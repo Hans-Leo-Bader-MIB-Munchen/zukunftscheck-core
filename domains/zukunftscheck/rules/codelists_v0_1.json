@@ -1,0 +1,12 @@
+{
+  "source_status": ["OFFICIAL", "INTERNAL_APPROVED", "DRAFT", "HISTORICAL", "UNKNOWN"],
+  "evidence_relation_type": ["DIRECT", "DERIVED", "UNSUPPORTED"],
+  "conflict_status": ["NONE", "CANDIDATE", "CONFIRMED"],
+  "locator_quality": ["EXACT", "LIMITED", "UNCLEAR"],
+  "extraction_method": ["MANUAL", "DETERMINISTIC", "AI_PROPOSED"],
+  "assignment_confidence": ["CLEAR", "PLAUSIBLE", "UNCERTAIN"],
+  "human_content_confirmation": ["UNREVIEWED", "CONFIRMED", "CORRECTED", "REJECTED"],
+  "governance_approval_state": ["NOT_REQUIRED", "PENDING", "APPROVED", "BLOCKED"],
+  "question_status": ["offen", "beantwortet", "teilweise beantwortet", "Nachforderung erforderlich", "widersprüchlich", "Fachanschluss erforderlich", "Prüfung Stufe 2 empfohlen", "nicht relevant", "in Stufe 1 nicht zulässig"],
+  "finding_type": ["DT", "BA", "UA", "AA", "WI", "IL", "OF", "NB", "FB", "S2", "NR", "NZ"]
+}
