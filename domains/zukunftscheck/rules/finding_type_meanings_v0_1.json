@@ -1,0 +1,19 @@
+{
+  "schema_version": "v0.1",
+  "source_drive_file_id": "1to1z1qAHHz011F42IJkDPujWusTO-67AgJrRdTz7_Tg",
+  "source_sheet": "Codelisten",
+  "finding_types": {
+    "DT": "Dokumentierte Tatsache",
+    "BA": "Bestätigte Angabe der Auftraggeberseite",
+    "UA": "Unbestätigte Angabe",
+    "AA": "Arbeitsannahme; ausdrücklich markiert, begründet, überprüfbar; keine Fachfolgerung",
+    "WI": "Widerspruch",
+    "IL": "Informationslücke",
+    "OF": "Offene Frage",
+    "NB": "Nachforderungsbedarf",
+    "FB": "Fachklärungsbedarf",
+    "S2": "Stufe-2-Bedarf",
+    "NR": "Nicht relevant",
+    "NZ": "Nicht zulässig in Stufe 1"
+  }
+}
