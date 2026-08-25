@@ -56,6 +56,35 @@ def parse_model_json(content: str) -> dict[str, Any]:
     return value
 
 
+def _failed_boundary_evaluation(
+    *,
+    boundary_issues: list[Any],
+    target_source_match: bool,
+    expectations: dict[str, Any],
+) -> dict[str, Any]:
+    group_results = [
+        {"allowed_group": group, "hits": [], "passed": False}
+        for group in expectations["required_question_groups"]
+    ]
+    criteria = {
+        "boundary_pass": False,
+        "target_source_match": target_source_match,
+        "question_groups_pass": False,
+        "conflict_candidate_pass": False,
+        "gap_or_uncertainty_pass": False,
+    }
+    return {
+        "passed": False,
+        "criteria": criteria,
+        "boundary_issues": [issue.to_dict() for issue in boundary_issues],
+        "question_group_results": group_results,
+        "conflict_hits": [],
+        "observed_question_ids": [],
+        "observed_conflict_refs": [],
+        "has_gap_or_uncertainty": False,
+    }
+
+
 def evaluate_smoke(
     response: dict[str, Any],
     *,
@@ -67,19 +96,42 @@ def evaluate_smoke(
         response,
         allowed_source_location_ids=allowed_ids,
     )
+    target_source_match = (
+        isinstance(response, dict)
+        and response.get("source_location_id") == expectations["target_source_location_id"]
+    )
+
+    # Untrusted model containers are never iterated after a boundary failure.
+    # This converts structurally invalid but parseable JSON into a deterministic FAIL.
+    if boundary_issues:
+        return _failed_boundary_evaluation(
+            boundary_issues=boundary_issues,
+            target_source_match=target_source_match,
+            expectations=expectations,
+        )
 
     question_ids: set[str] = set()
     conflict_refs: set[str] = set()
     has_gap_or_uncertainty = False
-    for proposal in response.get("proposals", []) if isinstance(response, dict) else []:
+    proposals = response.get("proposals", [])
+    if not isinstance(proposals, list):
+        return _failed_boundary_evaluation(
+            boundary_issues=boundary_issues,
+            target_source_match=target_source_match,
+            expectations=expectations,
+        )
+
+    for proposal in proposals:
         if not isinstance(proposal, dict):
             continue
-        for assignment in proposal.get("assignment_candidates", []) or []:
-            if isinstance(assignment, dict) and isinstance(assignment.get("question_id"), str):
-                question_ids.add(assignment["question_id"])
-        conflict_refs.update(
-            ref for ref in (proposal.get("conflict_candidate_refs", []) or []) if isinstance(ref, str)
-        )
+        assignments = proposal.get("assignment_candidates", [])
+        if isinstance(assignments, list):
+            for assignment in assignments:
+                if isinstance(assignment, dict) and isinstance(assignment.get("question_id"), str):
+                    question_ids.add(assignment["question_id"])
+        refs = proposal.get("conflict_candidate_refs", [])
+        if isinstance(refs, list):
+            conflict_refs.update(ref for ref in refs if isinstance(ref, str))
         has_gap_or_uncertainty = has_gap_or_uncertainty or bool(proposal.get("gap_notes")) or bool(
             proposal.get("uncertainty_notes")
         )
@@ -91,7 +143,8 @@ def evaluate_smoke(
 
     conflict_hits = sorted(set(expectations["required_conflict_ref_any"]) & conflict_refs)
     criteria = {
-        "boundary_pass": not boundary_issues,
+        "boundary_pass": True,
+        "target_source_match": target_source_match,
         "question_groups_pass": all(item["passed"] for item in group_results),
         "conflict_candidate_pass": bool(conflict_hits),
         "gap_or_uncertainty_pass": (
@@ -101,7 +154,7 @@ def evaluate_smoke(
     return {
         "passed": all(criteria.values()),
         "criteria": criteria,
-        "boundary_issues": [issue.to_dict() for issue in boundary_issues],
+        "boundary_issues": [],
         "question_group_results": group_results,
         "conflict_hits": conflict_hits,
         "observed_question_ids": sorted(question_ids),
