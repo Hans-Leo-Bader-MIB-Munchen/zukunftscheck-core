@@ -162,6 +162,13 @@ def validate_semantic_response(
                 add("INVALID_CANDIDATE_NOTE_LIST", rule, "SemanticProposal", proposal_id,
                     f"{list_field} muss eine Liste nichtleerer Strings sein")
 
+        conflict_refs = proposal.get("conflict_candidate_refs")
+        if isinstance(conflict_refs, list):
+            for conflict_ref in conflict_refs:
+                if isinstance(conflict_ref, str) and conflict_ref.strip() and conflict_ref not in allowed_source_location_ids:
+                    add("UNKNOWN_CONFLICT_SOURCE_REF", "B-SV015", "SemanticProposal", proposal_id,
+                        "conflict_candidate_refs darf nur deterministisch bereitgestellte Fundstellen referenzieren")
+
         proposal_review = proposal.get("human_review_required")
         if not isinstance(proposal_review, bool):
             add("INVALID_REVIEW_FLAG", "B-SV018", "SemanticProposal", proposal_id,
