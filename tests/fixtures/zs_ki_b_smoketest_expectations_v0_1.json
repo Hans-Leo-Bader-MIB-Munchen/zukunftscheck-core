@@ -1,0 +1,13 @@
+{
+  "expectation_id": "ZS-KI-B-SMOKE-EXPECT-001_v0.1",
+  "case_id": "ZS-KI-B-SMOKE-SYN-001",
+  "target_source_location_id": "SL-SMOKE-003",
+  "required_question_groups": [
+    ["4.5", "6.3", "11.1"],
+    ["7.3", "8.5", "11.3"]
+  ],
+  "required_conflict_ref_any": ["SL-SMOKE-002"],
+  "require_gap_or_uncertainty_note": true,
+  "require_boundary_pass": true,
+  "notes": "Smoke-Gate, kein Benchmark: geprüft wird nur, ob das lokale Modell eine formal zulässige, quellengebundene und grob sachadäquate Vorschlagsausgabe erzeugen kann."
+}
