@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zukunftscheck.local/schema/zs-ki-b-bundle-v0.1",
+  "title": "ZS-KI-B deterministic validation bundle v0.1",
+  "type": "object",
+  "required": ["run_manifest"],
+  "additionalProperties": false,
+  "properties": {
+    "run_manifest": {"$ref":"#/$defs/RunManifest"},
+    "documents": {"type":"array","items":{"$ref":"#/$defs/DocumentRecord"},"default":[]},
+    "source_locations": {"type":"array","items":{"$ref":"#/$defs/SourceLocation"},"default":[]},
+    "findings": {"type":"array","items":{"$ref":"#/$defs/FindingRecord"},"default":[]},
+    "evidence_relations": {"type":"array","items":{"$ref":"#/$defs/EvidenceRelation"},"default":[]},
+    "assignments": {"type":"array","items":{"$ref":"#/$defs/AssignmentRecord"},"default":[]},
+    "conflicts": {"type":"array","items":{"$ref":"#/$defs/ConflictRecord"},"default":[]},
+    "human_decisions": {"type":"array","items":{"$ref":"#/$defs/HumanDecision"},"default":[]},
+    "audit_events": {"type":"array","items":{"$ref":"#/$defs/AuditEvent"},"default":[]}
+  },
+  "$defs": {
+    "RunManifest": {"type":"object","required":["run_id","schema_version","development_data_class","llm_used"],"properties":{"run_id":{"type":"string","minLength":1},"schema_version":{"const":"v0.1"},"development_data_class":{"const":"SYNTHETIC_ONLY"},"llm_used":{"const":false}},"additionalProperties":true},
+    "DocumentRecord": {"type":"object","required":["document_id","document_title","document_type","source_status","project_or_case_id","confidentiality_or_data_class","storage_reference","captured_at","captured_by"],"properties":{"document_id":{"type":"string","minLength":1},"source_status":{"enum":["OFFICIAL","INTERNAL_APPROVED","DRAFT","HISTORICAL","UNKNOWN"]}},"additionalProperties":true},
+    "SourceLocation": {"type":"object","required":["source_location_id","document_id","original_text","extraction_method","locator_quality","source_version_reference"],"properties":{"source_location_id":{"type":"string","minLength":1},"extraction_method":{"enum":["MANUAL","DETERMINISTIC","AI_PROPOSED"]},"locator_quality":{"enum":["EXACT","LIMITED","UNCLEAR"]}},"additionalProperties":true},
+    "FindingRecord": {"type":"object","required":["finding_id","normalized_statement","human_content_confirmation","human_review_required"],"properties":{"finding_id":{"type":"string","minLength":1},"finding_type":{"enum":["DT","BA","UA","AA","WI","IL","OF","NB","FB","S2","NR","NZ"]},"human_content_confirmation":{"enum":["UNREVIEWED","CONFIRMED","CORRECTED","REJECTED"]},"human_review_required":{"type":"boolean"}},"additionalProperties":true},
+    "EvidenceRelation": {"type":"object","required":["evidence_relation_id","finding_id","evidence_relation_type"],"properties":{"evidence_relation_id":{"type":"string","minLength":1},"evidence_relation_type":{"enum":["DIRECT","DERIVED","UNSUPPORTED"]}},"additionalProperties":true},
+    "AssignmentRecord": {"type":"object","required":["assignment_id","finding_id","pf_id","question_id","assignment_confidence","human_review_required"],"properties":{"assignment_id":{"type":"string","minLength":1},"assignment_confidence":{"enum":["CLEAR","PLAUSIBLE","UNCERTAIN"]},"question_status":{"enum":["offen","beantwortet","teilweise beantwortet","Nachforderung erforderlich","widersprüchlich","Fachanschluss erforderlich","Prüfung Stufe 2 empfohlen","nicht relevant","in Stufe 1 nicht zulässig"]},"human_review_required":{"type":"boolean"}},"additionalProperties":true},
+    "ConflictRecord": {"type":"object","required":["conflict_id","conflict_status","related_record_ids"],"properties":{"conflict_id":{"type":"string","minLength":1},"conflict_status":{"enum":["NONE","CANDIDATE","CONFIRMED"]},"related_record_ids":{"type":"array","minItems":2,"items":{"type":"string"}}},"additionalProperties":true},
+    "HumanDecision": {"type":"object","required":["human_decision_id","actor_type","decision_scope","decision_value","reason"],"properties":{"human_decision_id":{"type":"string","minLength":1},"actor_type":{"const":"HUMAN"}},"additionalProperties":true},
+    "AuditEvent": {"type":"object","required":["audit_event_id","actor_type","action_type","timestamp"],"properties":{"audit_event_id":{"type":"string","minLength":1},"actor_type":{"enum":["HUMAN","AI","DETERMINISTIC"]}},"additionalProperties":true}
+  }
+}
