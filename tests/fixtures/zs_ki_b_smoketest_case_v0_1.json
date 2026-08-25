@@ -1,0 +1,28 @@
+{
+  "case_id": "ZS-KI-B-SMOKE-SYN-001",
+  "data_class": "SYNTHETIC_ONLY",
+  "target_source_location_id": "SL-SMOKE-003",
+  "source_locations": [
+    {
+      "source_location_id": "SL-SMOKE-001",
+      "document_id": "DOC-SMOKE-SYN-001",
+      "page_reference": "1",
+      "section_or_heading": "Projektbeschluss",
+      "original_text": "Der Projektbeschluss vom 15. Juli 2026 beauftragt die weitere Planung des Hauptgebäudes. Eine abschließende Ausführungsfreigabe ist damit ausdrücklich nicht verbunden."
+    },
+    {
+      "source_location_id": "SL-SMOKE-002",
+      "document_id": "DOC-SMOKE-SYN-001",
+      "page_reference": "2",
+      "section_or_heading": "Bestandsplan v2.1",
+      "original_text": "Der Bestandsplan v2.1 vom 30. Juni 2026 weist für das Hauptgebäude eine Nutzfläche von 2.450 m² aus."
+    },
+    {
+      "source_location_id": "SL-SMOKE-003",
+      "document_id": "DOC-SMOKE-SYN-001",
+      "page_reference": "3",
+      "section_or_heading": "Projektübersicht v1.4",
+      "original_text": "Die Projektübersicht v1.4 vom 12. August 2026 nennt für das Hauptgebäude eine Nutzfläche von 2.620 m². Welche Flächenangabe aktuell maßgeblich ist, wird nicht erläutert. Für die Barrierefreiheit liegt noch keine Fachuntersuchung vor; eine dafür zuständige externe Fachstelle ist in der Übersicht nicht benannt."
+    }
+  ]
+}
