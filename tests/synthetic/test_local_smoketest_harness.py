@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import copy
 import json
 import unittest
 from pathlib import Path
@@ -116,6 +115,12 @@ class LocalSmokeHarnessTests(unittest.TestCase):
     def test_14_expectations_are_bound_to_same_case(self) -> None:
         self.assertEqual(EXPECT["case_id"], CASE["case_id"])
         self.assertEqual(EXPECT["target_source_location_id"], CASE["target_source_location_id"])
+
+    def test_15_canonical_finding_type_meanings_are_in_prompt_payload(self) -> None:
+        payload = json.loads(build_messages(CASE)[1]["content"])
+        self.assertEqual(payload["finding_type_meanings"]["WI"], "Widerspruch")
+        self.assertEqual(payload["finding_type_meanings"]["IL"], "Informationslücke")
+        self.assertEqual(len(payload["finding_type_meanings"]), 12)
 
 
 if __name__ == "__main__":
