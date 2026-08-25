@@ -10,6 +10,7 @@ from core.validation.semantic_boundary import validate_semantic_response
 
 ROOT = Path(__file__).resolve().parents[1]
 QUESTIONS_PATH = ROOT / "domains" / "zukunftscheck" / "rules" / "reference_questions_v0_1.json"
+FINDING_TYPES_PATH = ROOT / "domains" / "zukunftscheck" / "rules" / "finding_type_meanings_v0_1.json"
 PROMPT_PATH = ROOT / "llm" / "prompts" / "zs_ki_b_smoketest_system_v0_1.txt"
 
 
@@ -23,6 +24,7 @@ def sha256_text(text: str) -> str:
 
 def build_messages(case: dict[str, Any]) -> list[dict[str, str]]:
     questions = json.loads(QUESTIONS_PATH.read_text(encoding="utf-8"))["questions"]
+    finding_types = json.loads(FINDING_TYPES_PATH.read_text(encoding="utf-8"))["finding_types"]
     system_prompt = PROMPT_PATH.read_text(encoding="utf-8")
     target_id = case["target_source_location_id"]
     locations = case["source_locations"]
@@ -38,6 +40,7 @@ def build_messages(case: dict[str, Any]) -> list[dict[str, str]]:
         "target_source_location": target,
         "allowed_context_source_locations": locations,
         "reference_questions": compact_questions,
+        "finding_type_meanings": finding_types,
     }
     return [
         {"role": "system", "content": system_prompt},
