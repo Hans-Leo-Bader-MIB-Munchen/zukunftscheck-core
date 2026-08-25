@@ -3,6 +3,7 @@
 
 Default mode is dry-run and performs no network call. --execute is required for
 exactly one local inference request. The endpoint is restricted to loopback.
+Every executed attempt is persisted as an audit JSON result.
 """
 from __future__ import annotations
 
@@ -16,16 +17,32 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from llm.local_model.openai_compatible import chat_completion, validate_local_base_url
+from llm.local_model.openai_compatible import LocalModelError, chat_completion, validate_local_base_url
 from llm.smoketest import build_messages, canonical_json, evaluate_smoke, parse_model_json, sha256_text
 
 CASE_PATH = ROOT / "tests" / "fixtures" / "zs_ki_b_smoketest_case_v0_1.json"
 EXPECT_PATH = ROOT / "tests" / "fixtures" / "zs_ki_b_smoketest_expectations_v0_1.json"
 PROMPT_PATH = ROOT / "llm" / "prompts" / "zs_ki_b_smoketest_system_v0_1.txt"
+DEFAULT_OUTPUT = "zs_ki_b_smoketest_result_v0_1.json"
 
 
 def load(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def persist_result(result: dict, output_path: str) -> None:
+    rendered = json.dumps(result, ensure_ascii=False, indent=2)
+    Path(output_path).write_text(rendered + "\n", encoding="utf-8")
+    print(rendered)
+
+
+def provider_metadata(envelope: dict) -> dict:
+    return {
+        "id": envelope.get("id"),
+        "model": envelope.get("model"),
+        "created": envelope.get("created"),
+        "usage": envelope.get("usage"),
+    }
 
 
 def main() -> int:
@@ -33,7 +50,11 @@ def main() -> int:
     parser.add_argument("--execute", action="store_true", help="genau einen lokalen Modellaufruf ausführen")
     parser.add_argument("--model", default="", help="lokale Modell-ID; für --execute erforderlich")
     parser.add_argument("--base-url", default="http://127.0.0.1:1234/v1")
-    parser.add_argument("--output", default="", help="optionale JSON-Ausgabedatei")
+    parser.add_argument(
+        "--output",
+        default=DEFAULT_OUTPUT,
+        help=f"Audit-JSON des ausgeführten Einmallaufs (Standard: {DEFAULT_OUTPUT})",
+    )
     args = parser.parse_args()
 
     base_url = validate_local_base_url(args.base_url)
@@ -53,6 +74,7 @@ def main() -> int:
         "expectations_sha256": sha256_text(canonical_json(expectations)),
         "base_url": base_url,
         "model": args.model or None,
+        "execution_attempted": False,
         "executed": False,
         "timestamp_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
     }
@@ -65,17 +87,52 @@ def main() -> int:
     if not args.model.strip():
         parser.error("--model ist zusammen mit --execute erforderlich")
 
-    content, envelope = chat_completion(
-        base_url=base_url,
-        model=args.model,
-        messages=messages,
-        temperature=0.0,
-    )
+    manifest["execution_attempted"] = True
+    try:
+        content, envelope = chat_completion(
+            base_url=base_url,
+            model=args.model,
+            messages=messages,
+            temperature=0.0,
+        )
+    except LocalModelError as exc:
+        result = {
+            "mode": "EXECUTED_ONCE_FAILED",
+            "manifest": manifest,
+            "model_response_raw": None,
+            "model_response": None,
+            "evaluation": {
+                "passed": False,
+                "criteria": {"endpoint_response_pass": False},
+                "endpoint_error": f"{type(exc).__name__}: {exc}",
+            },
+            "provider_envelope_metadata": None,
+        }
+        persist_result(result, args.output)
+        return 2
+
     manifest["executed"] = True
     manifest["model"] = args.model
     manifest["model_response_sha256"] = sha256_text(content)
 
-    response = parse_model_json(content)
+    try:
+        response = parse_model_json(content)
+    except (json.JSONDecodeError, ValueError) as exc:
+        result = {
+            "mode": "EXECUTED_ONCE_FAILED",
+            "manifest": manifest,
+            "model_response_raw": content,
+            "model_response": None,
+            "evaluation": {
+                "passed": False,
+                "criteria": {"parse_pass": False},
+                "parse_error": f"{type(exc).__name__}: {exc}",
+            },
+            "provider_envelope_metadata": provider_metadata(envelope),
+        }
+        persist_result(result, args.output)
+        return 2
+
     evaluation = evaluate_smoke(response, case=case, expectations=expectations)
     result = {
         "mode": "EXECUTED_ONCE",
@@ -83,17 +140,9 @@ def main() -> int:
         "model_response_raw": content,
         "model_response": response,
         "evaluation": evaluation,
-        "provider_envelope_metadata": {
-            "id": envelope.get("id"),
-            "model": envelope.get("model"),
-            "created": envelope.get("created"),
-            "usage": envelope.get("usage"),
-        },
+        "provider_envelope_metadata": provider_metadata(envelope),
     }
-    rendered = json.dumps(result, ensure_ascii=False, indent=2)
-    if args.output:
-        Path(args.output).write_text(rendered + "\n", encoding="utf-8")
-    print(rendered)
+    persist_result(result, args.output)
     return 0 if evaluation["passed"] else 2
 
 
