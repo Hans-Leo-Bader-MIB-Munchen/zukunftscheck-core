@@ -1,0 +1,199 @@
+{
+  "run_manifest": {
+    "run_id": "RUN-E2E-SYN-001",
+    "schema_version": "v0.1",
+    "development_data_class": "SYNTHETIC_ONLY",
+    "llm_used": false
+  },
+  "documents": [
+    {
+      "document_id": "DOC-SYN-A",
+      "document_title": "Synthetischer Projektstatus",
+      "document_type": "TEST-DOCUMENT",
+      "source_status": "OFFICIAL",
+      "project_or_case_id": "CASE-E2E-SYN",
+      "confidentiality_or_data_class": "SYNTHETIC",
+      "storage_reference": "local:synthetic/doc-a",
+      "captured_at": "2026-08-25T22:00:00+02:00",
+      "captured_by": "E2E-TEST"
+    },
+    {
+      "document_id": "DOC-SYN-B",
+      "document_title": "Synthetischer Nachtrag",
+      "document_type": "TEST-DOCUMENT",
+      "source_status": "DRAFT",
+      "project_or_case_id": "CASE-E2E-SYN",
+      "confidentiality_or_data_class": "SYNTHETIC",
+      "storage_reference": "local:synthetic/doc-b",
+      "captured_at": "2026-08-25T22:00:00+02:00",
+      "captured_by": "E2E-TEST"
+    }
+  ],
+  "source_locations": [
+    {
+      "source_location_id": "LOC-SYN-1",
+      "document_id": "DOC-SYN-A",
+      "original_text": "Die Freigabe wurde am 10. August synthetisch dokumentiert.",
+      "extraction_method": "MANUAL",
+      "locator_quality": "EXACT",
+      "human_review_required": false,
+      "source_version_reference": "v1"
+    },
+    {
+      "source_location_id": "LOC-SYN-2",
+      "document_id": "DOC-SYN-A",
+      "original_text": "Die Unterlage nennt synthetisch Version 3.2.",
+      "extraction_method": "DETERMINISTIC",
+      "locator_quality": "LIMITED",
+      "human_review_required": false,
+      "source_version_reference": "v1"
+    },
+    {
+      "source_location_id": "LOC-SYN-3",
+      "document_id": "DOC-SYN-B",
+      "original_text": "Eine Randnotiz könnte synthetisch einen abweichenden Stand meinen.",
+      "extraction_method": "MANUAL",
+      "locator_quality": "UNCLEAR",
+      "human_review_required": true,
+      "source_version_reference": "draft-1"
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "F-SYN-1",
+      "normalized_statement": "Eine synthetische Freigabe ist dokumentiert.",
+      "finding_type": "DT",
+      "human_content_confirmation": "UNREVIEWED",
+      "human_review_required": false
+    },
+    {
+      "finding_id": "F-SYN-2",
+      "normalized_statement": "Der dokumentierte Versionsstand ist synthetisch 3.2.",
+      "finding_type": "BA",
+      "human_content_confirmation": "UNREVIEWED",
+      "human_review_required": false
+    },
+    {
+      "finding_id": "F-SYN-3",
+      "normalized_statement": "Es besteht synthetisch ein möglicher abweichender Entscheidungsstand.",
+      "finding_type": "WI",
+      "human_content_confirmation": "UNREVIEWED",
+      "human_review_required": true
+    },
+    {
+      "finding_id": "F-SYN-4",
+      "normalized_statement": "Für eine synthetische Aussage fehlt ein belegender Nachweis.",
+      "finding_type": "NB",
+      "human_content_confirmation": "UNREVIEWED",
+      "human_review_required": true
+    }
+  ],
+  "evidence_relations": [
+    {
+      "evidence_relation_id": "E-SYN-1",
+      "finding_id": "F-SYN-1",
+      "source_location_id": "LOC-SYN-1",
+      "evidence_relation_type": "DIRECT"
+    },
+    {
+      "evidence_relation_id": "E-SYN-2",
+      "finding_id": "F-SYN-2",
+      "source_location_id": "LOC-SYN-2",
+      "evidence_relation_type": "DERIVED",
+      "derivation_note": "Versionsangabe wird synthetisch aus der expliziten Fundstelle abgeleitet."
+    },
+    {
+      "evidence_relation_id": "E-SYN-3",
+      "finding_id": "F-SYN-3",
+      "source_location_id": "LOC-SYN-3",
+      "evidence_relation_type": "DIRECT"
+    },
+    {
+      "evidence_relation_id": "E-SYN-4",
+      "finding_id": "F-SYN-4",
+      "evidence_relation_type": "UNSUPPORTED"
+    }
+  ],
+  "assignments": [
+    {
+      "assignment_id": "A-SYN-1",
+      "finding_id": "F-SYN-1",
+      "pf_id": "PF4",
+      "question_id": "4.2",
+      "assignment_confidence": "CLEAR",
+      "human_review_required": false,
+      "question_status": "beantwortet"
+    },
+    {
+      "assignment_id": "A-SYN-2",
+      "finding_id": "F-SYN-2",
+      "pf_id": "PF4",
+      "question_id": "4.2",
+      "assignment_confidence": "CLEAR",
+      "human_review_required": false,
+      "question_status": "beantwortet"
+    },
+    {
+      "assignment_id": "A-SYN-3",
+      "finding_id": "F-SYN-3",
+      "pf_id": "PF4",
+      "question_id": "4.5",
+      "assignment_confidence": "PLAUSIBLE",
+      "human_review_required": true,
+      "question_status": "widersprüchlich"
+    },
+    {
+      "assignment_id": "A-SYN-4",
+      "finding_id": "F-SYN-3",
+      "pf_id": "PF11",
+      "question_id": "11.6",
+      "assignment_confidence": "UNCERTAIN",
+      "human_review_required": true,
+      "question_status": "teilweise beantwortet"
+    },
+    {
+      "assignment_id": "A-SYN-5",
+      "finding_id": "F-SYN-4",
+      "pf_id": "PF11",
+      "question_id": "11.2",
+      "assignment_confidence": "CLEAR",
+      "human_review_required": true,
+      "question_status": "Nachforderung erforderlich"
+    }
+  ],
+  "conflicts": [
+    {
+      "conflict_id": "C-SYN-1",
+      "conflict_status": "CANDIDATE",
+      "related_record_ids": ["F-SYN-1", "F-SYN-3"]
+    },
+    {
+      "conflict_id": "C-SYN-2",
+      "conflict_status": "CONFIRMED",
+      "related_record_ids": ["F-SYN-2", "F-SYN-3"]
+    }
+  ],
+  "human_decisions": [
+    {
+      "human_decision_id": "HD-SYN-1",
+      "actor_type": "HUMAN",
+      "decision_scope": "synthetic_fixture_review",
+      "decision_value": "CONFIRMED_FOR_TEST_ONLY",
+      "reason": "Reiner synthetischer Testdatensatz; keine reale Governancefreigabe."
+    }
+  ],
+  "audit_events": [
+    {
+      "audit_event_id": "AE-SYN-1",
+      "actor_type": "DETERMINISTIC",
+      "action_type": "VALIDATE_BUNDLE",
+      "timestamp": "2026-08-25T22:05:00+02:00"
+    },
+    {
+      "audit_event_id": "AE-SYN-2",
+      "actor_type": "HUMAN",
+      "action_type": "SYNTHETIC_FIXTURE_REVIEW",
+      "timestamp": "2026-08-25T22:06:00+02:00"
+    }
+  ]
+}
