@@ -137,6 +137,11 @@ class SemanticBoundaryTests(unittest.TestCase):
         proposal["human_review_required"] = False
         self.assertEqual(codes(response), set())
 
+    def test_21_unknown_conflict_source_reference_fails(self) -> None:
+        response = valid_response()
+        response["proposals"][0]["conflict_candidate_refs"] = ["SL-HALLUCINATED"]
+        self.assertIn("UNKNOWN_CONFLICT_SOURCE_REF", codes(response))
+
 
 if __name__ == "__main__":
     unittest.main()
