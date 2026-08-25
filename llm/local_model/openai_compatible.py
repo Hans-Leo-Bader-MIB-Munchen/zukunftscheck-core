@@ -18,6 +18,13 @@ class LocalModelError(RuntimeError):
     pass
 
 
+class _RejectRedirects(urllib.request.HTTPRedirectHandler):
+    """Reject every redirect so one local POST cannot escape loopback or multiply requests."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):  # type: ignore[override]
+        return None
+
+
 def validate_local_base_url(base_url: str) -> str:
     parsed = urllib.parse.urlparse(base_url)
     if parsed.scheme not in {"http", "https"}:
@@ -53,11 +60,12 @@ def chat_completion(
         headers={"Content-Type": "application/json"},
         method="POST",
     )
+    opener = urllib.request.build_opener(_RejectRedirects())
     try:
-        with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
+        with opener.open(request, timeout=timeout_seconds) as response:
             raw = response.read().decode("utf-8")
     except (urllib.error.URLError, TimeoutError, OSError) as exc:
-        raise LocalModelError(f"lokaler Modellendpunkt nicht erreichbar: {exc}") from exc
+        raise LocalModelError(f"lokaler Modellendpunkt nicht erreichbar oder Redirect verworfen: {exc}") from exc
 
     try:
         envelope = json.loads(raw)
