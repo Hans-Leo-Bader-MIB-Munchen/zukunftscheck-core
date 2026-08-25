@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.1",
+  "title": "ZS-KI-B semantic proposal contract v0.1",
+  "description": "Provider-neutral proposal-only output contract. It does not permit fachliche status, governance decisions, stage opening or provenance overwrite.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "source_location_id", "proposals"],
+  "properties": {
+    "contract_version": {
+      "const": "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.1"
+    },
+    "source_location_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "proposals": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/proposal"}
+    }
+  },
+  "$defs": {
+    "proposal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "proposal_id",
+        "normalized_statement",
+        "finding_type_candidate",
+        "evidence_relation_type_candidate",
+        "assignment_candidates",
+        "conflict_candidate_refs",
+        "gap_notes",
+        "uncertainty_notes",
+        "human_review_required"
+      ],
+      "properties": {
+        "proposal_id": {"type": "string", "minLength": 1},
+        "normalized_statement": {"type": "string", "minLength": 1},
+        "finding_type_candidate": {
+          "enum": ["DT", "BA", "UA", "AA", "WI", "IL", "OF", "NB", "FB", "S2", "NR", "NZ"]
+        },
+        "evidence_relation_type_candidate": {
+          "enum": ["DIRECT", "DERIVED", "UNSUPPORTED"]
+        },
+        "derivation_note": {"type": ["string", "null"]},
+        "assignment_candidates": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/assignment_candidate"}
+        },
+        "conflict_candidate_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "gap_notes": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "uncertainty_notes": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "human_review_required": {"type": "boolean"}
+      }
+    },
+    "assignment_candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["question_id", "pf_id", "assignment_confidence", "human_review_required"],
+      "properties": {
+        "question_id": {"type": "string", "minLength": 1},
+        "pf_id": {"type": "string", "pattern": "^PF(?:[1-9]|1[0-2])$"},
+        "assignment_confidence": {
+          "enum": ["CLEAR", "PLAUSIBLE", "UNCERTAIN"]
+        },
+        "human_review_required": {"type": "boolean"}
+      }
+    }
+  }
+}
