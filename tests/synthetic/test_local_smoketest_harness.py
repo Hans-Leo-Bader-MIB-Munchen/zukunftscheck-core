@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import json
+import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
-from llm.local_model.openai_compatible import LocalModelError, validate_local_base_url
+from llm.local_model.openai_compatible import LocalModelError, _RejectRedirects, validate_local_base_url
 from llm.smoketest import build_messages, evaluate_smoke, parse_model_json
+import scripts.zs_ki_b_smoketest_v0_1 as runner
 
 ROOT = Path(__file__).resolve().parents[2]
 CASE = json.loads((ROOT / "tests" / "fixtures" / "zs_ki_b_smoketest_case_v0_1.json").read_text(encoding="utf-8"))
@@ -121,6 +125,54 @@ class LocalSmokeHarnessTests(unittest.TestCase):
         self.assertEqual(payload["finding_type_meanings"]["WI"], "Widerspruch")
         self.assertEqual(payload["finding_type_meanings"]["IL"], "Informationslücke")
         self.assertEqual(len(payload["finding_type_meanings"]), 12)
+
+    def test_16_context_source_cannot_pass_as_target(self) -> None:
+        response = valid_model_response()
+        response["source_location_id"] = "SL-SMOKE-002"
+        evaluation = evaluate_smoke(response, case=CASE, expectations=EXPECT)
+        self.assertFalse(evaluation["passed"])
+        self.assertFalse(evaluation["criteria"]["target_source_match"])
+
+    def test_17_boundary_invalid_container_returns_fail_not_exception(self) -> None:
+        response = valid_model_response()
+        response["proposals"] = None
+        evaluation = evaluate_smoke(response, case=CASE, expectations=EXPECT)
+        self.assertFalse(evaluation["passed"])
+        self.assertFalse(evaluation["criteria"]["boundary_pass"])
+
+    def test_18_redirect_handler_rejects_redirect(self) -> None:
+        handler = _RejectRedirects()
+        self.assertIsNone(
+            handler.redirect_request(
+                None,
+                None,
+                302,
+                "Found",
+                {},
+                "http://127.0.0.1:1234/v1/chat/completions",
+            )
+        )
+
+    def test_19_parse_failure_persists_raw_one_shot_output(self) -> None:
+        raw = '```json\n{"contract_version":"bad"}\n```'
+        envelope = {"id": "synthetic-envelope", "model": "synthetic-model", "created": 0, "usage": {}}
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output = Path(tmpdir) / "result.json"
+            argv = [
+                "zs_ki_b_smoketest_v0_1.py",
+                "--execute",
+                "--model",
+                "synthetic-model",
+                "--output",
+                str(output),
+            ]
+            with patch.object(runner, "chat_completion", return_value=(raw, envelope)), patch.object(sys, "argv", argv):
+                exit_code = runner.main()
+            persisted = json.loads(output.read_text(encoding="utf-8"))
+        self.assertEqual(exit_code, 2)
+        self.assertEqual(persisted["model_response_raw"], raw)
+        self.assertFalse(persisted["evaluation"]["passed"])
+        self.assertIn("parse_error", persisted["evaluation"])
 
 
 if __name__ == "__main__":
