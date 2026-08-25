@@ -9,12 +9,16 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import sys
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from llm.local_model.openai_compatible import chat_completion, validate_local_base_url
 from llm.smoketest import build_messages, canonical_json, evaluate_smoke, parse_model_json, sha256_text
 
-ROOT = Path(__file__).resolve().parents[1]
 CASE_PATH = ROOT / "tests" / "fixtures" / "zs_ki_b_smoketest_case_v0_1.json"
 EXPECT_PATH = ROOT / "tests" / "fixtures" / "zs_ki_b_smoketest_expectations_v0_1.json"
 PROMPT_PATH = ROOT / "llm" / "prompts" / "zs_ki_b_smoketest_system_v0_1.txt"
