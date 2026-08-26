@@ -3,8 +3,9 @@
 
 Purpose:
 - reduce reference-question payload only when deterministic lexical evidence is
-  sufficiently clear;
-- fail closed to the complete 67-question set when evidence is weak or broad;
+  sufficiently clear and supported by the existing calibrated meaning layer;
+- fail closed to the complete 67-question set when evidence is weak, broad or
+  points outside the calibrated PF neighborhood;
 - perform no model call and use no Human-Gold labels.
 
 This is a diagnostic prototype, not a production routing policy and not an
@@ -81,6 +82,7 @@ def meaning_text_by_question(meanings_doc: dict[str, Any]) -> dict[str, str]:
 def route(case: dict[str, Any], questions: list[dict[str, Any]], meanings_doc: dict[str, Any]) -> dict[str, Any]:
     src_tokens = tokenize(source_text(case))
     meaning_texts = meaning_text_by_question(meanings_doc)
+    calibrated_ids = set(meaning_texts)
 
     scored: list[dict[str, Any]] = []
     for row in questions:
@@ -98,38 +100,50 @@ def route(case: dict[str, Any], questions: list[dict[str, Any]], meanings_doc: d
                     "score": score,
                     "direct_overlap": direct_overlap,
                     "meaning_overlap": meaning_overlap,
+                    "meaning_backed": bool(meaning_overlap) and row["question_id"] in calibrated_ids,
                 }
             )
 
     scored.sort(key=lambda item: (-item["score"], item["question_id"]))
     strong = [item for item in scored if item["score"] >= MIN_SCORE]
+    meaning_backed = [item for item in strong if item["meaning_backed"]]
+    lexical_only = [item for item in strong if not item["meaning_backed"]]
 
     fallback_reasons: list[str] = []
     if not strong:
         fallback_reasons.append("no_candidate_meets_min_score")
     if len(strong) > MAX_SELECTED_QUESTIONS:
         fallback_reasons.append("candidate_set_too_broad")
+    if strong and not meaning_backed:
+        fallback_reasons.append("no_meaning_backed_candidate")
+
+    meaning_backed_pfs = {item["pf_id"] for item in meaning_backed}
+    lexical_only_external_pfs = sorted({item["pf_id"] for item in lexical_only if item["pf_id"] not in meaning_backed_pfs})
+    if lexical_only_external_pfs:
+        fallback_reasons.append("lexical_only_candidate_outside_meaning_backed_pf")
 
     if fallback_reasons:
         selected_ids = [row["question_id"] for row in questions]
         mode = "FULL_67_FAIL_CLOSED"
     else:
-        # Include all strong candidates and all questions in the same PF groups.
-        # PF expansion is deterministic and reduces the risk of slicing away a close neighbor.
-        selected_pfs = {item["pf_id"] for item in strong}
-        selected_ids = [row["question_id"] for row in questions if row["pf_id"] in selected_pfs]
+        # Reduction is anchored only in PFs that have at least one calibrated
+        # meaning-layer overlap. Lexical-only evidence may support a PF already
+        # anchored this way, but may never introduce a new PF on its own.
+        selected_ids = [row["question_id"] for row in questions if row["pf_id"] in meaning_backed_pfs]
         if len(selected_ids) > MAX_SELECTED_QUESTIONS:
             selected_ids = [row["question_id"] for row in questions]
             fallback_reasons.append("pf_expansion_exceeds_max_selected_questions")
             mode = "FULL_67_FAIL_CLOSED"
         else:
-            mode = "REDUCED_PF_EXPANDED"
+            mode = "REDUCED_MEANING_BACKED_PF_EXPANDED"
 
     return {
         "case_id": case["case_id"],
         "mode": mode,
         "source_tokens": sorted(src_tokens),
         "strong_candidates": strong,
+        "meaning_backed_candidates": meaning_backed,
+        "lexical_only_strong_candidates": lexical_only,
         "selected_question_count": len(selected_ids),
         "selected_question_ids": selected_ids,
         "fallback_reasons": fallback_reasons,
@@ -157,9 +171,10 @@ def main() -> int:
         },
         "cases": results,
         "guardrail": (
-            "Reduced routing is permitted only from deterministic lexical evidence plus PF expansion. "
-            "Weak, empty or overly broad evidence fails closed to all 67 questions. This prototype must not be "
-            "treated as production routing or independent semantic qualification without holdout validation."
+            "Reduced routing requires at least one calibrated meaning-layer overlap per selected PF. "
+            "Lexical-only evidence may not introduce an additional PF. Weak, empty, broad or cross-PF ambiguous "
+            "evidence fails closed to all 67 questions. This prototype must not be treated as production routing "
+            "or independent semantic qualification without holdout validation."
         ),
     }
     print(json.dumps(output, ensure_ascii=False, indent=2))
