@@ -1,0 +1,16 @@
+{
+  "case_id": "ZS-KI-B-SEM-R22-SYN-001",
+  "case_version": "v0.1",
+  "data_class": "SYNTHETIC_ONLY",
+  "target_source_location_id": "SL-R22-001",
+  "frozen_input_sha256": "4c9c7390251c0a88ad39e1c135922e7d2134116706dca71659bb5cde9a284248",
+  "source_locations": [
+    {
+      "source_location_id": "SL-R22-001",
+      "document_id": "DOC-R22-SYN-001",
+      "page_reference": "1",
+      "section_or_heading": "Genehmigungsstand",
+      "original_text": "Nach aktuellem Stand könnte die Genehmigung im September vorliegen; eine Zusage besteht nicht."
+    }
+  ]
+}
