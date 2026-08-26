@@ -22,7 +22,7 @@
       "pf_id": "PF4",
       "positive_scope": "Erfasst erforderliche Informationen oder Unterlagen, die im vorliegenden Informationsbestand fehlen und deshalb die Dokumenten- oder Datengrundlage unvollständig machen.",
       "negative_scope": "Nicht jede fachliche Restfrage und nicht bloß eine unbelegte Schlussfolgerung, wenn die zugrunde liegende Information vorhanden ist.",
-      "disambiguation_notes": "4.4 ist bestandsbezogen: Welche Information oder Unterlage fehlt in der Eingangslage? 11.3 ist stärker bewertungsbezogen: Welche entscheidungserhebliche Informationslücke bleibt als Befund der Prüfung bestehen? Beide können in demselben Fall einschlägig sein, dürfen aber nicht automatisch gleichgesetzt werden."
+      "disambiguation_notes": "4.4 ist bestandsbezogen: Welche Information oder Unterlage fehlt in der Eingangslage? 11.3 ist stärker bewertungsbezogen: Welche entscheidungserhebliche Informationslücke bleibt als Befund der Prüfung bestehen? 12.3 betrifft die daraus abgeleitete konkrete Unterlage, Bestätigung oder Entscheidung, die als Beschaffungsschritt benötigt wird, nicht die Bestandslücke selbst. 4.4 und 11.3 können in demselben Fall einschlägig sein, dürfen aber nicht automatisch gleichgesetzt werden."
     },
     {
       "question_id": "4.5",
@@ -71,7 +71,7 @@
       "pf_id": "PF11",
       "positive_scope": "Erfasst fehlende Informationen, die für die Orientierungsfrage oder den nächsten Entscheidungsschritt entscheidungserheblich sind und als verbleibende Prüflücke benannt werden müssen.",
       "negative_scope": "Nicht jede fehlende Unterlage oder Detailangabe ohne erkennbare Relevanz für die Orientierung und nicht bloß eine fachlich offene Frage trotz vollständiger Informationsbasis.",
-      "disambiguation_notes": "11.3 setzt die Relevanz der Informationslücke für den Prüfbefund voraus. 4.4 beschreibt demgegenüber zunächst die Unvollständigkeit der vorhandenen Informations- oder Dokumentengrundlage."
+      "disambiguation_notes": "11.3 setzt die Relevanz der Informationslücke für den Prüfbefund voraus. 4.4 beschreibt demgegenüber zunächst die Unvollständigkeit der vorhandenen Informations- oder Dokumentengrundlage. 12.3 übersetzt eine bestätigte Lücke in die konkret benötigte Unterlage, Bestätigung oder Entscheidung als Beschaffungsschritt; 11.3 benennt die Lücke selbst als Prüfbefund. Gegenüber 11.5 gilt: 11.3 betrifft eine durch Nachforderung grundsätzlich schließbare Informationslücke; 11.5 eine auch nach Nachforderung verbleibende fachliche Offenheit."
     },
     {
       "question_id": "11.4",
@@ -85,7 +85,7 @@
       "pf_id": "PF11",
       "positive_scope": "Erfasst eine Frage, die auch nach zumutbarer und konkret möglicher Nachforderung nicht allein durch weitere Unterlagen oder Bestätigungen geklärt werden kann und deshalb als fachlich offen verbleibt.",
       "negative_scope": "Nicht eine bloße Informationslücke, die durch eine konkrete Nachforderung geschlossen werden kann, und nicht die fachliche Beantwortung der offenen Frage selbst.",
-      "disambiguation_notes": "11.5 markiert die Grenze der Stufe-1-Informationsklärung: Bleibt eine Fachfrage trotz geschlossener oder nicht weiter schließbarer Informationslücke offen, darf Stufe 1 sie nicht selbst fachlich entscheiden; ein funktional benannter Fachanschluss kann erforderlich werden."
+      "disambiguation_notes": "11.5 markiert die Grenze der Stufe-1-Informationsklärung: Bleibt eine Fachfrage trotz geschlossener oder nicht weiter schließbarer Informationslücke offen, darf Stufe 1 sie nicht selbst fachlich entscheiden; ein funktional benannter Fachanschluss kann erforderlich werden. Abzugrenzen von 11.3: 11.3 betrifft eine durch Nachforderung grundsätzlich schließbare Informationslücke; 11.5 betrifft eine auch nach Nachforderung verbleibende fachliche Offenheit."
     }
   ],
   "guardrail": "Dieser Entwurf erweitert reference_question_meanings_v0_2.json nicht. Erst nach fachlichem Human Review, Gegenprüfung der Abgrenzungen und ausdrücklicher Versionierungsentscheidung darf daraus eine neue führende Meaning-Layer-Fassung entstehen."
