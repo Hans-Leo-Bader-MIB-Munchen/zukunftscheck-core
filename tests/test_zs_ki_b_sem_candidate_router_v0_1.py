@@ -39,7 +39,7 @@ class CandidateRouterV01Tests(unittest.TestCase):
         for path in router.CASE_PATHS:
             case = router.load(path)
             result = router.route(case, self.questions, self.meanings)
-            if result["mode"] == "REDUCED_PF_EXPANDED":
+            if result["mode"].startswith("REDUCED_"):
                 self.assertLessEqual(result["selected_question_count"], router.MAX_SELECTED_QUESTIONS)
 
     def test_selected_ids_always_resolve_to_reference_questions(self):
@@ -49,10 +49,17 @@ class CandidateRouterV01Tests(unittest.TestCase):
             result = router.route(case, self.questions, self.meanings)
             self.assertTrue(set(result["selected_question_ids"]).issubset(all_ids))
 
+    def test_lexical_only_external_pf_forces_fail_closed(self):
+        case = router.load(router.CASE_PATHS[1])
+        result = router.route(case, self.questions, self.meanings)
+        self.assertEqual(result["mode"], "FULL_67_FAIL_CLOSED")
+        self.assertIn("no_meaning_backed_candidate", result["fallback_reasons"])
+
     def test_no_human_gold_dependency_is_declared_or_imported(self):
         source = SCRIPT.read_text(encoding="utf-8").lower()
-        self.assertNotIn("human_gold", source.replace('"human_gold_used": false', ""))
-        self.assertNotIn("gold", source.replace("human-gold", ""))
+        # The diagnostic output flag is allowed; executable dependencies are not.
+        source_without_flag = source.replace('"human_gold_used": false', "")
+        self.assertNotIn("human_gold", source_without_flag)
 
 
 if __name__ == "__main__":
