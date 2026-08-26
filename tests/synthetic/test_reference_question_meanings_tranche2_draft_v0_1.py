@@ -45,10 +45,13 @@ class MeaningTranche2DraftTests(unittest.TestCase):
         self.assertIn("räum", rows["2.4"]["positive_scope"].lower())
         self.assertIn("teilgegen", rows["2.5"]["positive_scope"].lower())
 
-    def test_d05_25_vs_125_is_explicitly_separated(self) -> None:
+    def test_d05_25_vs_125_is_explicitly_separated_without_extra_threshold(self) -> None:
         rows = self.rows()
         self.assertIn("12.5", rows["2.5"]["disambiguation_notes"])
         self.assertIn("2.5", rows["12.5"]["disambiguation_notes"])
+        self.assertIn("nahelegen", rows["2.5"]["positive_scope"].lower())
+        self.assertNotIn("verkürzen", rows["2.5"]["positive_scope"].lower())
+        self.assertNotIn("verzerren", rows["2.5"]["positive_scope"].lower())
         self.assertIn("nicht", rows["12.5"]["negative_scope"].lower())
         self.assertIn("beauftragung", rows["12.5"]["negative_scope"].lower())
 
@@ -82,6 +85,23 @@ class MeaningTranche2DraftTests(unittest.TestCase):
         self.assertIn("stufe 1", positive)
         self.assertTrue("fachentscheid" in positive or "qualitätsbestät" in positive or "freigab" in positive)
         self.assertIn("nicht", row["negative_scope"].lower())
+
+    def test_d10_24_explicitly_separates_pf6_spatial_evidence_checks(self) -> None:
+        notes = self.rows()["2.4"]["disambiguation_notes"]
+        self.assertIn("6.2", notes)
+        self.assertIn("6.4", notes)
+
+    def test_d11_125_explicitly_separates_pf9_stage2_indication(self) -> None:
+        notes = self.rows()["12.5"]["disambiguation_notes"]
+        self.assertIn("9.5", notes)
+        self.assertIn("aggregierende", notes.lower())
+
+    def test_d12_126_separates_input_guardrail_and_concrete_connector(self) -> None:
+        notes = self.rows()["12.6"]["disambiguation_notes"]
+        self.assertIn("1.6", notes)
+        self.assertIn("12.4", notes)
+        self.assertIn("eingangsseitig", notes.lower())
+        self.assertIn("ausgangsseitig", notes.lower())
 
 
 if __name__ == "__main__":
