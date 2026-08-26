@@ -17,7 +17,19 @@ def valid_response(source_location_id: str) -> str:
         {
             "contract_version": runner.CONTRACT_VERSION,
             "source_location_id": source_location_id,
-            "proposals": [],
+            "proposals": [
+                {
+                    "proposal_id": f"P-{source_location_id}",
+                    "normalized_statement": "Synthetischer Testvorschlag ohne Goldbewertung.",
+                    "finding_type_candidate": "DT",
+                    "evidence_relation_type_candidate": "DIRECT",
+                    "assignment_candidates": [],
+                    "conflict_candidate_refs": [],
+                    "gap_notes": [],
+                    "uncertainty_notes": [],
+                    "human_review_required": False,
+                }
+            ],
         },
         ensure_ascii=False,
     )
