@@ -77,6 +77,19 @@ class MeaningTranche1DraftTests(unittest.TestCase):
         self.assertIn("nicht", row["negative_scope"].lower())
         self.assertIn("nicht selbst fachlich entscheiden", row["disambiguation_notes"].lower())
 
+    def test_d09_44_and_113_are_both_explicitly_separated_from_123(self) -> None:
+        rows = self.rows()
+        self.assertIn("12.3", rows["4.4"]["disambiguation_notes"])
+        self.assertIn("12.3", rows["11.3"]["disambiguation_notes"])
+        self.assertIn("beschaffung", rows["11.3"]["disambiguation_notes"].lower())
+
+    def test_d10_113_and_115_explicitly_separate_closable_gap_from_specialist_openness(self) -> None:
+        rows = self.rows()
+        self.assertIn("11.5", rows["11.3"]["disambiguation_notes"])
+        self.assertIn("11.3", rows["11.5"]["disambiguation_notes"])
+        self.assertIn("schließbare informationslücke", rows["11.5"]["disambiguation_notes"].lower())
+        self.assertIn("fachliche offenheit", rows["11.5"]["disambiguation_notes"].lower())
+
 
 if __name__ == "__main__":
     unittest.main()
