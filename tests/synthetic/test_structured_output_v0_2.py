@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import socket
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -115,23 +116,25 @@ class StructuredOutputV02Tests(unittest.TestCase):
         probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         probe.bind(("127.0.0.1", 0))
         port = probe.getsockname()[1]
-        probe.close()
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            output = Path(tmpdir) / "result.json"
-            argv = [
-                "zs_ki_b_smoketest_v0_2.py",
-                "--execute",
-                "--model",
-                "synthetic-model",
-                "--base-url",
-                f"http://127.0.0.1:{port}/v1",
-                "--output",
-                str(output),
-            ]
-            with patch.object(sys, "argv", argv):
-                exit_code = runner.main()
-            persisted = json.loads(output.read_text(encoding="utf-8"))
+        try:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                output = Path(tmpdir) / "result.json"
+                argv = [
+                    "zs_ki_b_smoketest_v0_2.py",
+                    "--execute",
+                    "--model",
+                    "synthetic-model",
+                    "--base-url",
+                    f"http://127.0.0.1:{port}/v1",
+                    "--output",
+                    str(output),
+                ]
+                with patch.object(sys, "argv", argv):
+                    exit_code = runner.main()
+                persisted = json.loads(output.read_text(encoding="utf-8"))
+        finally:
+            probe.close()
 
         self.assertEqual(exit_code, 2)
         self.assertEqual(persisted["mode"], "EXECUTED_ONCE_FAILED_STRUCTURED_V0_2")
@@ -140,6 +143,32 @@ class StructuredOutputV02Tests(unittest.TestCase):
         self.assertFalse(persisted["evaluation"]["passed"])
         self.assertFalse(persisted["evaluation"]["criteria"]["endpoint_response_pass"])
         self.assertIn("LocalModelError", persisted["evaluation"]["endpoint_error"])
+
+    def test_11_dirty_worktree_fails_before_model_contact(self) -> None:
+        argv = [
+            "zs_ki_b_smoketest_v0_2.py",
+            "--execute",
+            "--model",
+            "synthetic-model",
+        ]
+        rev_parse = subprocess.CompletedProcess(
+            args=["git", "rev-parse", "HEAD"],
+            returncode=0,
+            stdout="e4ef33bc0259d6ad1fb3e5f61871158478c2df1a\n",
+            stderr="",
+        )
+        dirty_status = subprocess.CompletedProcess(
+            args=["git", "status", "--porcelain", "--untracked-files=normal"],
+            returncode=0,
+            stdout=" M scripts/zs_ki_b_smoketest_v0_2.py\n",
+            stderr="",
+        )
+        with patch.object(runner.subprocess, "run", side_effect=[rev_parse, dirty_status]), patch.object(
+            runner, "chat_completion_structured"
+        ) as call, patch.object(sys, "argv", argv):
+            with self.assertRaisesRegex(RuntimeError, "working tree must be clean"):
+                runner.main()
+        call.assert_not_called()
 
 
 if __name__ == "__main__":
