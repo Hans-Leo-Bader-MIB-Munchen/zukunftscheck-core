@@ -14,6 +14,7 @@ import scripts.zs_ki_b_smoketest_v0_1 as runner
 ROOT = Path(__file__).resolve().parents[2]
 CASE = json.loads((ROOT / "tests" / "fixtures" / "zs_ki_b_smoketest_case_v0_1.json").read_text(encoding="utf-8"))
 EXPECT = json.loads((ROOT / "tests" / "fixtures" / "zs_ki_b_smoketest_expectations_v0_1.json").read_text(encoding="utf-8"))
+TEST_GIT_COMMIT = "e4ef33bc0259d6ad1fb3e5f61871158478c2df1a"
 
 
 def valid_model_response() -> dict:
@@ -166,7 +167,9 @@ class LocalSmokeHarnessTests(unittest.TestCase):
                 "--output",
                 str(output),
             ]
-            with patch.object(runner, "chat_completion", return_value=(raw, envelope)), patch.object(sys, "argv", argv):
+            with patch.object(runner, "current_git_commit", return_value=TEST_GIT_COMMIT), patch.object(
+                runner, "chat_completion", return_value=(raw, envelope)
+            ), patch.object(sys, "argv", argv):
                 exit_code = runner.main()
             persisted = json.loads(output.read_text(encoding="utf-8"))
         self.assertEqual(exit_code, 2)

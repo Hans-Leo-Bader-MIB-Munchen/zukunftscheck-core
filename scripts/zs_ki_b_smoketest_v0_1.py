@@ -45,8 +45,17 @@ def current_git_commit() -> str:
             capture_output=True,
             text=True,
         )
+        status = subprocess.run(
+            ["git", "status", "--porcelain", "--untracked-files=normal"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
     except (OSError, subprocess.CalledProcessError) as exc:
-        raise RuntimeError("cannot resolve git commit for auditable run manifest") from exc
+        raise RuntimeError("cannot resolve clean git state for auditable run manifest") from exc
+    if status.stdout.strip():
+        raise RuntimeError("working tree must be clean for auditable run manifest")
     commit = completed.stdout.strip()
     if len(commit) != 40 or any(ch not in "0123456789abcdefABCDEF" for ch in commit):
         raise RuntimeError("invalid git commit returned for auditable run manifest")
