@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import socket
 import sys
 import tempfile
 import unittest
@@ -93,7 +94,52 @@ class StructuredOutputV02Tests(unittest.TestCase):
         self.assertEqual(persisted["mode"], "EXECUTED_ONCE_STRUCTURED_V0_2")
         self.assertEqual(persisted["manifest"]["retry_count"], 0)
         self.assertFalse(persisted["manifest"]["output_repair"])
+        self.assertEqual(len(persisted["manifest"]["git_commit"]), 40)
         self.assertTrue(persisted["evaluation"]["passed"])
+
+    def test_09_non_synthetic_case_fails_before_model_contact(self) -> None:
+        argv = [
+            "zs_ki_b_smoketest_v0_2.py",
+            "--execute",
+            "--model",
+            "synthetic-model",
+        ]
+        with patch.object(runner, "load", return_value={"data_class": "REAL_DATA"}), patch.object(
+            runner, "chat_completion_structured"
+        ) as call, patch.object(sys, "argv", argv):
+            with self.assertRaisesRegex(ValueError, "SYNTHETIC_ONLY"):
+                runner.main()
+        call.assert_not_called()
+
+    def test_10_connection_refused_persists_controlled_failure(self) -> None:
+        probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        probe.bind(("127.0.0.1", 0))
+        port = probe.getsockname()[1]
+        probe.close()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output = Path(tmpdir) / "result.json"
+            argv = [
+                "zs_ki_b_smoketest_v0_2.py",
+                "--execute",
+                "--model",
+                "synthetic-model",
+                "--base-url",
+                f"http://127.0.0.1:{port}/v1",
+                "--output",
+                str(output),
+            ]
+            with patch.object(sys, "argv", argv):
+                exit_code = runner.main()
+            persisted = json.loads(output.read_text(encoding="utf-8"))
+
+        self.assertEqual(exit_code, 2)
+        self.assertEqual(persisted["mode"], "EXECUTED_ONCE_FAILED_STRUCTURED_V0_2")
+        self.assertFalse(persisted["manifest"]["executed"])
+        self.assertTrue(persisted["manifest"]["execution_attempted"])
+        self.assertFalse(persisted["evaluation"]["passed"])
+        self.assertFalse(persisted["evaluation"]["criteria"]["endpoint_response_pass"])
+        self.assertIn("LocalModelError", persisted["evaluation"]["endpoint_error"])
 
 
 if __name__ == "__main__":

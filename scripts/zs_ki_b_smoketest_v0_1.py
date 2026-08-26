@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -28,6 +29,28 @@ DEFAULT_OUTPUT = "zs_ki_b_smoketest_result_v0_1.json"
 
 def load(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def require_synthetic_only(case: dict) -> None:
+    if case.get("data_class") != "SYNTHETIC_ONLY":
+        raise ValueError("smoketest runner requires data_class=SYNTHETIC_ONLY")
+
+
+def current_git_commit() -> str:
+    try:
+        completed = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise RuntimeError("cannot resolve git commit for auditable run manifest") from exc
+    commit = completed.stdout.strip()
+    if len(commit) != 40 or any(ch not in "0123456789abcdefABCDEF" for ch in commit):
+        raise RuntimeError("invalid git commit returned for auditable run manifest")
+    return commit.lower()
 
 
 def persist_result(result: dict, output_path: str) -> None:
@@ -59,12 +82,14 @@ def main() -> int:
 
     base_url = validate_local_base_url(args.base_url)
     case = load(CASE_PATH)
+    require_synthetic_only(case)
     expectations = load(EXPECT_PATH)
     messages = build_messages(case)
     prompt_text = PROMPT_PATH.read_text(encoding="utf-8")
 
     manifest = {
         "run_type": "ZS-KI-B-LOCAL-MODEL-SMOKETEST-2026-001",
+        "git_commit": current_git_commit(),
         "case_id": case["case_id"],
         "data_class": case["data_class"],
         "contract_version": "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.1",
