@@ -1,0 +1,92 @@
+{
+  "schema_version": "v0.1",
+  "status": "HUMAN_REVIEW_DRAFT_ONLY",
+  "purpose": "Fachlicher Entwurf für die erste Meaning-Coverage-Tranche in bereits kalibrierten PF-Nachbarschaften. Nicht Bestandteil des führenden Meaning Layers und nicht für Modellqualifikation oder Produktivnutzung freigegeben.",
+  "meanings": [
+    {
+      "question_id": "3.1",
+      "pf_id": "PF3",
+      "positive_scope": "Erfasst die ausdrücklich dokumentierte Phase oder den formalen Bearbeitungsstand, in dem sich der betrachtete Gegenstand aktuell befindet.",
+      "negative_scope": "Nicht einzelne bereits getroffene oder noch offene Entscheidungen, Fristen oder abweichende Entscheidungsstände, sofern diese nicht selbst die dokumentierte Phase bezeichnen.",
+      "disambiguation_notes": "3.1 beschreibt den übergeordneten Verfahrens- oder Projektstand; 3.2 bis 3.5 erfassen demgegenüber konkrete Entscheidungen, offene Entscheidungen, Termine/Verfahren oder abweichende Entscheidungsstände."
+    },
+    {
+      "question_id": "4.3",
+      "pf_id": "PF4",
+      "positive_scope": "Erfasst für die Ausgangsfrage wesentliche Angaben, die bislang nur mündlich, informell oder außerhalb belastbarer Kernunterlagen vorliegen.",
+      "negative_scope": "Nicht bereits belastbar dokumentierte Angaben und nicht allein das Fehlen einer Information, wenn überhaupt keine Angabe vorliegt.",
+      "disambiguation_notes": "4.3 setzt eine vorhandene, aber nur informelle Informationsquelle voraus; vollständiges Fehlen gehört näher zu 4.4 bzw. bei entscheidungserheblicher Restlücke zu 11.3."
+    },
+    {
+      "question_id": "4.4",
+      "pf_id": "PF4",
+      "positive_scope": "Erfasst erforderliche Informationen oder Unterlagen, die im vorliegenden Informationsbestand fehlen und deshalb die Dokumenten- oder Datengrundlage unvollständig machen.",
+      "negative_scope": "Nicht jede fachliche Restfrage und nicht bloß eine unbelegte Schlussfolgerung, wenn die zugrunde liegende Information vorhanden ist.",
+      "disambiguation_notes": "4.4 ist bestandsbezogen: Welche Information oder Unterlage fehlt in der Eingangslage? 11.3 ist stärker bewertungsbezogen: Welche entscheidungserhebliche Informationslücke bleibt als Befund der Prüfung bestehen? 12.3 betrifft die daraus abgeleitete konkrete Unterlage, Bestätigung oder Entscheidung, die als Beschaffungsschritt benötigt wird, nicht die Bestandslücke selbst. 4.4 und 11.3 können in demselben Fall einschlägig sein, dürfen aber nicht automatisch gleichgesetzt werden."
+    },
+    {
+      "question_id": "4.5",
+      "pf_id": "PF4",
+      "positive_scope": "Erfasst inhaltliche Widersprüche zwischen vorliegenden Unterlagen, Angaben oder dokumentierten Informationsständen.",
+      "negative_scope": "Nicht bloß unterschiedliche Versionen ohne sachlichen Widerspruch und nicht jeder entscheidungserhebliche Konflikt, der nicht aus widersprechenden Unterlagen oder Angaben hervorgeht.",
+      "disambiguation_notes": "4.5 benennt die Widerspruchslage in der Informationsbasis. 11.1 bewertet, ob ein Widerspruch für die Orientierungsentscheidung erheblich ist. Ein Dokumentwiderspruch ist daher nicht automatisch 11.1."
+    },
+    {
+      "question_id": "4.6",
+      "pf_id": "PF4",
+      "positive_scope": "Erfasst eine konkret begrenzte Nachforderung von Unterlagen, Angaben oder Bestätigungen, die erforderlich ist, um eine identifizierte Lücke der Informationsgrundlage zu schließen.",
+      "negative_scope": "Nicht allgemeine Rechercheaufträge, umfassende neue Fachprüfungen oder unbestimmte Forderungen nach weiteren Informationen.",
+      "disambiguation_notes": "4.6 knüpft an die Beschaffung einer konkret fehlenden Grundlage an. 11.4 formuliert die aus der Prüfungsbewertung ableitbare konkrete Nachforderung; beide können zusammenfallen, wenn dieselbe begrenzte Information zugleich Dokumentenlücke und entscheidungserhebliche Prüflücke ist."
+    },
+    {
+      "question_id": "7.4",
+      "pf_id": "PF7",
+      "positive_scope": "Erfasst dokumentierte Abweichungen oder Widersprüche zwischen einer geplanten bzw. vorgesehenen Nutzung und der tatsächlich bestehenden Nutzung.",
+      "negative_scope": "Nicht allgemeine Nutzungskonflikte ohne Plan-Ist-Bezug und nicht bloß unterschiedliche Nutzungen verschiedener Bereiche oder Zeiten.",
+      "disambiguation_notes": "7.4 ist gegenüber 7.3 spezieller, wenn gerade der Plan-Ist-Widerspruch den Befund bildet. 7.3 bleibt für sonstige Nutzungskonflikte sowie Zugangs- und Barrierefreiheitsfragen zuständig."
+    },
+    {
+      "question_id": "7.5",
+      "pf_id": "PF7",
+      "positive_scope": "Erfasst das Vorliegen und den dokumentierten Inhalt eines Raumprogramms, Nutzungskonzepts oder ausdrücklich dokumentierter Nutzerbedarfe als Grundlage für die Nutzungsbewertung.",
+      "negative_scope": "Nicht einzelne bestehende Nutzungen, Nutzergruppen oder Nutzungszeiten allein und nicht die bloße Frage, ob eine weitergehende qualitative Prüfung erforderlich ist.",
+      "disambiguation_notes": "7.5 betrifft vorhandene konzeptionelle oder bedarfsbezogene Grundlagen; 7.1 und 7.2 betreffen konkrete Nutzungen, Nutzergruppen und Zeiten. 7.6 betrifft erst die Notwendigkeit einer weitergehenden Prüfung oder Planung."
+    },
+    {
+      "question_id": "7.6",
+      "pf_id": "PF7",
+      "positive_scope": "Erfasst die aus dem dokumentierten Nutzungsstand ableitbare Notwendigkeit einer qualitativen Raumfunktionsprüfung, Nutzerbedarfsanalyse oder Betriebsplanung als nachgelagerten Fachanschluss.",
+      "negative_scope": "Nicht die Durchführung oder fachliche Vorwegnahme einer solchen Prüfung und nicht allein das Vorliegen eines Raumprogramms oder Nutzungskonzepts.",
+      "disambiguation_notes": "7.6 ist eine Anschluss- bzw. Eskalationsfrage innerhalb des Nutzungsfelds. Stufe 1 darf den Bedarf benennen, aber die qualitative Fachprüfung nicht selbst ersetzen."
+    },
+    {
+      "question_id": "11.1",
+      "pf_id": "PF11",
+      "positive_scope": "Erfasst entscheidungserhebliche Widersprüche, die für die Orientierungsfrage oder einen nächsten Entscheidungsschritt tatsächlich erheblich sind und deshalb als Prüfbefund sichtbar gemacht werden müssen.",
+      "negative_scope": "Nicht jede formale Abweichung, Versionsdifferenz oder widersprechende Angabe ohne erkennbare Entscheidungsrelevanz.",
+      "disambiguation_notes": "11.1 bewertet die Entscheidungserheblichkeit eines Widerspruchs. 4.5 erfasst dagegen zunächst, dass Unterlagen oder Angaben einander widersprechen. Ein Fall kann beide Zuordnungen tragen, wenn beides eigenständig zutrifft."
+    },
+    {
+      "question_id": "11.3",
+      "pf_id": "PF11",
+      "positive_scope": "Erfasst fehlende Informationen, die für die Orientierungsfrage oder den nächsten Entscheidungsschritt entscheidungserheblich sind und als verbleibende Prüflücke benannt werden müssen.",
+      "negative_scope": "Nicht jede fehlende Unterlage oder Detailangabe ohne erkennbare Relevanz für die Orientierung und nicht bloß eine fachlich offene Frage trotz vollständiger Informationsbasis.",
+      "disambiguation_notes": "11.3 setzt die Relevanz der Informationslücke für den Prüfbefund voraus. 4.4 beschreibt demgegenüber zunächst die Unvollständigkeit der vorhandenen Informations- oder Dokumentengrundlage. 12.3 übersetzt eine bestätigte Lücke in die konkret benötigte Unterlage, Bestätigung oder Entscheidung als Beschaffungsschritt; 11.3 benennt die Lücke selbst als Prüfbefund. Gegenüber 11.5 gilt: 11.3 betrifft eine durch Nachforderung grundsätzlich schließbare Informationslücke; 11.5 eine auch nach Nachforderung verbleibende fachliche Offenheit."
+    },
+    {
+      "question_id": "11.4",
+      "pf_id": "PF11",
+      "positive_scope": "Erfasst die konkrete, verhältnismäßig begrenzte Nachforderung, die sich aus einer entscheidungserheblichen Prüflücke, Informationslücke oder Bestätigungslücke als nächster Prüfschritt ableiten lässt.",
+      "negative_scope": "Nicht pauschale Forderungen nach vollständiger Neuprüfung, nicht die Beauftragung einer umfassenden Fachplanung und nicht eine Nachforderung ohne Bezug zu einer identifizierten Prüflücke.",
+      "disambiguation_notes": "11.4 ist die bewertete Konsequenz aus einer relevanten Prüflücke. 4.6 betrachtet die konkret erforderliche Ergänzung der Informationsgrundlage; 12.x behandelt den übergeordneten nächsten Klärungsschritt und dessen funktionale Zuständigkeit."
+    },
+    {
+      "question_id": "11.5",
+      "pf_id": "PF11",
+      "positive_scope": "Erfasst eine Frage, die auch nach zumutbarer und konkret möglicher Nachforderung nicht allein durch weitere Unterlagen oder Bestätigungen geklärt werden kann und deshalb als fachlich offen verbleibt.",
+      "negative_scope": "Nicht eine bloße Informationslücke, die durch eine konkrete Nachforderung geschlossen werden kann, und nicht die fachliche Beantwortung der offenen Frage selbst.",
+      "disambiguation_notes": "11.5 markiert die Grenze der Stufe-1-Informationsklärung: Bleibt eine Fachfrage trotz geschlossener oder nicht weiter schließbarer Informationslücke offen, darf Stufe 1 sie nicht selbst fachlich entscheiden; ein funktional benannter Fachanschluss kann erforderlich werden. Abzugrenzen von 11.3: 11.3 betrifft eine durch Nachforderung grundsätzlich schließbare Informationslücke; 11.5 betrifft eine auch nach Nachforderung verbleibende fachliche Offenheit."
+    }
+  ],
+  "guardrail": "Dieser Entwurf erweitert reference_question_meanings_v0_2.json nicht. Erst nach fachlichem Human Review, Gegenprüfung der Abgrenzungen und ausdrücklicher Versionierungsentscheidung darf daraus eine neue führende Meaning-Layer-Fassung entstehen."
+}
