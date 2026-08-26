@@ -9,8 +9,8 @@ from __future__ import annotations
 import copy
 from typing import Any
 
-from .semantic_boundary import validate_semantic_response as validate_semantic_response_v0_1
-from .validator import ValidationIssue
+from core.validation.semantic_boundary import validate_semantic_response as validate_semantic_response_v0_1
+from core.validation.validator import ValidationIssue
 
 CONTRACT_VERSION = "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.2"
 
