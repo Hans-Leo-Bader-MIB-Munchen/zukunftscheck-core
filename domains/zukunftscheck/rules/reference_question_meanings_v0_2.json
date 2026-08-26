@@ -1,0 +1,90 @@
+{
+  "schema_version": "v0.2",
+  "calibration_scope": "Begrenzte modellfreie Post-Run-Kalibrierung für die in R16/R18/R21/R22 tatsächlich berührten Nachbarfragen. Keine Validierung aller 67 Referenzfragen und keine Generalisierung auf nicht aufgeführte question_ids.",
+  "meanings": [
+    {
+      "question_id": "2.1",
+      "pf_id": "PF2",
+      "positive_scope": "Erfasst den konkreten Gegenstand selbst, der betrachtet oder abgegrenzt wird.",
+      "negative_scope": "Nicht allein die Existenz, Benennung oder der Inhalt einer Unterlage oder eines Plans.",
+      "disambiguation_notes": "Bei Aussagen über einen Bestandsplan als vorhandenes Dokument ist 4.1 näher als 2.1."
+    },
+    {
+      "question_id": "3.2",
+      "pf_id": "PF3",
+      "positive_scope": "Erfasst dokumentierte Entscheidungen, Beschlüsse, Beauftragungen oder Freigaben, die tatsächlich vorliegen bzw. erteilt wurden.",
+      "negative_scope": "Nicht bloß offene, erwartete oder mögliche Entscheidungen und nicht allein ein historisch überholter Entscheidungsstand.",
+      "disambiguation_notes": "Gegenüber 3.3 ist das Vorliegen der Entscheidung entscheidend; gegenüber 3.5 geht es nicht primär um Abweichung, Vorläufigkeit oder Überholung, sondern um die dokumentierte Entscheidung selbst."
+    },
+    {
+      "question_id": "3.3",
+      "pf_id": "PF3",
+      "positive_scope": "Erfasst Entscheidungen, die noch ausstehen, nicht getroffen oder nicht verbindlich zugesagt sind.",
+      "negative_scope": "Nicht bereits erteilte Entscheidungen oder Freigaben und nicht bloß ein überholter früherer Entscheidungsstand.",
+      "disambiguation_notes": "Formulierungen wie 'noch offen', 'nicht entschieden' oder 'keine Zusage' sprechen für 3.3, wenn die Kernaussage der offene Entscheidungsstand ist."
+    },
+    {
+      "question_id": "3.4",
+      "pf_id": "PF3",
+      "positive_scope": "Erfasst für die Orientierungsfrage erhebliche Fristen, Termine oder laufende Verfahren einschließlich ausdrücklich als möglich oder ungewiss bezeichneten Zeitfenstern.",
+      "negative_scope": "Nicht allein eine Entscheidung selbst und nicht jede Datumsnennung ohne verfahrens- oder fristbezogene Relevanz.",
+      "disambiguation_notes": "Ein möglicher September-Termin kann 3.4 betreffen, ohne dadurch zu einer Zusage oder sicheren Prognose zu werden."
+    },
+    {
+      "question_id": "3.5",
+      "pf_id": "PF3",
+      "positive_scope": "Erfasst abweichende, vorläufige oder überholte Entscheidungsstände und deren zeitliche oder sachliche Einordnung.",
+      "negative_scope": "Nicht allein eine unbelegte Aussage, Prognose oder Schlussfolgerung ohne dokumentierten Entscheidungsstand.",
+      "disambiguation_notes": "Ein fehlender Beleg ist nicht automatisch ein abweichender oder überholter Entscheidungsstand."
+    },
+    {
+      "question_id": "4.1",
+      "pf_id": "PF4",
+      "positive_scope": "Erfasst vorhandene oder erforderliche Kernunterlagen, Pläne, Dokumente und sonstige Unterlagen für die Ausgangsfrage.",
+      "negative_scope": "Nicht den betrachteten Gegenstand selbst nur deshalb, weil er in einer Unterlage beschrieben ist.",
+      "disambiguation_notes": "Bestandsplan als vorhandene Kernunterlage fällt hierher; die Sache, Fläche oder Anlage selbst gehört nicht allein deswegen zu 4.1."
+    },
+    {
+      "question_id": "4.2",
+      "pf_id": "PF4",
+      "positive_scope": "Erfasst Datum, Version oder Status einer konkreten vorhandenen Unterlage bzw. eines dokumentierten Informationsstands.",
+      "negative_scope": "Nicht die sachliche Entscheidung oder Freigabe selbst nur deshalb, weil sie in einer datierten Unterlage erwähnt wird.",
+      "disambiguation_notes": "Bei mehreren zeitlich datierten Quellen kann 4.2 parallel zu einer fachlichen PF3-Zuordnung einschlägig sein, wenn der Dokument- oder Versionsstatus Teil des Informationswerts ist."
+    },
+    {
+      "question_id": "7.1",
+      "pf_id": "PF7",
+      "positive_scope": "Erfasst dokumentierte derzeitige oder geplante Nutzungen als sachlichen Nutzungsinhalt.",
+      "negative_scope": "Nicht allein eine unbelegte Behauptung über künftige Bedarfsdeckung und nicht bloß ein fehlender Beleg.",
+      "disambiguation_notes": "Der thematische Bezug zu Nutzung genügt nicht, wenn die Kernaussage die fehlende Belegbarkeit einer Schlussfolgerung ist."
+    },
+    {
+      "question_id": "7.2",
+      "pf_id": "PF7",
+      "positive_scope": "Erfasst dokumentierte Nutzergruppen und/oder konkrete Nutzungszeiten, Betriebszeiten oder zeitliche Nutzungsmuster.",
+      "negative_scope": "Nicht bloß die Tatsache, dass eine Nutzung besteht oder geplant ist, wenn keine Nutzergruppe oder Zeitdimension die Kernaussage bildet.",
+      "disambiguation_notes": "'werktags von 8 bis 18 Uhr genutzt' ist spezifischer 7.2-Bezug; eine parallele 7.1-Zuordnung ist nur sinnvoll, wenn zusätzlich der Nutzungsinhalt selbst eigenständig relevant ist."
+    },
+    {
+      "question_id": "7.3",
+      "pf_id": "PF7",
+      "positive_scope": "Erfasst dokumentierte Nutzungskonflikte sowie Zugangs- oder Barrierefreiheitsfragen.",
+      "negative_scope": "Nicht bloß vorhandene Unterlagen oder allgemein dokumentierte Nutzung, wenn der eigentliche Befund Zugang oder Barrierefreiheit betrifft.",
+      "disambiguation_notes": "Die Formulierung 'laut Unterlage' macht einen Barrierefreiheitsbefund nicht zu 4.1/PF4; maßgeblich ist der semantische Inhalt des Befunds."
+    },
+    {
+      "question_id": "11.2",
+      "pf_id": "PF11",
+      "positive_scope": "Erfasst unbelegte oder nicht zuständig bestätigte Aussagen, Behauptungen und Schlussfolgerungen.",
+      "negative_scope": "Nicht allein dokumentierte Nutzung oder ein dokumentierter Entscheidungsstand, wenn deren Belegbarkeit nicht die eigentliche Aussage ist.",
+      "disambiguation_notes": "Bei einer eigenständig unbelegten Schlussfolgerung ist 11.2 gegenüber rein thematischen Nachbarn zu bevorzugen."
+    },
+    {
+      "question_id": "11.6",
+      "pf_id": "PF11",
+      "positive_scope": "Erfasst Unsicherheiten, Vorbehalte oder Gewissheitsgrenzen, die in der Orientierungsnotiz ausdrücklich sichtbar bleiben müssen.",
+      "negative_scope": "Nicht jede unbelegte Aussage automatisch und nicht ein dokumentierter überholter Entscheidungsstand allein wegen zeitlicher Veränderung.",
+      "disambiguation_notes": "'könnte' plus 'keine Zusage' ist primär eine sichtbar zu haltende Unsicherheit; 11.2 ist nur dann zusätzlich einschlägig, wenn die fehlende Beleg- oder Bestätigungslage selbst eigenständiger Aussagekern ist."
+    }
+  ]
+}
