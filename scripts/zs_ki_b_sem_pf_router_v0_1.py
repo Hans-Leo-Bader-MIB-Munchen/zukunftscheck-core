@@ -10,8 +10,8 @@ Guardrails:
 - no model/network/tool call;
 - no dependency on prior R16/R18/R21/R22 labels;
 - no case-specific routing rules;
-- if routing evidence is weak, broad, or tied across too many PFs, fail closed
-  to all PFs/all 67 questions;
+- if routing evidence is weak, broad, tied, or contains relevant semantic
+  evidence below the selection threshold, fail closed to all PFs/all 67 questions;
 - no production or qualification claim.
 """
 from __future__ import annotations
@@ -119,15 +119,26 @@ def route_text(text: str, questions: list[dict[str, Any]], pf_semantics: dict[st
     scored.sort(key=lambda row: (-row["score"], int(row["pf_id"][2:])))
 
     strong = [row for row in scored if row["score"] >= MIN_PF_SCORE]
+    strong_ids = {row["pf_id"] for row in strong}
     fallback: list[str] = []
     if not strong:
         fallback.append("no_pf_meets_min_score")
     if len(strong) > MAX_SELECTED_PFS:
         fallback.append("too_many_strong_pfs")
 
+    # A semantic phrase, or at least two explicit semantic-token matches, is
+    # material evidence even when the aggregate score stays below MIN_PF_SCORE.
+    # Such evidence may not be silently discarded by a reduced route.
+    below_threshold_semantic = [
+        row for row in scored
+        if row["pf_id"] not in strong_ids
+        and (row["semantic_phrase_overlap"] or len(row["semantic_token_overlap"]) >= 2)
+    ]
+    if below_threshold_semantic:
+        fallback.append("semantic_evidence_below_selection_threshold")
+
     if strong:
         cutoff = strong[-1]["score"]
-        strong_ids = {x["pf_id"] for x in strong}
         next_score = next((row["score"] for row in scored if row["pf_id"] not in strong_ids), 0)
         if cutoff - next_score < MIN_MARGIN and next_score > 0:
             fallback.append("insufficient_score_margin")
@@ -145,6 +156,7 @@ def route_text(text: str, questions: list[dict[str, Any]], pf_semantics: dict[st
         "mode": mode,
         "source_tokens": sorted(src),
         "pf_scores": scored,
+        "below_threshold_semantic_evidence": below_threshold_semantic,
         "selected_pf_ids": selected_pfs,
         "selected_pf_count": len(selected_pfs),
         "selected_question_ids": selected_question_ids,
@@ -182,7 +194,7 @@ def main() -> int:
             "semantic_phrase_weight": SEMANTIC_PHRASE_WEIGHT,
         },
         "holdout_cases": rows,
-        "guardrail": "Stage A only limits PF groups when deterministic PF-level lexical/phrase evidence is strong and bounded; otherwise all 12 PFs/all 67 questions are retained. Stage B is not executed here."
+        "guardrail": "Stage A only limits PF groups when deterministic PF-level lexical/phrase evidence is strong and bounded and no material semantic evidence is left below threshold; otherwise all 12 PFs/all 67 questions are retained. Stage B is not executed here."
     }
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0
