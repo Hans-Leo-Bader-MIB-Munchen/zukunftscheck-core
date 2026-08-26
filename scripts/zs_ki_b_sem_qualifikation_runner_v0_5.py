@@ -10,8 +10,13 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import sys
 from pathlib import Path
 from typing import Any
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 import scripts.zs_ki_b_sem_qualifikation_runner_v0_1 as base
 from core.validation.semantic_boundary_v0_2 import validate_semantic_response_v0_2
@@ -19,7 +24,6 @@ from llm.local_model.openai_compatible import LocalModelError, validate_local_ba
 from llm.local_model.structured_output_v0_5 import build_response_format, chat_completion_structured
 from llm.smoketest import canonical_json, parse_model_json, sha256_text
 
-ROOT = base.ROOT
 PROMPT_VERSION = "zs_ki_b_sem_qualifikation_system_v0_3"
 CONTRACT_VERSION = "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.2"
 RUN_TYPE = "ZS-KI-B-SEM-QUALIFIKATION-SYNTHETIC-ARCHITEKTURDELTA-2026-005"
@@ -145,8 +149,6 @@ def main() -> int:
     if not args.model.strip():
         parser.error("--model ist zusammen mit --execute erforderlich")
 
-    # Execution path is intentionally deterministic and one-shot. This code path
-    # must only be used after a separate human one-time authorization and freeze.
     prompt_text = PROMPT_PATH.read_text(encoding="utf-8")
     cases = [load(path) for path in CASE_PATHS]
     base.validate_frozen_cases(cases)
