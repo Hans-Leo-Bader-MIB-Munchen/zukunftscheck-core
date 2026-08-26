@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 import unittest
 from pathlib import Path
 
@@ -80,6 +82,22 @@ class ReferenceQuestionMeaningsV02Tests(unittest.TestCase):
         self.assertIn("reference_question_meanings_v0_2.json", prompt)
         self.assertIn("reference_question_meanings_v0_2.json", runner)
         self.assertIn("zs_ki_b_sem_qualifikation_system_v0_4", runner)
+
+    def test_t24_standalone_dry_run_reports_v02_meaning_layer(self) -> None:
+        completed = subprocess.run(
+            [sys.executable, str(RUNNER_V06), "--model", "qwen3-14b"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        payload = json.loads(completed.stdout)
+        self.assertEqual(payload["manifest"]["observed_model_request_count"], 0)
+        self.assertFalse(payload["manifest"]["execution_attempted"])
+        self.assertEqual(
+            payload["manifest"]["meaning_layer"],
+            "reference_question_meanings_v0_2.json/R16-R18-R21-R22-neighbor-limited",
+        )
 
 
 if __name__ == "__main__":
