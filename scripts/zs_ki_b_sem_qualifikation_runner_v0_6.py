@@ -18,6 +18,8 @@ if str(ROOT) not in sys.path:
 
 import scripts.zs_ki_b_sem_qualifikation_runner_v0_5 as base
 
+_BASE_BUILD_DRY_RUN_MANIFEST = base.build_dry_run_manifest
+
 PROMPT_VERSION = "zs_ki_b_sem_qualifikation_system_v0_4"
 CONTRACT_VERSION = "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.2"
 RUN_TYPE = "ZS-KI-B-SEM-QUALIFIKATION-SYNTHETIC-MEANING-LAYER-V0-2-REGRESSION-2026-006"
@@ -30,6 +32,7 @@ QUESTIONS_PATH = ROOT / "domains" / "zukunftscheck" / "rules" / "reference_quest
 MEANINGS_PATH = ROOT / "domains" / "zukunftscheck" / "rules" / "reference_question_meanings_v0_2.json"
 FINDING_TYPES_PATH = ROOT / "domains" / "zukunftscheck" / "rules" / "finding_type_meanings_v0_1.json"
 CASE_PATHS = base.CASE_PATHS
+MEANING_LAYER_LABEL = "reference_question_meanings_v0_2.json/R16-R18-R21-R22-neighbor-limited"
 
 
 def _bind_base() -> None:
@@ -45,6 +48,9 @@ def _bind_base() -> None:
     base.MEANINGS_PATH = MEANINGS_PATH
     base.FINDING_TYPES_PATH = FINDING_TYPES_PATH
     base.CASE_PATHS = CASE_PATHS
+    # v0.5 main() calls its own module-level builder. Rebind that call site to
+    # the v0.6 wrapper so standalone dry-runs/executions report the v0.2 label.
+    base.build_dry_run_manifest = build_dry_run_manifest
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -66,8 +72,8 @@ def evaluate_boundary(case: dict[str, Any], response: dict[str, Any]) -> dict[st
 
 def build_dry_run_manifest(*, model: str = "", base_url: str = "http://127.0.0.1:1234/v1") -> dict[str, Any]:
     _bind_base()
-    result = base.build_dry_run_manifest(model=model, base_url=base_url)
-    result["manifest"]["meaning_layer"] = "reference_question_meanings_v0_2.json/R16-R18-R21-R22-neighbor-limited"
+    result = _BASE_BUILD_DRY_RUN_MANIFEST(model=model, base_url=base_url)
+    result["manifest"]["meaning_layer"] = MEANING_LAYER_LABEL
     return result
 
 
