@@ -1,0 +1,16 @@
+{
+  "case_id": "ZS-KI-B-SEM-R21-SYN-001",
+  "case_version": "v0.1",
+  "data_class": "SYNTHETIC_ONLY",
+  "target_source_location_id": "SL-R21-001",
+  "frozen_input_sha256": "c2b9c8a821900f6d7eb44a8ecb489457f63783a80476aeafe14d81615b0a49d2",
+  "source_locations": [
+    {
+      "source_location_id": "SL-R21-001",
+      "document_id": "DOC-R21-SYN-001",
+      "page_reference": "1",
+      "section_or_heading": "Nutzung und Zugang",
+      "original_text": "Der Westflügel ist derzeit ungenutzt, der Ostflügel wird werktags von 8 bis 18 Uhr genutzt und der barrierefreie Zugang zum Ostflügel ist laut Unterlage nicht hergestellt."
+    }
+  ]
+}
