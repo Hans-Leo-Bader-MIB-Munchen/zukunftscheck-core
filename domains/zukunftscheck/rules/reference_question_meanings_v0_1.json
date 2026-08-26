@@ -1,0 +1,41 @@
+{
+  "schema_version": "v0.1",
+  "calibration_scope": "Begrenzte modellfreie R16-Kalibrierung. Keine Validierung aller 67 Referenzfragen und keine Generalisierung auf nicht aufgeführte question_ids.",
+  "meanings": [
+    {
+      "question_id": "2.1",
+      "pf_id": "PF2",
+      "positive_scope": "Erfasst den konkreten Gegenstand selbst, der betrachtet oder abgegrenzt wird.",
+      "negative_scope": "Nicht allein die Existenz, Benennung oder der Inhalt einer Unterlage oder eines Plans.",
+      "disambiguation_notes": "Bei Aussagen über einen Bestandsplan als vorhandenes Dokument ist 4.1 näher als 2.1."
+    },
+    {
+      "question_id": "3.5",
+      "pf_id": "PF3",
+      "positive_scope": "Erfasst abweichende, vorläufige oder überholte Entscheidungsstände und deren zeitliche oder sachliche Einordnung.",
+      "negative_scope": "Nicht allein eine unbelegte Aussage, Prognose oder Schlussfolgerung ohne dokumentierten Entscheidungsstand.",
+      "disambiguation_notes": "Ein fehlender Beleg ist nicht automatisch ein abweichender oder überholter Entscheidungsstand."
+    },
+    {
+      "question_id": "4.1",
+      "pf_id": "PF4",
+      "positive_scope": "Erfasst vorhandene oder erforderliche Kernunterlagen, Pläne, Dokumente und sonstige Unterlagen für die Ausgangsfrage.",
+      "negative_scope": "Nicht den betrachteten Gegenstand selbst nur deshalb, weil er in einer Unterlage beschrieben ist.",
+      "disambiguation_notes": "Bestandsplan als vorhandene Kernunterlage fällt hierher; die Sache, Fläche oder Anlage selbst gehört nicht allein deswegen zu 4.1."
+    },
+    {
+      "question_id": "7.1",
+      "pf_id": "PF7",
+      "positive_scope": "Erfasst dokumentierte derzeitige oder geplante Nutzungen als sachlichen Nutzungsinhalt.",
+      "negative_scope": "Nicht allein eine unbelegte Behauptung über künftige Bedarfsdeckung und nicht bloß ein fehlender Beleg.",
+      "disambiguation_notes": "Der thematische Bezug zu Nutzung genügt nicht, wenn die Kernaussage die fehlende Belegbarkeit einer Schlussfolgerung ist."
+    },
+    {
+      "question_id": "11.2",
+      "pf_id": "PF11",
+      "positive_scope": "Erfasst unbelegte oder nicht zuständig bestätigte Aussagen, Behauptungen und Schlussfolgerungen.",
+      "negative_scope": "Nicht allein dokumentierte Nutzung oder ein dokumentierter Entscheidungsstand, wenn deren Belegbarkeit nicht die eigentliche Aussage ist.",
+      "disambiguation_notes": "Bei einer eigenständig unbelegten Schlussfolgerung ist 11.2 gegenüber rein thematischen Nachbarn zu bevorzugen."
+    }
+  ]
+}
