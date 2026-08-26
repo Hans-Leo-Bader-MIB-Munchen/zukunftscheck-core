@@ -2,3 +2,5 @@ __pycache__/
 *.py[cod]
 .venv/
 .pytest_cache/
+zs_ki_b_sem_qualifikation_result_v0_*.json
+zs_ki_b_smoketest_result*.json
