@@ -1,0 +1,78 @@
+{
+  "schema_version": "v0.1",
+  "status": "HUMAN_REVIEW_DRAFT_ONLY",
+  "purpose": "Fachlicher Entwurf für Meaning-Coverage-Tranche 3 in PF6 und PF8. Ergänzt den auf main führenden Meaning Layer v0.4 noch nicht und ist weder für Modellqualifikation noch Produktivnutzung freigegeben.",
+  "meanings": [
+    {
+      "question_id": "6.1",
+      "pf_id": "PF6",
+      "positive_scope": "Erfasst die konkret betroffenen räumlichen oder infrastrukturellen Einheiten, etwa Gebäude, Gebäudeteile, Räume, Flächen, Anlagen oder Infrastrukturen, soweit sie für den Fallbezug dokumentiert sind.",
+      "negative_scope": "Nicht allein die abstrakte Benennung des Gesamtgegenstands und nicht die Bewertung, ob dessen räumliche Grenze eindeutig oder anhand von Unterlagen nachvollziehbar ist.",
+      "disambiguation_notes": "6.1 benennt die tatsächlich betroffenen räumlichen Einheiten innerhalb eines fallbezogenen Gegenstands. 2.1 benennt demgegenüber den Bearbeitungsgegenstand insgesamt; 6.2 prüft erst die Nachvollziehbarkeit von Lage und räumlicher Abgrenzung."
+    },
+    {
+      "question_id": "6.2",
+      "pf_id": "PF6",
+      "positive_scope": "Erfasst, ob Lage und räumliche Abgrenzung der betroffenen Einheiten anhand der vorliegenden Unterlagen nachvollziehbar und prüfbar dargestellt sind.",
+      "negative_scope": "Nicht die eigenständige Vermessung, Rekonstruktion oder planerische Festlegung einer Grenze und nicht allein die Eingangsfrage, ob der Bearbeitungsgegenstand räumlich eindeutig abgegrenzt ist.",
+      "disambiguation_notes": "6.2 ist unterlagenbezogen und fallbezogen: Sind Lage und Grenze aus Plan-, Bestands- oder sonstigen räumlichen Unterlagen nachvollziehbar? 2.4 ist die vorgelagerte Eingangsfrage zur eindeutigen räumlichen Abgrenzung des Bearbeitungsgegenstands."
+    },
+    {
+      "question_id": "6.3",
+      "pf_id": "PF6",
+      "positive_scope": "Erfasst erkennbare Übereinstimmung oder Abweichung zwischen vorliegenden Plan-, Bestands- und Flächenangaben zum räumlichen Gegenstand.",
+      "negative_scope": "Nicht jede allgemeine Dokumentenabweichung ohne räumlichen Bezug und nicht bloß das Fehlen einer erforderlichen räumlichen Basisangabe.",
+      "disambiguation_notes": "6.3 prüft spezifisch die Konsistenz räumlicher Plan-, Bestands- und Flächenangaben. 4.5 erfasst allgemeine Widersprüche in Unterlagen oder Angaben; 6.4 bündelt fehlende oder widersprüchliche räumliche Basisangaben als räumlichen Befund."
+    },
+    {
+      "question_id": "6.4",
+      "pf_id": "PF6",
+      "positive_scope": "Erfasst fehlende oder widersprüchliche räumliche Basisangaben, die für die Nachvollziehbarkeit des fallbezogenen räumlichen Gegenstands benötigt werden.",
+      "negative_scope": "Nicht jede fehlende Information oder jeder allgemeine Dokumentenwiderspruch ohne räumlichen Bezug und nicht automatisch jede entscheidungserhebliche Prüflücke.",
+      "disambiguation_notes": "6.4 ist räumlich spezialisiert. 4.4 betrifft fehlende Informationen oder Unterlagen in der Informationsbasis allgemein, 4.5 allgemeine Widersprüche zwischen Unterlagen oder Angaben, 11.1 entscheidungserhebliche Widersprüche und 11.3 entscheidungserhebliche Informationslücken als Prüfbefund. Derselbe Sachverhalt kann parallel einschlägig sein, wenn räumlicher Befund und allgemeine bzw. entscheidungserhebliche Bewertung jeweils eigenständig vorliegen."
+    },
+    {
+      "question_id": "6.5",
+      "pf_id": "PF6",
+      "positive_scope": "Erfasst, ob der dokumentierte räumliche Informationsstand einen möglichen Anschluss an Planung oder eine qualitative Raumfunktionsprüfung erkennen lässt.",
+      "negative_scope": "Nicht die Durchführung, fachliche Vorwegnahme oder Beauftragung einer Planung oder Raumfunktionsprüfung und nicht allein das Vorliegen einer offenen räumlichen Basisangabe.",
+      "disambiguation_notes": "6.5 ist die räumlich ausgelöste Anschlussindikation. 7.6 betrifft den aus dem Nutzungsstand abgeleiteten Bedarf an qualitativer Raumfunktionsprüfung, Nutzerbedarfsanalyse oder Betriebsplanung; 12.4 benennt den funktional erforderlichen Fachanschluss als nächsten Verfahrensschritt."
+    },
+    {
+      "question_id": "8.1",
+      "pf_id": "PF8",
+      "positive_scope": "Erfasst vorhandene Fachplanungen, Gutachten, Beratungen oder Untersuchungen als bereits vorliegende fachliche Beiträge zum Gegenstand.",
+      "negative_scope": "Nicht jede Kernunterlage ohne fachplanerischen oder fachprüfenden Charakter und nicht die inhaltliche Bewertung, welchen Gegenstand oder Status ein Fachbeitrag abdeckt.",
+      "disambiguation_notes": "8.1 fragt nach dem Vorliegen fachlicher Beiträge als eigener Dokumentenkategorie. 4.1 erfasst Kernunterlagen allgemein; 8.2 beschreibt Gegenstand und Status der bereits vorliegenden Fachbeiträge."
+    },
+    {
+      "question_id": "8.2",
+      "pf_id": "PF8",
+      "positive_scope": "Erfasst den dokumentierten Gegenstand, Bearbeitungsumfang und Status eines vorhandenen Fachbeitrags.",
+      "negative_scope": "Nicht allein Datum, Version oder Dokumentstatus einer beliebigen Unterlage und nicht die Detailfrage, welche Fachfragen innerhalb des Beitrags bearbeitet oder ausgespart wurden.",
+      "disambiguation_notes": "8.2 beschreibt Reichweite und fachlichen Bearbeitungsstatus des Fachbeitrags. 4.2 erfasst Datum, Version oder Status einer konkreten Unterlage allgemein; 8.3 trennt innerhalb des Fachbeitrags bearbeitete von ausdrücklich nicht bearbeiteten Fachfragen."
+    },
+    {
+      "question_id": "8.3",
+      "pf_id": "PF8",
+      "positive_scope": "Erfasst, welche konkreten Fachfragen ein vorhandener Fachbeitrag tatsächlich bearbeitet hat und welche Fragen ausdrücklich außerhalb seines Bearbeitungsumfangs liegen.",
+      "negative_scope": "Nicht die eigene fachliche Beantwortung offener Fragen und nicht allein der formale Status oder Titel eines Fachbeitrags.",
+      "disambiguation_notes": "8.3 ist eine Reichweitenprüfung vorhandener Facharbeit: Was wurde fachlich behandelt und was ausdrücklich nicht? Eine danach verbleibende fachlich offene Frage kann 11.5 betreffen; ein daraus erforderlicher funktionaler Anschluss kann über 8.5 bzw. 12.4 benannt werden."
+    },
+    {
+      "question_id": "8.4",
+      "pf_id": "PF8",
+      "positive_scope": "Erfasst erkennbare fachliche Schnittstellen oder inhaltliche Widersprüche zwischen mehreren vorhandenen Fachbeiträgen.",
+      "negative_scope": "Nicht jede allgemeine Dokumentenabweichung ohne fachlichen Bezug und nicht die eigenständige fachliche Auflösung eines Widerspruchs oder einer Schnittstelle.",
+      "disambiguation_notes": "8.4 ist auf Beziehungen zwischen Fachbeiträgen spezialisiert. 4.5 erfasst allgemeine Widersprüche in Unterlagen oder Angaben, 11.1 deren Entscheidungserheblichkeit und PF9 die Abhängigkeit von Entscheidungen, Klärungen oder Fachschritten. 8.4 stellt die fachbeitragsbezogene Schnittstelle oder Widerspruchslage fest, löst sie aber nicht selbst auf."
+    },
+    {
+      "question_id": "8.5",
+      "pf_id": "PF8",
+      "positive_scope": "Erfasst eine nach Sichtung der vorhandenen Fachbeiträge konkret offen verbleibende Fachfrage, für die ein funktional benannter fachlicher Anschluss erforderlich ist.",
+      "negative_scope": "Nicht die fachliche Beantwortung dieser Frage, nicht die Beauftragung oder Freigabe eines Fachbeitrags und nicht jede einfache Informations- oder Unterlagenlücke.",
+      "disambiguation_notes": "8.5 verbindet eine konkrete offene Fachfrage mit dem Bedarf eines funktional benannten Fachanschlusses. 11.5 markiert allgemein eine auch nach Nachforderung fachlich offen verbleibende Frage; 12.4 überführt einen solchen Befund in den erforderlichen funktionalen Fachanschluss als nächsten Verfahrensschritt."
+    }
+  ],
+  "guardrail": "Dieser Draft ändert reference_question_meanings_v0_4.json nicht. Eine Übernahme in eine neue führende Meaning-Layer-Version setzt gebündelten Human Review, unabhängigen Gegencheck und ausdrückliche Versionierungsentscheidung voraus."
+}
