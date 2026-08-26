@@ -62,7 +62,7 @@
     {
       "question_id": "11.1",
       "pf_id": "PF11",
-      "positive_scope": "Erfasst Widersprüche, die für die Orientierungsfrage oder einen nächsten Entscheidungsschritt tatsächlich erheblich sind und deshalb als Prüfbefund sichtbar gemacht werden müssen.",
+      "positive_scope": "Erfasst entscheidungserhebliche Widersprüche, die für die Orientierungsfrage oder einen nächsten Entscheidungsschritt tatsächlich erheblich sind und deshalb als Prüfbefund sichtbar gemacht werden müssen.",
       "negative_scope": "Nicht jede formale Abweichung, Versionsdifferenz oder widersprechende Angabe ohne erkennbare Entscheidungsrelevanz.",
       "disambiguation_notes": "11.1 bewertet die Entscheidungserheblichkeit eines Widerspruchs. 4.5 erfasst dagegen zunächst, dass Unterlagen oder Angaben einander widersprechen. Ein Fall kann beide Zuordnungen tragen, wenn beides eigenständig zutrifft."
     },
@@ -76,9 +76,9 @@
     {
       "question_id": "11.4",
       "pf_id": "PF11",
-      "positive_scope": "Erfasst die konkrete, verhältnismäßig begrenzte Nachforderung, die sich aus einer entscheidungserheblichen Informations- oder Bestätigungslücke als nächster Prüfschritt ableiten lässt.",
+      "positive_scope": "Erfasst die konkrete, verhältnismäßig begrenzte Nachforderung, die sich aus einer entscheidungserheblichen Prüf-, Informations- oder Bestätigungslücke als nächster Prüfschritt ableiten lässt.",
       "negative_scope": "Nicht pauschale Forderungen nach vollständiger Neuprüfung, nicht die Beauftragung einer umfassenden Fachplanung und nicht eine Nachforderung ohne Bezug zu einer identifizierten Prüflücke.",
-      "disambiguation_notes": "11.4 ist die bewertete Konsequenz aus einer relevanten Lücke. 4.6 betrachtet die konkret erforderliche Ergänzung der Informationsgrundlage; 12.x behandelt den übergeordneten nächsten Klärungsschritt und dessen funktionale Zuständigkeit."
+      "disambiguation_notes": "11.4 ist die bewertete Konsequenz aus einer relevanten Prüflücke. 4.6 betrachtet die konkret erforderliche Ergänzung der Informationsgrundlage; 12.x behandelt den übergeordneten nächsten Klärungsschritt und dessen funktionale Zuständigkeit."
     },
     {
       "question_id": "11.5",
