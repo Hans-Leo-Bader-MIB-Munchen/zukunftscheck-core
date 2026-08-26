@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import importlib.util
+import json
+import subprocess
+import sys
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -57,6 +60,20 @@ class SemQualificationRunnerV05Tests(unittest.TestCase):
         for version in ("v0_1", "v0_2", "v0_3", "v0_4"):
             self.assertTrue((ROOT / f"scripts/zs_ki_b_sem_qualifikation_runner_{version}.py").exists())
         self.assertTrue(RUNNER.exists())
+
+    def test_standalone_dry_run_bootstraps_repo_root(self) -> None:
+        completed = subprocess.run(
+            [sys.executable, str(RUNNER), "--model", "qwen3-14b"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        result = json.loads(completed.stdout)
+        self.assertEqual(result["mode"], "DRY_RUN_SEM_QUALIFICATION_V0_2")
+        self.assertEqual(result["manifest"]["model"], "qwen3-14b")
+        self.assertFalse(result["manifest"]["execution_attempted"])
+        self.assertEqual(result["manifest"]["observed_model_request_count"], 0)
 
 
 if __name__ == "__main__":
