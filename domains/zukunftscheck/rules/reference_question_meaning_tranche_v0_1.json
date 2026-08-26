@@ -1,0 +1,22 @@
+{
+  "schema_version": "v0.1",
+  "mode": "HUMAN_MEANING_COVERAGE_TRANCHE_1",
+  "purpose": "Arbeitsliste für die erste kontrollierte Meaning-Coverage-Etappe. Enthält nur bislang unkalibrierte Fragen in bereits semantisch verankerten PF-Nachbarschaften. Keine neuen Bedeutungen werden in dieser Datei festgelegt.",
+  "target_pf_ids": ["PF3", "PF4", "PF7", "PF11"],
+  "question_count": 12,
+  "questions": [
+    {"question_id":"3.1","pf_id":"PF3","question":"In welcher dokumentierten Phase befindet sich der Gegenstand?","existing_neighbor_meaning_ids":["3.2","3.3","3.4","3.5"],"status":"HUMAN_MEANING_DRAFT_REQUIRED"},
+    {"question_id":"4.3","pf_id":"PF4","question":"Welche wesentlichen Angaben sind nur mündlich oder informell vorhanden?","existing_neighbor_meaning_ids":["4.1","4.2"],"status":"HUMAN_MEANING_DRAFT_REQUIRED"},
+    {"question_id":"4.4","pf_id":"PF4","question":"Welche erforderlichen Informationen fehlen?","existing_neighbor_meaning_ids":["4.1","4.2"],"status":"HUMAN_MEANING_DRAFT_REQUIRED"},
+    {"question_id":"4.5","pf_id":"PF4","question":"Welche Unterlagen oder Angaben widersprechen sich?","existing_neighbor_meaning_ids":["4.1","4.2"],"status":"HUMAN_MEANING_DRAFT_REQUIRED"},
+    {"question_id":"4.6","pf_id":"PF4","question":"Welche konkret begrenzte Nachforderung ist erforderlich?","existing_neighbor_meaning_ids":["4.1","4.2"],"status":"HUMAN_MEANING_DRAFT_REQUIRED"},
+    {"question_id":"7.4","pf_id":"PF7","question":"Bestehen Widersprüche zwischen geplanter und tatsächlicher Nutzung?","existing_neighbor_meaning_ids":["7.1","7.2","7.3"],"status":"HUMAN_MEANING_DRAFT_REQUIRED"},
+    {"question_id":"7.5","pf_id":"PF7","question":"Liegen Raumprogramm, Nutzungskonzept oder dokumentierte Nutzerbedarfe vor?","existing_neighbor_meaning_ids":["7.1","7.2","7.3"],"status":"HUMAN_MEANING_DRAFT_REQUIRED"},
+    {"question_id":"7.6","pf_id":"PF7","question":"Ist eine qualitative Raumfunktionsprüfung, Nutzerbedarfsanalyse oder Betriebsplanung erforderlich?","existing_neighbor_meaning_ids":["7.1","7.2","7.3"],"status":"HUMAN_MEANING_DRAFT_REQUIRED"},
+    {"question_id":"11.1","pf_id":"PF11","question":"Welche entscheidungserheblichen Widersprüche bestehen?","existing_neighbor_meaning_ids":["11.2","11.6"],"status":"HUMAN_MEANING_DRAFT_REQUIRED"},
+    {"question_id":"11.3","pf_id":"PF11","question":"Welche erforderlichen Informationen fehlen?","existing_neighbor_meaning_ids":["11.2","11.6"],"status":"HUMAN_MEANING_DRAFT_REQUIRED"},
+    {"question_id":"11.4","pf_id":"PF11","question":"Was kann konkret nachgefordert werden?","existing_neighbor_meaning_ids":["11.2","11.6"],"status":"HUMAN_MEANING_DRAFT_REQUIRED"},
+    {"question_id":"11.5","pf_id":"PF11","question":"Welche Frage bleibt auch nach Nachforderung fachlich offen?","existing_neighbor_meaning_ids":["11.2","11.6"],"status":"HUMAN_MEANING_DRAFT_REQUIRED"}
+  ],
+  "guardrail": "Diese Arbeitsliste ist keine Erweiterung des führenden Meaning Layers. Neue positive_scope-, negative_scope- oder disambiguation_notes-Texte müssen separat fachlich entworfen, geprüft und versioniert werden."
+}
