@@ -1,0 +1,36 @@
+{
+  "schema_version": "v0.1",
+  "purpose": "Independent synthetic holdout set for model-free PF routing. These cases are not R16/R18/R21/R22 paraphrases and are not semantic qualification cases.",
+  "cases": [
+    {
+      "case_id": "ZS-KI-B-PF-HO-001",
+      "text": "Die Projektleitung hat den Beschluss zur Beauftragung am 5. Mai dokumentiert; weitere Freigaben stehen noch aus.",
+      "expected_pf_ids": ["PF3"]
+    },
+    {
+      "case_id": "ZS-KI-B-PF-HO-002",
+      "text": "Für das Vorhaben liegen ein Lageplan und ein Nutzungskonzept vor; die Versionsstände der beiden Unterlagen sind nicht angegeben.",
+      "expected_pf_ids": ["PF4", "PF7"]
+    },
+    {
+      "case_id": "ZS-KI-B-PF-HO-003",
+      "text": "Die Stadtverwaltung, das Planungsbüro und die Eigentümervertretung sind beteiligt; wer die tatsächlichen Angaben verbindlich bestätigen darf, ist ungeklärt.",
+      "expected_pf_ids": ["PF5"]
+    },
+    {
+      "case_id": "ZS-KI-B-PF-HO-004",
+      "text": "Der Nordbau wird als Lager genutzt, der Südbau als Werkstatt. Die Zufahrt zum Südbau ist nur über eine nicht barrierefreie Rampe möglich.",
+      "expected_pf_ids": ["PF7"]
+    },
+    {
+      "case_id": "ZS-KI-B-PF-HO-005",
+      "text": "Die Prüfung kann erst fortgesetzt werden, wenn die fehlende Bestätigung vorliegt; bis dahin bleibt die zentrale Aussage unsicher.",
+      "expected_pf_ids": ["PF9", "PF11"]
+    },
+    {
+      "case_id": "ZS-KI-B-PF-HO-006",
+      "text": "Für die eingereichten Unterlagen ist noch zu klären, welche personenbezogenen Angaben geschwärzt werden müssen und wer sie erhalten darf.",
+      "expected_pf_ids": ["PF10"]
+    }
+  ]
+}
