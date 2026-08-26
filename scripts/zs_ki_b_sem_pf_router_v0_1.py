@@ -2,12 +2,14 @@
 """Model-free PF router prototype for a two-stage SEM payload.
 
 Stage A chooses PF groups deterministically from aggregate reference-question
-vocabulary. Stage B (not implemented here) would expose all questions from the
-selected PF groups to the semantic model.
+vocabulary plus an explicit PF-level routing-semantics table. Stage B (not
+implemented here) would expose all questions from the selected PF groups to the
+semantic model.
 
 Guardrails:
 - no model/network/tool call;
 - no dependency on prior R16/R18/R21/R22 labels;
+- no case-specific routing rules;
 - if routing evidence is weak, broad, or tied across too many PFs, fail closed
   to all PFs/all 67 questions;
 - no production or qualification claim.
@@ -22,12 +24,16 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 QUESTIONS_PATH = ROOT / "domains" / "zukunftscheck" / "rules" / "reference_questions_v0_1.json"
+PF_SEMANTICS_PATH = ROOT / "domains" / "zukunftscheck" / "rules" / "pf_routing_semantics_v0_1.json"
 HOLDOUT_PATH = ROOT / "tests" / "fixtures" / "zs_ki_b_sem_pf_router_holdout_v0_1.json"
 
 MIN_TOKEN_LENGTH = 4
 MIN_PF_SCORE = 3
 MAX_SELECTED_PFS = 3
 MIN_MARGIN = 1
+QUESTION_TOKEN_WEIGHT = 1
+SEMANTIC_TOKEN_WEIGHT = 2
+SEMANTIC_PHRASE_WEIGHT = 3
 
 STOPWORDS = {
     "aber", "alle", "als", "auch", "auf", "aus", "bei", "beim", "bereits", "der", "die", "das",
@@ -43,6 +49,10 @@ def load(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def normalize(text: str) -> str:
+    return " ".join(re.findall(r"[A-Za-zÄÖÜäöüß0-9]+", text.lower()))
+
+
 def tokenize(text: str) -> set[str]:
     tokens = set(re.findall(r"[A-Za-zÄÖÜäöüß0-9]+", text.lower()))
     return {token for token in tokens if len(token) >= MIN_TOKEN_LENGTH and token not in STOPWORDS}
@@ -55,6 +65,20 @@ def build_pf_profiles(questions: list[dict[str, Any]]) -> dict[str, set[str]]:
     return dict(profiles)
 
 
+def load_pf_semantics() -> dict[str, dict[str, Any]]:
+    doc = load(PF_SEMANTICS_PATH)
+    result: dict[str, dict[str, Any]] = {}
+    for row in doc["pf_semantics"]:
+        pf = row["pf_id"]
+        if pf in result:
+            raise RuntimeError(f"duplicate PF semantics: {pf}")
+        result[pf] = {
+            "tokens": set(str(token).lower() for token in row.get("tokens", [])),
+            "phrases": [normalize(str(phrase)) for phrase in row.get("phrases", [])],
+        }
+    return result
+
+
 def questions_by_pf(questions: list[dict[str, Any]]) -> dict[str, list[str]]:
     result: dict[str, list[str]] = defaultdict(list)
     for row in questions:
@@ -62,17 +86,36 @@ def questions_by_pf(questions: list[dict[str, Any]]) -> dict[str, list[str]]:
     return dict(result)
 
 
-def route_text(text: str, questions: list[dict[str, Any]]) -> dict[str, Any]:
+def route_text(text: str, questions: list[dict[str, Any]], pf_semantics: dict[str, dict[str, Any]] | None = None) -> dict[str, Any]:
     src = tokenize(text)
+    normalized = normalize(text)
     profiles = build_pf_profiles(questions)
     grouped = questions_by_pf(questions)
+    semantics = pf_semantics if pf_semantics is not None else load_pf_semantics()
     pf_order = sorted(grouped, key=lambda pf: int(pf[2:]))
+
+    if set(semantics) != set(pf_order):
+        raise RuntimeError("PF routing semantics must cover exactly all PF groups")
 
     scored = []
     for pf in pf_order:
-        overlap = sorted(src & profiles[pf])
-        score = len(overlap)
-        scored.append({"pf_id": pf, "score": score, "overlap": overlap})
+        question_overlap = sorted(src & profiles[pf])
+        semantic_token_overlap = sorted(src & semantics[pf]["tokens"])
+        semantic_phrase_overlap = sorted(
+            phrase for phrase in semantics[pf]["phrases"] if phrase and phrase in normalized
+        )
+        score = (
+            QUESTION_TOKEN_WEIGHT * len(question_overlap)
+            + SEMANTIC_TOKEN_WEIGHT * len(semantic_token_overlap)
+            + SEMANTIC_PHRASE_WEIGHT * len(semantic_phrase_overlap)
+        )
+        scored.append({
+            "pf_id": pf,
+            "score": score,
+            "question_overlap": question_overlap,
+            "semantic_token_overlap": semantic_token_overlap,
+            "semantic_phrase_overlap": semantic_phrase_overlap,
+        })
     scored.sort(key=lambda row: (-row["score"], int(row["pf_id"][2:])))
 
     strong = [row for row in scored if row["score"] >= MIN_PF_SCORE]
@@ -84,7 +127,8 @@ def route_text(text: str, questions: list[dict[str, Any]]) -> dict[str, Any]:
 
     if strong:
         cutoff = strong[-1]["score"]
-        next_score = next((row["score"] for row in scored if row["pf_id"] not in {x["pf_id"] for x in strong}), 0)
+        strong_ids = {x["pf_id"] for x in strong}
+        next_score = next((row["score"] for row in scored if row["pf_id"] not in strong_ids), 0)
         if cutoff - next_score < MIN_MARGIN and next_score > 0:
             fallback.append("insufficient_score_margin")
 
@@ -111,10 +155,11 @@ def route_text(text: str, questions: list[dict[str, Any]]) -> dict[str, Any]:
 
 def main() -> int:
     questions = load(QUESTIONS_PATH)["questions"]
+    semantics = load_pf_semantics()
     holdouts = load(HOLDOUT_PATH)["cases"]
     rows = []
     for case in holdouts:
-        routed = route_text(case["text"], questions)
+        routed = route_text(case["text"], questions, semantics)
         rows.append({
             "case_id": case["case_id"],
             "expected_pf_ids": case["expected_pf_ids"],
@@ -126,14 +171,18 @@ def main() -> int:
         "network_contact": False,
         "qualification_claim": False,
         "production_routing_claim": False,
+        "pf_routing_semantics_version": "v0.1",
         "thresholds": {
             "min_pf_score": MIN_PF_SCORE,
             "max_selected_pfs": MAX_SELECTED_PFS,
             "min_margin": MIN_MARGIN,
             "min_token_length": MIN_TOKEN_LENGTH,
+            "question_token_weight": QUESTION_TOKEN_WEIGHT,
+            "semantic_token_weight": SEMANTIC_TOKEN_WEIGHT,
+            "semantic_phrase_weight": SEMANTIC_PHRASE_WEIGHT,
         },
         "holdout_cases": rows,
-        "guardrail": "Stage A only limits PF groups when lexical PF-level evidence is strong and bounded; otherwise all 12 PFs/all 67 questions are retained. Stage B is not executed here."
+        "guardrail": "Stage A only limits PF groups when deterministic PF-level lexical/phrase evidence is strong and bounded; otherwise all 12 PFs/all 67 questions are retained. Stage B is not executed here."
     }
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0
