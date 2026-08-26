@@ -90,6 +90,13 @@ def chat_completion_structured(
     try:
         with opener.open(request, timeout=timeout_seconds) as response:
             raw = response.read().decode("utf-8")
+    except urllib.error.HTTPError as exc:
+        try:
+            response_body = exc.read().decode("utf-8", errors="replace").strip()
+        except Exception:
+            response_body = ""
+        detail = response_body or str(exc.reason or exc)
+        raise LocalModelError(f"lokaler strukturierter Modellendpunkt HTTP {exc.code}: {detail}") from exc
     except (urllib.error.URLError, TimeoutError, OSError) as exc:
         raise LocalModelError(f"lokaler strukturierter Modellendpunkt nicht erreichbar oder Redirect verworfen: {exc}") from exc
 
