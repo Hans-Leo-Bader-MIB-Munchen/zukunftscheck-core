@@ -1,0 +1,16 @@
+{
+  "case_id": "ZS-KI-B-SEM-R16-SYN-001",
+  "case_version": "v0.1",
+  "data_class": "SYNTHETIC_ONLY",
+  "target_source_location_id": "SL-R16-001",
+  "frozen_input_sha256": "ede8579e508eb8b611a73563610c20678aeb45f83c6f293dff0fd42128a957ec",
+  "source_locations": [
+    {
+      "source_location_id": "SL-R16-001",
+      "document_id": "DOC-R16-SYN-001",
+      "page_reference": "1",
+      "section_or_heading": "Bestandsplan",
+      "original_text": "Im Bestandsplan sind 24 Stellplätze eingezeichnet; damit ist der künftige Stellplatzbedarf vollständig gedeckt."
+    }
+  ]
+}

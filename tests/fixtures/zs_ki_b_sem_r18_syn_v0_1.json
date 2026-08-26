@@ -1,0 +1,23 @@
+{
+  "case_id": "ZS-KI-B-SEM-R18-SYN-001",
+  "case_version": "v0.1",
+  "data_class": "SYNTHETIC_ONLY",
+  "target_source_location_id": "SL-R18-002",
+  "frozen_input_sha256": "b56bbbc296e8780c209fcbb3125dc2011e473e9cf7566f19436390f82a4df547",
+  "source_locations": [
+    {
+      "source_location_id": "SL-R18-001",
+      "document_id": "DOC-R18-SYN-001",
+      "page_reference": "Stand 01.03.2026",
+      "section_or_heading": "Zeitstand 01.03.2026",
+      "original_text": "Die Freigabe liegt noch nicht vor."
+    },
+    {
+      "source_location_id": "SL-R18-002",
+      "document_id": "DOC-R18-SYN-001",
+      "page_reference": "Stand 15.04.2026",
+      "section_or_heading": "Zeitstand 15.04.2026",
+      "original_text": "Die Freigabe wurde am 10.04.2026 erteilt."
+    }
+  ]
+}
