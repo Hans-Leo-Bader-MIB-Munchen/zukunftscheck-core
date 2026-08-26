@@ -1,0 +1,48 @@
+{
+  "schema_version": "v0.1",
+  "status": "FROZEN_BEFORE_FIRST_RUN",
+  "purpose": "Independent post-fix validation set for model-free PF Stage-A routing. Created after router v0.1 hardening; must not be edited after first run.",
+  "forbidden_use": "Do not tune pf_routing_semantics_v0_1 or routing thresholds against these cases before recording the first-run result.",
+  "cases": [
+    {
+      "case_id": "ZS-KI-B-PF-PFV-001",
+      "text": "Die Auftraggeberin erwartet eine kurze Orientierungsnotiz für den Lenkungskreis; die zuständige Ansprechpartnerin im Bauamt ist benannt.",
+      "expected_pf_ids": ["PF1"]
+    },
+    {
+      "case_id": "ZS-KI-B-PF-PFV-002",
+      "text": "Unklar ist, ob die angrenzende Freifläche noch zum Prüfgegenstand gehört oder ausdrücklich außerhalb der räumlichen Abgrenzung liegt.",
+      "expected_pf_ids": ["PF2"]
+    },
+    {
+      "case_id": "ZS-KI-B-PF-PFV-003",
+      "text": "Der Bestandsplan weist für das Nebengebäude eine andere Fläche aus als die aktuelle Gebäudeliste; die räumlichen Angaben stimmen damit nicht überein.",
+      "expected_pf_ids": ["PF6"]
+    },
+    {
+      "case_id": "ZS-KI-B-PF-PFV-004",
+      "text": "Ein Brandschutzgutachten liegt vor, behandelt aber die geplante Lüftungsänderung ausdrücklich nicht; hierfür bleibt eine fachliche Untersuchung offen.",
+      "expected_pf_ids": ["PF8"]
+    },
+    {
+      "case_id": "ZS-KI-B-PF-PFV-005",
+      "text": "Die Ausschreibung kann erst gestartet werden, nachdem der Gemeinderat den noch offenen Finanzierungsbeschluss gefasst hat.",
+      "expected_pf_ids": ["PF3", "PF9"]
+    },
+    {
+      "case_id": "ZS-KI-B-PF-PFV-006",
+      "text": "Vor der Weitergabe an den externen Planer müssen die personenbezogenen Kontaktdaten geschwärzt und der zulässige Empfängerkreis geklärt werden.",
+      "expected_pf_ids": ["PF10"]
+    },
+    {
+      "case_id": "ZS-KI-B-PF-PFV-007",
+      "text": "Für die nächste Bearbeitungsstufe wird eine schriftliche Bestätigung der Eigentümervertretung benötigt; welche Stelle sie einholen soll, ist noch zu klären.",
+      "expected_pf_ids": ["PF12"]
+    },
+    {
+      "case_id": "ZS-KI-B-PF-PFV-008",
+      "text": "Die Unterlagen nennen zwei unterschiedliche Inbetriebnahmetermine; welcher davon gilt, ist unbelegt und muss in der Orientierungsnotiz als Unsicherheit sichtbar bleiben.",
+      "expected_pf_ids": ["PF4", "PF11"]
+    }
+  ]
+}
