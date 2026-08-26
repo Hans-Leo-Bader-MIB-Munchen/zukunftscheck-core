@@ -51,7 +51,7 @@ def target_text(case: dict[str, Any]) -> str:
     target = case["target_source_location_id"]
     for row in case.get("source_locations", []):
         if row.get("source_location_id") == target:
-            for key in ("text", "content", "source_text"):
+            for key in ("original_text", "text", "content", "source_text"):
                 value = row.get(key)
                 if isinstance(value, str) and value.strip():
                     return value
