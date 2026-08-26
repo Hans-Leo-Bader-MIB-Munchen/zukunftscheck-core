@@ -76,7 +76,7 @@
     {
       "question_id": "11.4",
       "pf_id": "PF11",
-      "positive_scope": "Erfasst die konkrete, verhältnismäßig begrenzte Nachforderung, die sich aus einer entscheidungserheblichen Prüf-, Informations- oder Bestätigungslücke als nächster Prüfschritt ableiten lässt.",
+      "positive_scope": "Erfasst die konkrete, verhältnismäßig begrenzte Nachforderung, die sich aus einer entscheidungserheblichen Prüflücke, Informationslücke oder Bestätigungslücke als nächster Prüfschritt ableiten lässt.",
       "negative_scope": "Nicht pauschale Forderungen nach vollständiger Neuprüfung, nicht die Beauftragung einer umfassenden Fachplanung und nicht eine Nachforderung ohne Bezug zu einer identifizierten Prüflücke.",
       "disambiguation_notes": "11.4 ist die bewertete Konsequenz aus einer relevanten Prüflücke. 4.6 betrachtet die konkret erforderliche Ergänzung der Informationsgrundlage; 12.x behandelt den übergeordneten nächsten Klärungsschritt und dessen funktionale Zuständigkeit."
     },
