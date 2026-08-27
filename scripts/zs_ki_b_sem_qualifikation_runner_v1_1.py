@@ -26,6 +26,9 @@ AUTH_PATH = ROOT / "tests/fixtures/zs_ki_b_sem_v11_model_run_authorization_v0_1.
 PREVIOUS_FAILURE_PATH = ROOT / "tests/fixtures/zs_ki_b_sem_v10_execution_failure_gold_pf2_v0_1.json"
 DEFAULT_OUTPUT = "zs_ki_b_sem_qualifikation_result_v1_1.json"
 
+_ORIGINAL_VALIDATE_AUTH = v10.validate_execution_authorization
+_ORIGINAL_BUILD_DRY_RUN = v10.build_dry_run_manifest
+
 
 def _configure() -> None:
     v10.RUN_TYPE = RUN_TYPE
@@ -48,7 +51,7 @@ def _configure() -> None:
 
 def validate_execution_authorization(model: str) -> dict[str, Any]:
     _configure()
-    auth = v10.validate_execution_authorization(model)
+    auth = _ORIGINAL_VALIDATE_AUTH(model)
     if auth.get("prompt_version") != PROMPT_VERSION:
         raise PermissionError("authorization prompt version does not match runner prompt version")
     return auth
@@ -56,7 +59,7 @@ def validate_execution_authorization(model: str) -> dict[str, Any]:
 
 def build_dry_run_manifest(*, model: str = "", base_url: str = "http://127.0.0.1:1234/v1") -> dict[str, Any]:
     _configure()
-    payload = v10.build_dry_run_manifest(model=model, base_url=base_url)
+    payload = _ORIGINAL_BUILD_DRY_RUN(model=model, base_url=base_url)
     payload["mode"] = "DRY_RUN_SEM_QUALIFICATION_V1_1"
     manifest = payload["manifest"]
     manifest["run_type"] = RUN_TYPE
