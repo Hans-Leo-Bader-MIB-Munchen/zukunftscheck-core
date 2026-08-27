@@ -27,8 +27,32 @@ class SemQualificationRunnerV10Tests(unittest.TestCase):
         self.assertFalse(manifest["execution_attempted"])
 
     def test_r03_pending_authorization_blocks_execution(self) -> None:
-        with self.assertRaises(PermissionError):
-            self.mod.validate_execution_authorization("qwen3-14b")
+        auth = {
+            "status": "PENDING_USER_APPROVAL",
+            "run_type": self.mod.RUN_TYPE,
+            "model": "qwen3-14b",
+            "required_loaded_context_length": 32768,
+            "required_request_timeout_seconds": 1800,
+            "expected_model_request_count": 16,
+            "synthetic_only": True,
+            "local_loopback_only": True,
+            "single_run_only": True,
+            "retry_count": 0,
+            "output_repair": False,
+            "remote_cloud": False,
+            "real_data": False,
+        }
+        original_path = self.mod.AUTH_PATH
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "auth.json"
+            path.write_text(json.dumps(auth), encoding="utf-8")
+            try:
+                self.mod.AUTH_PATH = path
+                with self.assertRaises(PermissionError):
+                    self.mod.validate_execution_authorization("qwen3-14b")
+            finally:
+                self.mod.AUTH_PATH = original_path
+                self.mod._configure_v09()
 
     def test_r04_approved_authorization_must_bind_timeout_and_model(self) -> None:
         auth = {
