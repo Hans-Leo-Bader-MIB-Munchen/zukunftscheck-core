@@ -67,6 +67,7 @@ class SemRuntimeBindingV07Tests(unittest.TestCase):
         )
         payload = json.loads(completed.stdout)
         manifest = payload["manifest"]
+        self.assertEqual(payload["mode"], "DRY_RUN_SEM_RUNTIME_BINDING_V0_7")
         self.assertEqual(manifest["runner_version"], "v0.7")
         self.assertEqual(manifest["prompt_version"], "zs_ki_b_sem_qualifikation_system_v0_5")
         self.assertEqual(manifest["contract_version"], "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.2")
@@ -77,12 +78,16 @@ class SemRuntimeBindingV07Tests(unittest.TestCase):
         self.assertEqual(manifest["meaning_layer_coverage"], "67/67")
         self.assertTrue(manifest["meaning_layer_full_reference_coverage"])
         self.assertFalse(manifest["meaning_layer_model_qualified"])
+        self.assertFalse(manifest["model_execution_enabled"])
         self.assertFalse(manifest["benchmark_approved"])
         self.assertFalse(manifest["generalisation_approved"])
         self.assertFalse(manifest["real_data_approved"])
         self.assertFalse(manifest["pilot_approved"])
         self.assertFalse(manifest["production_approved"])
         self.assertFalse(manifest["phase_f_approved"])
+        self.assertEqual(manifest["expected_run_count"], 0)
+        self.assertEqual(manifest["observed_run_count"], 0)
+        self.assertEqual(manifest["expected_model_request_count"], 0)
         self.assertEqual(manifest["observed_model_request_count"], 0)
         self.assertFalse(manifest["execution_attempted"])
         self.assertEqual(manifest["contract_schema"], "b_semantic_contract_v0_2.schema.json")
@@ -91,7 +96,18 @@ class SemRuntimeBindingV07Tests(unittest.TestCase):
         self.assertTrue(manifest["prompt_sha256"])
         self.assertTrue(manifest["runner_sha256"])
 
-    def test_b06_unknown_question_id_remains_fail_closed(self) -> None:
+    def test_b06_execute_flag_is_blocked_before_any_model_contact(self) -> None:
+        completed = subprocess.run(
+            [sys.executable, str(RUNNER_V07), "--execute", "--model", "MUST_NOT_RUN"],
+            cwd=ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertNotEqual(completed.returncode, 0)
+        self.assertIn("model execution is disabled", completed.stderr)
+
+    def test_b07_unknown_question_id_remains_fail_closed(self) -> None:
         from core.validation.semantic_boundary_v0_2 import validate_semantic_response_v0_2
 
         response = {
@@ -123,7 +139,7 @@ class SemRuntimeBindingV07Tests(unittest.TestCase):
         )
         self.assertIn("UNKNOWN_QUESTION_ID", {issue.code for issue in issues})
 
-    def test_b07_v07_source_artifact_itself_still_declares_model_free_no-production_scope(self) -> None:
+    def test_b08_v07_source_artifact_itself_still_declares_model_free_no-production_scope(self) -> None:
         doc = json.loads(MEANINGS_V07.read_text(encoding="utf-8"))
         scope = doc["calibration_scope"].lower()
         self.assertEqual(doc["schema_version"], "v0.7")
