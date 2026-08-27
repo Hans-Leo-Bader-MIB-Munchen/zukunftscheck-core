@@ -62,7 +62,11 @@ class SemQualificationRunnerV09Tests(unittest.TestCase):
         self.assertEqual(self.mod.REQUIRED_LOADED_CONTEXT_LENGTH, 32768)
 
     def test_r02_pending_authorization_is_not_execution_authorization(self) -> None:
-        payload = self.mod.build_dry_run_manifest(model="qwen3-14b")
+        with tempfile.TemporaryDirectory() as tmp:
+            auth_path = Path(tmp) / "auth.json"
+            auth_path.write_text(json.dumps(self._auth(status="PENDING_USER_APPROVAL")), encoding="utf-8")
+            with patch.object(self.mod, "AUTH_PATH", auth_path):
+                payload = self.mod.build_dry_run_manifest(model="qwen3-14b")
         self.assertEqual(payload["mode"], "DRY_RUN_SEM_QUALIFICATION_V0_9")
         self.assertFalse(payload["manifest"]["execution_attempted"])
         self.assertFalse(payload["manifest"]["execution_authorized"])
