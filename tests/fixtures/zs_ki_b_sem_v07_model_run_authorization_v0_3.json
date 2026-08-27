@@ -1,7 +1,8 @@
 {
   "authorization_version": "ZS-KI-B-SEM-V0-7-MODEL-RUN-AUTHORIZATION-2026-003_v0.3",
-  "status": "PENDING_USER_APPROVAL",
+  "status": "EXPLICIT_USER_APPROVED",
   "prepared_on": "2026-08-27",
+  "approved_on": "2026-08-27",
   "run_type": "ZS-KI-B-SEM-QUALIFIKATION-SYNTHETIC-V0-7-FROZEN-2026-010",
   "model": "qwen3-14b",
   "required_loaded_context_length": 32768,
@@ -18,7 +19,6 @@
   "previous_run_status": "EXECUTED_ONCE_FAILED_TECHNICAL_TRANSPORT_TIMEOUT",
   "approval_scope_if_approved": "Exactly one additional local 16-request qualification run with exact model identifier qwen3-14b, loaded with at least 32768 context tokens, using a 1800-second per-request local transport timeout, against the unchanged frozen v0.7 qualification package. No retry, no repair, no cloud model, no real data.",
   "not_approved": [
-    "execution before explicit user approval",
     "more than one additional model run",
     "a different model identifier",
     "loaded context below 32768 tokens",
