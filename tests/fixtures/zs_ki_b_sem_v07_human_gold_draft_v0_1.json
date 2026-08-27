@@ -16,6 +16,10 @@
     {"case_id":"ZS-KI-B-SEM-V07-Q-PF9-SYN-001","expected_assignments":[{"question_id":"9.2","pf_id":"PF9"}],"notes":"Ein offener Schritt blockiert ausdrücklich die Freigabe."},
     {"case_id":"ZS-KI-B-SEM-V07-Q-PF10-SYN-001","expected_assignments":[{"question_id":"10.3","pf_id":"PF10"}],"notes":"Erforderliche Schwärzung wird ausdrücklich benannt."},
     {"case_id":"ZS-KI-B-SEM-V07-Q-PF11-SYN-001","expected_assignments":[{"question_id":"11.2","pf_id":"PF11"}],"notes":"Eigenständige Aussage ist ausdrücklich nicht belegt."},
-    {"case_id":"ZS-KI-B-SEM-V07-Q-PF12-SYN-001","expected_assignments":[{"question_id":"12.1","pf_id":"PF12"},{"question_id":"12.2","pf_id":"PF12"},{"question_id":"12.3","pf_id":"PF12"}],"notes":"Nächster begrenzter Schritt, funktional zuständige Stelle und benötigte Unterlage sind gemeinsam benannt."}
+    {"case_id":"ZS-KI-B-SEM-V07-Q-PF12-SYN-001","expected_assignments":[{"question_id":"12.1","pf_id":"PF12"},{"question_id":"12.2","pf_id":"PF12"},{"question_id":"12.3","pf_id":"PF12"}],"notes":"Nächster begrenzter Schritt, funktional zuständige Stelle und benötigte Unterlage sind gemeinsam benannt."},
+    {"case_id":"ZS-KI-B-SEM-V07-Q-CHALLENGE-DOC-SYN-001","expected_assignments":[{"question_id":"4.1","pf_id":"PF4"},{"question_id":"4.2","pf_id":"PF4"}],"forbidden_assignments":[{"question_id":"2.1","pf_id":"PF2"}],"notes":"Dokument und Dokumentstatus, nicht der betrachtete Gegenstand selbst."},
+    {"case_id":"ZS-KI-B-SEM-V07-Q-CHALLENGE-UNSUPPORTED-SYN-001","expected_assignments":[{"question_id":"11.2","pf_id":"PF11"}],"forbidden_assignments":[{"question_id":"7.1","pf_id":"PF7"}],"notes":"Unbelegte Schlussfolgerung; thematische Nutzungsnähe allein reicht nicht."},
+    {"case_id":"ZS-KI-B-SEM-V07-Q-CHALLENGE-TIME-SYN-001","expected_assignments":[{"question_id":"4.2","pf_id":"PF4"}],"expected_conflict_candidate":false,"notes":"Unterschiedliche, klar datierte Fortschreibungsstände sind nicht allein deshalb Konfliktkandidaten."},
+    {"case_id":"ZS-KI-B-SEM-V07-Q-CHALLENGE-POSSIBLE-DATE-SYN-001","expected_assignments":[{"question_id":"3.4","pf_id":"PF3"},{"question_id":"3.3","pf_id":"PF3"}],"notes":"Möglicher Termin plus ausdrücklich fehlende Zusage; keine sichere Freigabe behaupten."}
   ]
 }
