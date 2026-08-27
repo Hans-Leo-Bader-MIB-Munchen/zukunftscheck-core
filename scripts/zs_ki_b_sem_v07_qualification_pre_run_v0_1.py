@@ -19,6 +19,7 @@ import scripts.zs_ki_b_sem_qualifikation_runner_v0_7 as runtime
 PRE_RUN_VERSION = "ZS-DEV-KI-B-SEM-V0-7-QUALIFIKATION-PRE-RUN-2026-001_v0.1"
 SUITE_PATH = ROOT / "tests" / "fixtures" / "zs_ki_b_sem_v07_qualification_suite_draft_v0_1.json"
 GOLD_PATH = ROOT / "tests" / "fixtures" / "zs_ki_b_sem_v07_human_gold_draft_v0_1.json"
+POLICY_PATH = ROOT / "tests" / "fixtures" / "zs_ki_b_sem_v07_qualification_policy_draft_v0_1.json"
 QUESTIONS_PATH = ROOT / "domains" / "zukunftscheck" / "rules" / "reference_questions_v0_1.json"
 EXPECTED_PFS = {f"PF{i}" for i in range(1, 13)}
 EXPECTED_CASE_COUNT = 16
@@ -48,6 +49,7 @@ def validate_pre_run_bundle() -> dict[str, Any]:
     runtime_binding = runtime.validate_runtime_binding()
     suite = load(SUITE_PATH)
     gold = load(GOLD_PATH)
+    policy = load(POLICY_PATH)
     questions = load(QUESTIONS_PATH)["questions"]
     canonical_pf = {row["question_id"]: row["pf_id"] for row in questions}
 
@@ -99,6 +101,15 @@ def validate_pre_run_bundle() -> dict[str, Any]:
         raise ValueError("human gold must be explicitly model_visible=false")
     if gold.get("status") != "DRAFT_NOT_HUMAN_APPROVED":
         raise ValueError("this pre-run block requires unapproved draft gold")
+    if policy.get("status") != "DRAFT_NOT_HUMAN_APPROVED":
+        raise ValueError("qualification policy must remain draft until explicit human approval")
+    criteria = policy.get("pass_criteria", {})
+    if criteria.get("model_requests_expected") != EXPECTED_CASE_COUNT:
+        raise ValueError("qualification policy model request count must equal suite case count")
+    if criteria.get("parse_success_required") != "16/16" or criteria.get("contract_and_boundary_pass_required") != "16/16":
+        raise ValueError("qualification policy must require 16/16 parse and boundary success")
+    if policy.get("preconditions_for_future_execution", {}).get("explicit_user_model_run_approval_required") is not True:
+        raise ValueError("qualification policy must require explicit user model-run approval")
 
     return {
         "runtime_binding": runtime_binding["binding_version"],
@@ -106,6 +117,7 @@ def validate_pre_run_bundle() -> dict[str, Any]:
         "challenge_case_count": challenge_count,
         "pf_coverage": "12/12",
         "human_gold_status": gold["status"],
+        "policy_status": policy["status"],
     }
 
 
@@ -129,6 +141,9 @@ def build_manifest() -> dict[str, Any]:
             "human_gold_sha256": sha256_text(canonical_json(load(GOLD_PATH))),
             "human_gold_status": validation["human_gold_status"],
             "human_gold_model_visible": False,
+            "qualification_policy": POLICY_PATH.name,
+            "qualification_policy_sha256": sha256_text(canonical_json(load(POLICY_PATH))),
+            "qualification_policy_status": validation["policy_status"],
             "qualification_case_count": validation["case_count"],
             "qualification_challenge_case_count": validation["challenge_case_count"],
             "qualification_pf_coverage": validation["pf_coverage"],
