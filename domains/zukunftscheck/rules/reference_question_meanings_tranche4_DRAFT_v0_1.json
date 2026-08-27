@@ -29,7 +29,7 @@
       "pf_id": "PF5",
       "positive_scope": "Erfasst, welche dokumentierte Stelle oder Funktion die Orientierungsnotiz entgegennehmen und innerhalb der betroffenen Organisation intern freigeben darf.",
       "negative_scope": "Nicht die fachliche oder rechtliche Freigabe des Gegenstands selbst und nicht automatisch die Entscheidungskompetenz für die zugrunde liegende Sachfrage.",
-      "disambiguation_notes": "5.4 bezieht sich auf Empfänger- und interne Freigabefunktion der Orientierungsnotiz. 1.5 fragt, wer die Notiz erhalten soll; 5.3 betrifft die sachliche Entscheidungskompetenz; 12.6 stellt klar, dass Stufe 1 keine nachgelagerte Fach- oder Rechtsfreigabe ersetzt."
+      "disambiguation_notes": "5.4 bezieht sich auf Empfänger- und interne Freigabefunktion der Orientierungsnotiz. 1.5 legt die Adressierung fest, unabhängig von der organisatorischen Freigabebefugnis; 5.4 prüft, ob die adressierte oder eine andere Stelle die Orientierungsnotiz intern freigeben darf. 5.3 betrifft die sachliche Entscheidungskompetenz; 12.6 stellt klar, dass Stufe 1 keine nachgelagerte Fach- oder Rechtsfreigabe ersetzt."
     },
     {
       "question_id": "5.5",
@@ -57,7 +57,7 @@
       "pf_id": "PF9",
       "positive_scope": "Erfasst dokumentierte sachliche oder verfahrensbezogene Abhängigkeiten zwischen Entscheidungen oder Klärungen, bei denen der Fortgang oder die Belastbarkeit des einen Punkts vom anderen abhängt.",
       "negative_scope": "Nicht bloß die Beteiligung mehrerer Stellen und nicht jede fachliche Schnittstelle ohne erkennbare Abhängigkeitsfolge.",
-      "disambiguation_notes": "9.1 beschreibt die Abhängigkeitsbeziehung selbst. 8.4 stellt zunächst Schnittstellen oder Widersprüche zwischen Fachbeiträgen fest; 9.2 fokussiert den konkret blockierenden offenen Punkt, 9.3 die vorgelagert erforderliche Fachklärung."
+      "disambiguation_notes": "9.1 beschreibt die Abhängigkeitsbeziehung selbst. 8.4 stellt zunächst Schnittstellen oder Widersprüche zwischen Fachbeiträgen fest; 9.2 fokussiert den konkret blockierenden offenen Punkt, 9.3 die vorgelagert erforderliche Fachklärung. Abzugrenzen von 5.7: 5.7 erfasst akteurs- oder personenbezogene Abhängigkeiten und Interessenkonflikte; 9.1 erfasst sachlich-verfahrensbezogene Abhängigkeiten zwischen Entscheidungen oder Klärungen, unabhängig von den beteiligten Personen."
     },
     {
       "question_id": "9.2",
@@ -77,7 +77,7 @@
       "question_id": "9.4",
       "pf_id": "PF9",
       "positive_scope": "Erfasst begrenzte Klärungs-, Beschaffungs- oder Vorbereitungsschritte, die trotz anderer offener Abhängigkeiten unabhängig voneinander oder parallel erfolgen können.",
-      "negative_scope": "Nicht die Vorwegnahme blockierter Entscheidungen, nicht umfassende Fachprüfungen ohne geklärte Voraussetzungen und nicht die Behauptung, Abhängigkeiten seien dadurch aufgehoben.",
+      "negative_scope": "Nicht die Vorwegnahme blockierter Entscheidungen, nicht umfassende Fachprüfungen ohne geklärte Voraussetzungen, nicht die eigenständige Ablaufplanung oder Sequenzierung mehrerer Schritte und nicht die Behauptung, Abhängigkeiten seien dadurch aufgehoben.",
       "disambiguation_notes": "9.4 ist die Parallelisierungsfrage innerhalb PF9. 9.1 bis 9.3 beschreiben Abhängigkeit, Blockade oder notwendige Reihenfolge; 12.1 formuliert den übergeordneten nächsten begrenzten Klärungsschritt, der auch einen parallel möglichen Schritt aufgreifen kann."
     },
     {
