@@ -5,12 +5,17 @@ Reuses the v1.1 qualification implementation while changing only the exact model
 binding and run identity for the first model-comparison run. Prompt v0.6 and all
 frozen semantic assets remain unchanged. Execution is blocked until the separate
 Gemma authorization artifact is explicitly approved.
+
+Important: the comparison wrapper temporarily binds shared runner modules and
+restores their prior module state afterwards. This prevents import/test-order
+state leakage into the historical v1.0/v1.1 runners.
 """
 from __future__ import annotations
 
 import sys
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -26,6 +31,51 @@ AUTH_PATH = ROOT / "tests/fixtures/zs_ki_b_sem_model_comparison_gemma_authorizat
 DEFAULT_OUTPUT = "zs_ki_b_sem_model_comparison_gemma_result_v0_1.json"
 REQUIRED_LOADED_CONTEXT_LENGTH = 32768
 REQUEST_TIMEOUT_SECONDS = 1800.0
+COMPARISON_PLAN_VERSION = "ZS-KI-B-SEM-MODELLVERGLEICH-NACH-PF2-REPRODUKTION-2026-001_v0.1"
+
+
+def _state_targets() -> tuple[tuple[object, tuple[str, ...]], ...]:
+    return (
+        (v11, ("RUN_TYPE", "RUNNER_VERSION", "AUTH_PATH", "DEFAULT_OUTPUT")),
+        (
+            v11.v10,
+            (
+                "RUN_TYPE",
+                "RUNNER_VERSION",
+                "AUTH_PATH",
+                "DEFAULT_OUTPUT",
+                "REQUIRED_LOADED_CONTEXT_LENGTH",
+                "REQUEST_TIMEOUT_SECONDS",
+            ),
+        ),
+        (
+            v11.v10.v09,
+            (
+                "RUN_TYPE",
+                "RUNNER_VERSION",
+                "AUTH_PATH",
+                "DEFAULT_OUTPUT",
+                "REQUIRED_LOADED_CONTEXT_LENGTH",
+            ),
+        ),
+        (
+            v11.v10.v09.base,
+            ("RUN_TYPE", "RUNNER_VERSION", "AUTH_PATH", "DEFAULT_OUTPUT"),
+        ),
+    )
+
+
+def _snapshot_state() -> list[tuple[object, str, Any]]:
+    snapshot: list[tuple[object, str, Any]] = []
+    for module, names in _state_targets():
+        for name in names:
+            snapshot.append((module, name, getattr(module, name)))
+    return snapshot
+
+
+def _restore_state(snapshot: list[tuple[object, str, Any]]) -> None:
+    for module, name, value in reversed(snapshot):
+        setattr(module, name, value)
 
 
 def _configure() -> None:
@@ -50,43 +100,64 @@ def _configure() -> None:
     v11.v10.v09.base.DEFAULT_OUTPUT = DEFAULT_OUTPUT
 
 
-def validate_execution_authorization(model: str) -> dict[str, Any]:
+@contextmanager
+def _temporary_bindings() -> Iterator[None]:
+    snapshot = _snapshot_state()
     _configure()
+    try:
+        yield
+    finally:
+        _restore_state(snapshot)
+
+
+def validate_execution_authorization(model: str) -> dict[str, Any]:
     if model != MODEL:
         raise PermissionError(f"Gemma comparison requires exact model {MODEL!r}")
-    auth = v11.validate_execution_authorization(model)
-    if auth.get("model") != MODEL:
-        raise PermissionError("authorization model does not match Gemma comparison model")
-    if auth.get("comparison_plan_version") != "ZS-KI-B-SEM-MODELLVERGLEICH-NACH-PF2-REPRODUKTION-2026-001_v0.1":
-        raise PermissionError("authorization comparison plan does not match")
-    if auth.get("qwen3_14b_rerun_authorized") is not False:
-        raise PermissionError("comparison authorization must keep qwen3-14b rerun blocked")
-    return auth
+    with _temporary_bindings():
+        auth = v11.validate_execution_authorization(model)
+        if auth.get("model") != MODEL:
+            raise PermissionError("authorization model does not match Gemma comparison model")
+        if auth.get("comparison_plan_version") != COMPARISON_PLAN_VERSION:
+            raise PermissionError("authorization comparison plan does not match")
+        if auth.get("qwen3_14b_rerun_authorized") is not False:
+            raise PermissionError("comparison authorization must keep qwen3-14b rerun blocked")
+        return auth
 
 
 def build_dry_run_manifest(*, model: str = MODEL, base_url: str = "http://127.0.0.1:1234/v1") -> dict[str, Any]:
-    _configure()
-    payload = v11.build_dry_run_manifest(model=model, base_url=base_url)
+    if model != MODEL:
+        raise PermissionError(f"Gemma comparison requires exact model {MODEL!r}")
+    with _temporary_bindings():
+        payload = v11.build_dry_run_manifest(model=model, base_url=base_url)
     payload["mode"] = "DRY_RUN_SEM_MODEL_COMPARISON_GEMMA_V0_1"
     manifest = payload["manifest"]
     manifest["run_type"] = RUN_TYPE
     manifest["runner_version"] = RUNNER_VERSION
     manifest["comparison_model"] = MODEL
-    manifest["comparison_plan_version"] = "ZS-KI-B-SEM-MODELLVERGLEICH-NACH-PF2-REPRODUKTION-2026-001_v0.1"
+    manifest["comparison_plan_version"] = COMPARISON_PLAN_VERSION
     manifest["reference_model"] = "qwen3-14b"
     manifest["reference_failure"] = "PF2 missing required 2.2/PF2 reproduced in 2026-010 and 2026-011"
     return payload
 
 
 def _install_bindings() -> None:
+    """Install comparison hooks only for the duration of main()."""
     _configure()
     v11.validate_execution_authorization = validate_execution_authorization
     v11.build_dry_run_manifest = build_dry_run_manifest
 
 
 def main() -> int:
-    _install_bindings()
-    return v11.main()
+    snapshot = _snapshot_state()
+    original_validate = v11.validate_execution_authorization
+    original_dry_run = v11.build_dry_run_manifest
+    try:
+        _install_bindings()
+        return v11.main()
+    finally:
+        v11.validate_execution_authorization = original_validate
+        v11.build_dry_run_manifest = original_dry_run
+        _restore_state(snapshot)
 
 
 if __name__ == "__main__":
