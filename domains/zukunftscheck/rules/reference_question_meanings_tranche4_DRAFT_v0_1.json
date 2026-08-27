@@ -1,0 +1,92 @@
+{
+  "schema_version": "v0.1",
+  "status": "HUMAN_REVIEW_DRAFT_ONLY",
+  "purpose": "Fachlicher Entwurf für Meaning-Coverage-Tranche 4 in PF5 und PF9. Ergänzt den auf main führenden Meaning Layer v0.5 noch nicht und ist weder für Modellqualifikation noch Produktivnutzung freigegeben.",
+  "meanings": [
+    {
+      "question_id": "5.1",
+      "pf_id": "PF5",
+      "positive_scope": "Erfasst die dokumentiert beteiligten Organisationen und Organisationseinheiten, soweit sie für den Bearbeitungsgegenstand oder das Verfahren eine erkennbare Rolle haben.",
+      "negative_scope": "Nicht automatisch deren konkrete Entscheidungs-, Bestätigungs- oder Freigabebefugnis und nicht bloß die Nennung einer Organisation ohne erkennbare Beteiligung.",
+      "disambiguation_notes": "5.1 bildet die Beteiligtenlandschaft ab. 5.2 bis 5.4 spezifizieren demgegenüber konkrete Funktionen für Tatsachenbestätigung, Entscheidung sowie Entgegennahme/interne Freigabe; 5.5 betrifft externe Fachstellen als besondere Beteiligtenkategorie."
+    },
+    {
+      "question_id": "5.2",
+      "pf_id": "PF5",
+      "positive_scope": "Erfasst, welche dokumentierte Stelle oder Funktion tatsächliche Angaben zum Gegenstand belastbar bestätigen darf.",
+      "negative_scope": "Nicht die Entscheidung über die Sache selbst, nicht die fachliche Bewertung einer offenen Frage und nicht die Erfindung einer Bestätigungsbefugnis ohne dokumentierte Grundlage.",
+      "disambiguation_notes": "5.2 ist auf Tatsachenbestätigung begrenzt. 5.3 betrifft maßgebliche Entscheidungen; 12.2 kann für einen nächsten Schritt eine funktionale Zuständigkeit ableiten, ohne damit eine Bestätigungs- oder Entscheidungsbefugnis neu zu schaffen."
+    },
+    {
+      "question_id": "5.3",
+      "pf_id": "PF5",
+      "positive_scope": "Erfasst die dokumentierte Stelle oder Funktion, die die für die Ausgangsfrage maßgeblichen Entscheidungen trifft oder treffen darf.",
+      "negative_scope": "Nicht bloß fachliche Zuarbeit, Tatsachenbestätigung, Beratung oder interne Weiterleitung und nicht die Annahme einer Entscheidungskompetenz allein aus faktischer Beteiligung.",
+      "disambiguation_notes": "5.3 betrifft Entscheidungskompetenz. 5.2 bleibt bei Tatsachenbestätigung, 5.4 bei Entgegennahme und interner Freigabe der Orientierungsnotiz, 12.2 bei der funktionalen Zuständigkeit für einen nächsten Klärungs- oder Verfahrensschritt."
+    },
+    {
+      "question_id": "5.4",
+      "pf_id": "PF5",
+      "positive_scope": "Erfasst, welche dokumentierte Stelle oder Funktion die Orientierungsnotiz entgegennehmen und innerhalb der betroffenen Organisation intern freigeben darf.",
+      "negative_scope": "Nicht die fachliche oder rechtliche Freigabe des Gegenstands selbst und nicht automatisch die Entscheidungskompetenz für die zugrunde liegende Sachfrage.",
+      "disambiguation_notes": "5.4 bezieht sich auf Empfänger- und interne Freigabefunktion der Orientierungsnotiz. 1.5 legt die Adressierung fest, unabhängig von der organisatorischen Freigabebefugnis; 5.4 prüft, ob die adressierte oder eine andere Stelle die Orientierungsnotiz intern freigeben darf. 5.3 betrifft die sachliche Entscheidungskompetenz; 12.6 stellt klar, dass Stufe 1 keine nachgelagerte Fach- oder Rechtsfreigabe ersetzt."
+    },
+    {
+      "question_id": "5.5",
+      "pf_id": "PF5",
+      "positive_scope": "Erfasst externe Fachstellen, Gutachter, Planer, Beratungen oder sonstige fachliche Akteure, die nach dokumentiertem Stand bereits beauftragt oder beteiligt sind.",
+      "negative_scope": "Nicht erst künftig möglicherweise benötigte Fachanschlüsse und nicht jede externe Organisation ohne fachbezogene Rolle.",
+      "disambiguation_notes": "5.5 beschreibt bereits bestehende externe Fachbeteiligung. 8.1 erfasst die von solchen oder anderen Fachstellen vorliegenden Fachplanungen, Gutachten, Beratungen oder Untersuchungen; 12.4 bezeichnet einen erst noch erforderlichen funktionalen Fachanschluss."
+    },
+    {
+      "question_id": "5.6",
+      "pf_id": "PF5",
+      "positive_scope": "Erfasst dokumentierte oder aus der Rollenlage erkennbare Zuständigkeitslücken, Doppelzuständigkeiten oder widersprüchliche Beauftragungen, die für die Orientierung relevant sind.",
+      "negative_scope": "Nicht jede bloße Mehrfachbeteiligung mehrerer Stellen und nicht die eigenständige rechtliche Klärung oder Neuordnung von Zuständigkeiten.",
+      "disambiguation_notes": "5.6 bewertet die Rollen- und Beauftragungsstruktur. 4.5 betrifft allgemeine Widersprüche in Unterlagen oder Angaben, 11.1 deren Entscheidungserheblichkeit; 9.1 und 9.2 betreffen daraus oder aus anderen Gründen entstehende Abhängigkeiten und Blockaden zwischen Entscheidungen oder Klärungen."
+    },
+    {
+      "question_id": "5.7",
+      "pf_id": "PF5",
+      "positive_scope": "Erfasst erkennbare Abhängigkeiten oder Interessenkonflikte von beteiligten Stellen oder Personen, soweit sie für die Einordnung der Informations-, Bestätigungs- oder Entscheidungslage offengelegt werden müssen.",
+      "negative_scope": "Nicht bloße organisatorische Abhängigkeiten ohne Relevanz für Unabhängigkeit oder Einordnung und nicht spekulative Interessenkonflikte ohne dokumentierten Anhaltspunkt.",
+      "disambiguation_notes": "5.7 ist akteursbezogen und auf Transparenz über mögliche Einflusslagen gerichtet. PF9 behandelt demgegenüber sachliche oder verfahrensbezogene Abhängigkeiten zwischen Entscheidungen, Klärungen und Fachschritten."
+    },
+    {
+      "question_id": "9.1",
+      "pf_id": "PF9",
+      "positive_scope": "Erfasst dokumentierte sachliche oder verfahrensbezogene Abhängigkeiten zwischen Entscheidungen oder Klärungen, bei denen der Fortgang oder die Belastbarkeit des einen Punkts vom anderen abhängt.",
+      "negative_scope": "Nicht bloß die Beteiligung mehrerer Stellen und nicht jede fachliche Schnittstelle ohne erkennbare Abhängigkeitsfolge.",
+      "disambiguation_notes": "9.1 beschreibt die Abhängigkeitsbeziehung selbst. 8.4 stellt zunächst Schnittstellen oder Widersprüche zwischen Fachbeiträgen fest; 9.2 fokussiert den konkret blockierenden offenen Punkt, 9.3 die vorgelagert erforderliche Fachklärung. Abzugrenzen von 5.7: 5.7 erfasst akteurs- oder personenbezogene Abhängigkeiten und Interessenkonflikte; 9.1 erfasst sachlich-verfahrensbezogene Abhängigkeiten zwischen Entscheidungen oder Klärungen, unabhängig von den beteiligten Personen."
+    },
+    {
+      "question_id": "9.2",
+      "pf_id": "PF9",
+      "positive_scope": "Erfasst die konkrete offene Frage, deren ungeklärter Zustand einen anderen benannten Schritt derzeit blockiert oder sachlich verhindert.",
+      "negative_scope": "Nicht jede offene Frage ohne Blockadewirkung und nicht die allgemeine Abhängigkeit zweier Themen, wenn kein konkret blockierter Schritt erkennbar ist.",
+      "disambiguation_notes": "9.2 ist gegenüber 9.1 spezieller: Es muss ein konkreter blockierender offener Punkt und ein davon betroffener Schritt erkennbar sein. 11.3 oder 11.5 können die Art der zugrunde liegenden Informations- bzw. Fachlücke beschreiben."
+    },
+    {
+      "question_id": "9.3",
+      "pf_id": "PF9",
+      "positive_scope": "Erfasst die konkrete fachliche Klärung, die nach dokumentiertem Stand vor einer weiteren Entscheidung erforderlich ist.",
+      "negative_scope": "Nicht die Durchführung oder fachliche Vorwegnahme dieser Klärung und nicht jede offene Fachfrage ohne erkennbare Reihenfolgebeziehung zu einer Entscheidung.",
+      "disambiguation_notes": "9.3 beschreibt eine vorgelagerte Fachklärung als Sequenzbedingung. 8.5 kann die offene Fachfrage mit Fachanschluss benennen; 12.4 den funktional erforderlichen Fachanschluss als nächsten Schritt; 9.3 hält fest, dass diese Klärung vor einer weiteren Entscheidung liegen muss."
+    },
+    {
+      "question_id": "9.4",
+      "pf_id": "PF9",
+      "positive_scope": "Erfasst begrenzte Klärungs-, Beschaffungs- oder Vorbereitungsschritte, die trotz anderer offener Abhängigkeiten unabhängig voneinander oder parallel erfolgen können.",
+      "negative_scope": "Nicht die Vorwegnahme blockierter Entscheidungen, nicht umfassende Fachprüfungen ohne geklärte Voraussetzungen, nicht die eigenständige Ablaufplanung oder Sequenzierung mehrerer Schritte und nicht die Behauptung, Abhängigkeiten seien dadurch aufgehoben.",
+      "disambiguation_notes": "9.4 ist die Parallelisierungsfrage innerhalb PF9. 9.1 bis 9.3 beschreiben Abhängigkeit, Blockade oder notwendige Reihenfolge; 12.1 formuliert den übergeordneten nächsten begrenzten Klärungsschritt, der auch einen parallel möglichen Schritt aufgreifen kann."
+    },
+    {
+      "question_id": "9.5",
+      "pf_id": "PF9",
+      "positive_scope": "Erfasst, ob die dokumentierte Schnittstellen- und Abhängigkeitslage sachliche Anhaltspunkte dafür enthält, eine koordinierte Stufe-2-Bearbeitung als möglichen Anschluss zu prüfen.",
+      "negative_scope": "Nicht die Freigabe, Entscheidung oder Beauftragung von Stufe 2 selbst und nicht jede einzelne Abhängigkeit automatisch.",
+      "disambiguation_notes": "9.5 ist eine schnittstellenbezogene Einzelindikation innerhalb PF9. 8.4 kann die fachliche Schnittstellenlage liefern; 12.5 ist die aggregierende Abschlussfrage, ob aus dem Gesamtbefund eine Stufe-2-Beauftragung zu prüfen ist."
+    }
+  ],
+  "guardrail": "Dieser Draft ändert reference_question_meanings_v0_5.json nicht. Eine Übernahme in eine neue führende Meaning-Layer-Version setzt gebündelten Human Review, unabhängigen Gegencheck und ausdrückliche Versionierungsentscheidung voraus."
+}
