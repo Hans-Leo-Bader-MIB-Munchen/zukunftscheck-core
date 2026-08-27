@@ -33,6 +33,13 @@ REQUIRED_LOADED_CONTEXT_LENGTH = 32768
 REQUEST_TIMEOUT_SECONDS = 1800.0
 COMPARISON_PLAN_VERSION = "ZS-KI-B-SEM-MODELLVERGLEICH-NACH-PF2-REPRODUKTION-2026-001_v0.1"
 
+# Capture the unpatched v1.1 callables once at import time. The comparison main()
+# temporarily replaces the public v11 hooks; wrapper functions must therefore call
+# these captured originals rather than v11.<hook>, otherwise they recurse into
+# themselves after _install_bindings().
+_ORIGINAL_V11_VALIDATE_AUTH = v11.validate_execution_authorization
+_ORIGINAL_V11_BUILD_DRY_RUN = v11.build_dry_run_manifest
+
 
 def _state_targets() -> tuple[tuple[object, tuple[str, ...]], ...]:
     return (
@@ -134,7 +141,7 @@ def validate_execution_authorization(model: str) -> dict[str, Any]:
     if model != MODEL:
         raise PermissionError(f"Gemma comparison requires exact model {MODEL!r}")
     with _temporary_bindings():
-        auth = v11.validate_execution_authorization(model)
+        auth = _ORIGINAL_V11_VALIDATE_AUTH(model)
         if auth.get("model") != MODEL:
             raise PermissionError("authorization model does not match Gemma comparison model")
         if auth.get("comparison_plan_version") != COMPARISON_PLAN_VERSION:
@@ -148,7 +155,7 @@ def build_dry_run_manifest(*, model: str = MODEL, base_url: str = "http://127.0.
     if model != MODEL:
         raise PermissionError(f"Gemma comparison requires exact model {MODEL!r}")
     with _temporary_bindings():
-        payload = v11.build_dry_run_manifest(model=model, base_url=base_url)
+        payload = _ORIGINAL_V11_BUILD_DRY_RUN(model=model, base_url=base_url)
     payload["mode"] = "DRY_RUN_SEM_MODEL_COMPARISON_GEMMA_V0_1"
     manifest = payload["manifest"]
     manifest["run_type"] = RUN_TYPE
