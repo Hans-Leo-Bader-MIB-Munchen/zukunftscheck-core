@@ -1,0 +1,33 @@
+{
+  "architecture_version": "ZS-DEV-KI-B-SEM-MULTI-ASSIGNMENT-ROBUSTNESS-PF2-2026-001_v0.1",
+  "status": "MODEL_FREE_ARCHITECTURE_ANALYSIS",
+  "triggering_evidence": {
+    "reference_failure": "PF2 missing required 2.2/PF2",
+    "models_reproducing_failure": ["qwen3-14b", "gemma-3-12b-it-qat"],
+    "gold_decision": "GOLD_CONFIRMED",
+    "prompt_version": "zs_ki_b_sem_qualifikation_system_v0_6"
+  },
+  "diagnosis": "SEMANTIC_COMPLETENESS_AUDIT_REQUIRED",
+  "current_gap": "Formal semantic boundary validation can accept a structurally valid response even when a semantically required assignment is omitted; omission is currently detected only by later Human-Gold evaluation.",
+  "prototype_scope": "PF2 explicit inclusion/exclusion markers only",
+  "prototype_markers": ["ausschließlich", "einschließlich", "ausgenommen"],
+  "audit_effects_allowed": [
+    "flag_possible_multi_assignment_omission",
+    "require_human_review",
+    "stop_automatic_downstream_use"
+  ],
+  "audit_effects_forbidden": [
+    "auto_add_assignment",
+    "reconstruct_human_gold",
+    "make_stage_decision",
+    "make_approval_decision",
+    "change_model_output_silently"
+  ],
+  "frozen_assets_changed": false,
+  "model_run_authorized": false,
+  "real_data_authorized": false,
+  "pilot_authorized": false,
+  "production_authorized": false,
+  "phase_f_authorized": false,
+  "next_step": "Implement a separately versioned deterministic semantic_completeness_audit prototype with synthetic positive and negative tests before any further model run."
+}
