@@ -45,6 +45,10 @@ def _validate_assignment(assignment: dict[str, Any], canonical_pf: dict[str, str
     return pf_id
 
 
+def _assignment_keys(items: list[dict[str, Any]]) -> set[tuple[str, str]]:
+    return {(str(item.get("question_id")), str(item.get("pf_id"))) for item in items}
+
+
 def validate_pre_run_bundle() -> dict[str, Any]:
     runtime_binding = runtime.validate_runtime_binding()
     suite = load(SUITE_PATH)
@@ -69,6 +73,7 @@ def validate_pre_run_bundle() -> dict[str, Any]:
 
     suite_pfs: set[str] = set()
     challenge_count = 0
+    optional_assignment_count = 0
     for case, expected in zip(cases, gold_cases):
         case_id = str(case.get("case_id"))
         if case.get("data_class") != "SYNTHETIC_ONLY":
@@ -78,18 +83,35 @@ def validate_pre_run_bundle() -> dict[str, Any]:
             raise ValueError(f"{case_id}: source_locations missing")
         if case.get("target_source_location_id") not in {row.get("source_location_id") for row in locations}:
             raise ValueError(f"{case_id}: target source location missing")
-        if any(key.startswith("expected_") or key.startswith("forbidden_") for key in case):
+        if any(key.startswith("expected_") or key.startswith("optional_") or key.startswith("forbidden_") for key in case):
             raise ValueError(f"{case_id}: gold information must not be model-visible")
+
         assignments = expected.get("expected_assignments")
         if not isinstance(assignments, list) or not assignments:
             raise ValueError(f"{case_id}: expected assignments missing")
-        for assignment in assignments:
-            suite_pfs.add(_validate_assignment(assignment, canonical_pf, case_id))
+        optional = expected.get("optional_assignments", [])
         forbidden = expected.get("forbidden_assignments", [])
+        if not isinstance(optional, list):
+            raise ValueError(f"{case_id}: optional_assignments must be a list")
         if not isinstance(forbidden, list):
             raise ValueError(f"{case_id}: forbidden_assignments must be a list")
+
+        for assignment in assignments:
+            suite_pfs.add(_validate_assignment(assignment, canonical_pf, case_id))
+        for assignment in optional:
+            _validate_assignment(assignment, canonical_pf, case_id)
         for assignment in forbidden:
             _validate_assignment(assignment, canonical_pf, case_id)
+
+        required_keys = _assignment_keys(assignments)
+        optional_keys = _assignment_keys(optional)
+        forbidden_keys = _assignment_keys(forbidden)
+        if required_keys & optional_keys or required_keys & forbidden_keys or optional_keys & forbidden_keys:
+            raise ValueError(f"{case_id}: required, optional and forbidden assignment sets must be disjoint")
+        optional_assignment_count += len(optional)
+
+        if "expected_conflict_candidate" in expected and not isinstance(expected["expected_conflict_candidate"], bool):
+            raise ValueError(f"{case_id}: expected_conflict_candidate must be boolean")
         if "CHALLENGE" in case_id:
             challenge_count += 1
 
@@ -103,18 +125,31 @@ def validate_pre_run_bundle() -> dict[str, Any]:
         raise ValueError("this pre-run block requires unapproved draft gold")
     if policy.get("status") != "DRAFT_NOT_HUMAN_APPROVED":
         raise ValueError("qualification policy must remain draft until explicit human approval")
+
+    preconditions = policy.get("preconditions_for_future_execution", {})
     criteria = policy.get("pass_criteria", {})
     if criteria.get("model_requests_expected") != EXPECTED_CASE_COUNT:
         raise ValueError("qualification policy model request count must equal suite case count")
     if criteria.get("parse_success_required") != "16/16" or criteria.get("contract_and_boundary_pass_required") != "16/16":
         raise ValueError("qualification policy must require 16/16 parse and boundary success")
-    if policy.get("preconditions_for_future_execution", {}).get("explicit_user_model_run_approval_required") is not True:
+    if criteria.get("spurious_assignments_outside_required_or_optional_allowed") != 0:
+        raise ValueError("qualification policy must allow zero spurious assignments")
+    if criteria.get("expected_conflict_candidate_mismatches_allowed") != 0:
+        raise ValueError("qualification policy must allow zero expected-conflict mismatches")
+    if criteria.get("optional_gold_assignments_allowed_but_not_required") is not True:
+        raise ValueError("qualification policy must explicitly allow optional gold assignments without requiring them")
+    if preconditions.get("explicit_user_model_run_approval_required") is not True:
         raise ValueError("qualification policy must require explicit user model-run approval")
+    if preconditions.get("qualification_evaluator_must_enforce_optional_and_spurious_assignments") is not True:
+        raise ValueError("future qualification evaluator must enforce optional/spurious assignment policy")
+    if preconditions.get("qualification_evaluator_must_enforce_expected_conflict_candidate") is not True:
+        raise ValueError("future qualification evaluator must enforce expected_conflict_candidate")
 
     return {
         "runtime_binding": runtime_binding["binding_version"],
         "case_count": len(cases),
         "challenge_case_count": challenge_count,
+        "optional_assignment_count": optional_assignment_count,
         "pf_coverage": "12/12",
         "human_gold_status": gold["status"],
         "policy_status": policy["status"],
@@ -146,6 +181,7 @@ def build_manifest() -> dict[str, Any]:
             "qualification_policy_status": validation["policy_status"],
             "qualification_case_count": validation["case_count"],
             "qualification_challenge_case_count": validation["challenge_case_count"],
+            "qualification_optional_assignment_count": validation["optional_assignment_count"],
             "qualification_pf_coverage": validation["pf_coverage"],
             "expected_run_count": 0,
             "expected_model_request_count": 0,
