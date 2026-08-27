@@ -1,0 +1,28 @@
+{
+  "gold_version": "ZS-KI-B-SEM-V0-7-HUMAN-GOLD-FROZEN-v0.1",
+  "status": "HUMAN_APPROVED_FROZEN",
+  "approved_on": "2026-08-27",
+  "data_class": "SYNTHETIC_ONLY",
+  "model_visible": false,
+  "source_draft": "zs_ki_b_sem_v07_human_gold_draft_v0_1.json",
+  "review_basis": ["internal fachlicher review", "independent Claude countercheck ZS-KI-B-SEM-V0-7-HUMAN-GOLD-GEGENCHECK-2026-001", "explicit user approval"],
+  "purpose": "Frozen human-gold evaluation basis for the separately versioned future synthetic v0.7 qualification run. The gold must not be model-visible.",
+  "cases": [
+    {"case_id":"ZS-KI-B-SEM-V07-Q-PF1-SYN-001","expected_assignments":[{"question_id":"1.1","pf_id":"PF1"}],"notes":"Auftraggebende Organisation wird ausdrücklich benannt."},
+    {"case_id":"ZS-KI-B-SEM-V07-Q-PF2-SYN-001","expected_assignments":[{"question_id":"2.1","pf_id":"PF2"},{"question_id":"2.2","pf_id":"PF2"}],"optional_assignments":[{"question_id":"2.4","pf_id":"PF2"}],"notes":"Gegenstand und ausdrückliche Begrenzung sind zwingend; 2.4 ist als zusätzliche räumliche Lesart vertretbar, aber nicht zwingend."},
+    {"case_id":"ZS-KI-B-SEM-V07-Q-PF3-SYN-001","expected_assignments":[{"question_id":"3.3","pf_id":"PF3"}],"notes":"Die Entscheidung ist ausdrücklich noch offen."},
+    {"case_id":"ZS-KI-B-SEM-V07-Q-PF4-SYN-001","expected_assignments":[{"question_id":"4.4","pf_id":"PF4"}],"notes":"Erforderliche Unterlage fehlt im Informationsbestand."},
+    {"case_id":"ZS-KI-B-SEM-V07-Q-PF5-SYN-001","expected_assignments":[{"question_id":"5.5","pf_id":"PF5"}],"notes":"Bereits beauftragte externe Fachstelle."},
+    {"case_id":"ZS-KI-B-SEM-V07-Q-PF6-SYN-001","expected_assignments":[{"question_id":"6.4","pf_id":"PF6"}],"optional_assignments":[{"question_id":"4.4","pf_id":"PF4"}],"notes":"Räumliche Basisangabe fehlt; 4.4 ist als allgemeine parallele Informationslücke vertretbar, aber nicht zwingend."},
+    {"case_id":"ZS-KI-B-SEM-V07-Q-PF7-SYN-001","expected_assignments":[{"question_id":"7.2","pf_id":"PF7"}],"notes":"Nutzergruppen und Nutzungszeiten sind ausdrücklich dokumentiert."},
+    {"case_id":"ZS-KI-B-SEM-V07-Q-PF8-SYN-001","expected_assignments":[{"question_id":"8.1","pf_id":"PF8"},{"question_id":"8.3","pf_id":"PF8"}],"notes":"Vorliegen des Gutachtens sowie bearbeitete und ausdrücklich nicht bearbeitete Fachfragen sind eigenständig enthalten."},
+    {"case_id":"ZS-KI-B-SEM-V07-Q-PF9-SYN-001","expected_assignments":[{"question_id":"9.1","pf_id":"PF9"},{"question_id":"9.2","pf_id":"PF9"},{"question_id":"9.3","pf_id":"PF9"}],"notes":"Die Freigabe hängt vom Abschluss der Bestandsvermessung ab; dies ist Abhängigkeit, blockierender offener Schritt und vorgelagerte Fachklärung zugleich."},
+    {"case_id":"ZS-KI-B-SEM-V07-Q-PF10-SYN-001","expected_assignments":[{"question_id":"10.3","pf_id":"PF10"}],"notes":"Erforderliche Schwärzung wird ausdrücklich benannt."},
+    {"case_id":"ZS-KI-B-SEM-V07-Q-PF11-SYN-001","expected_assignments":[{"question_id":"11.2","pf_id":"PF11"}],"notes":"Eigenständige Aussage ist ausdrücklich nicht belegt."},
+    {"case_id":"ZS-KI-B-SEM-V07-Q-PF12-SYN-001","expected_assignments":[{"question_id":"12.1","pf_id":"PF12"},{"question_id":"12.2","pf_id":"PF12"},{"question_id":"12.3","pf_id":"PF12"}],"notes":"Nächster begrenzter Schritt, funktional zuständige Stelle und benötigte Unterlage sind gemeinsam benannt."},
+    {"case_id":"ZS-KI-B-SEM-V07-Q-CHALLENGE-DOC-SYN-001","expected_assignments":[{"question_id":"4.1","pf_id":"PF4"},{"question_id":"4.2","pf_id":"PF4"}],"forbidden_assignments":[{"question_id":"2.1","pf_id":"PF2"}],"notes":"Dokument und Dokumentstatus, nicht der betrachtete Gegenstand selbst."},
+    {"case_id":"ZS-KI-B-SEM-V07-Q-CHALLENGE-UNSUPPORTED-SYN-001","expected_assignments":[{"question_id":"11.2","pf_id":"PF11"}],"forbidden_assignments":[{"question_id":"7.1","pf_id":"PF7"}],"notes":"Unbelegte Schlussfolgerung; thematische Nutzungsnähe allein reicht nicht."},
+    {"case_id":"ZS-KI-B-SEM-V07-Q-CHALLENGE-TIME-SYN-001","expected_assignments":[{"question_id":"4.2","pf_id":"PF4"}],"forbidden_assignments":[{"question_id":"4.5","pf_id":"PF4"}],"expected_conflict_candidate":false,"notes":"Unterschiedliche, klar datierte Fortschreibungsstände sind nicht allein deshalb Konfliktkandidaten; 4.5 ist deshalb ausdrücklich ausgeschlossen. Der spätere Qualifikations-Evaluator muss zusätzlich expected_conflict_candidate auswerten."},
+    {"case_id":"ZS-KI-B-SEM-V07-Q-CHALLENGE-POSSIBLE-DATE-SYN-001","expected_assignments":[{"question_id":"3.4","pf_id":"PF3"},{"question_id":"3.3","pf_id":"PF3"}],"forbidden_assignments":[{"question_id":"3.2","pf_id":"PF3"}],"notes":"Möglicher Termin plus ausdrücklich fehlende Zusage; 3.2 ist ausgeschlossen, weil keine Entscheidung/Freigabe vorliegt."}
+  ]
+}
