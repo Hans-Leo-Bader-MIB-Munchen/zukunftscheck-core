@@ -1,0 +1,21 @@
+{
+  "sweep_version": "ZS-DEV-KI-B-SEM-RUNTIME-GUARD-FROZEN-SUITE-SWEEP-2026-001_v0.1",
+  "mode": "MODEL_FREE",
+  "suite_version": "ZS-KI-B-SEM-V0-7-QUALIFIKATION-SUITE-FROZEN-v0.1",
+  "gold_version": "ZS-KI-B-SEM-V0-7-HUMAN-GOLD-FROZEN-v0.1",
+  "runtime_guard_version": "semantic-runtime-guard-v0.1",
+  "complete_gold_case_count": 16,
+  "expected_false_positive_case_ids": [],
+  "expected_underassignment_detection_case_ids": [
+    "ZS-KI-B-SEM-V07-Q-PF2-SYN-001"
+  ],
+  "pf2_underassignment_removed_assignment": {
+    "question_id": "2.2",
+    "pf_id": "PF2"
+  },
+  "model_run_authorized": false,
+  "real_data_authorized": false,
+  "pilot_authorized": false,
+  "production_authorized": false,
+  "phase_f_authorized": false
+}
