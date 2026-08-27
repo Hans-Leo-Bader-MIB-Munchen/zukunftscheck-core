@@ -1,6 +1,6 @@
 {
   "authorization_version": "ZS-KI-B-SEM-V1-1-MODEL-RUN-AUTHORIZATION-2026-001_v0.1",
-  "status": "PENDING_USER_APPROVAL",
+  "status": "EXPLICIT_USER_APPROVED",
   "prepared_on": "2026-08-27",
   "run_type": "ZS-KI-B-SEM-QUALIFIKATION-SYNTHETIC-V1-1-PROMPT-V0-6-2026-011",
   "model": "qwen3-14b",
