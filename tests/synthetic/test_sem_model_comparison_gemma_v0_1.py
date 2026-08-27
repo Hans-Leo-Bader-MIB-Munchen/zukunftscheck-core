@@ -12,6 +12,20 @@ class SemModelComparisonGemmaV01Tests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.mod = importlib.import_module("scripts.zs_ki_b_sem_model_comparison_runner_gemma_v0_1")
 
+    @classmethod
+    def tearDownClass(cls) -> None:
+        # The comparison wrapper deliberately reuses historical runner modules.
+        # Reload them bottom-up after this class so full-suite test order cannot
+        # inherit any transient comparison binding or nested _configure() state.
+        base = cls.mod.v11.v10.v09.base
+        v09 = cls.mod.v11.v10.v09
+        v10 = cls.mod.v11.v10
+        v11 = cls.mod.v11
+        importlib.reload(base)
+        importlib.reload(v09)
+        importlib.reload(v10)
+        importlib.reload(v11)
+
     def test_g01_exact_gemma_model_is_bound(self) -> None:
         self.assertEqual(self.mod.MODEL, "gemma-3-12b-it-qat")
         self.assertEqual(self.mod.PROMPT_VERSION, "zs_ki_b_sem_qualifikation_system_v0_6")
@@ -66,6 +80,7 @@ class SemModelComparisonGemmaV01Tests(unittest.TestCase):
     def test_g05_frozen_semantic_assets_remain_reused_without_state_leak(self) -> None:
         base = self.mod.v11.v10.v09.base
         before_version = base.RUNNER_VERSION
+        before_failure = self.mod.v11.v10.v09.PREVIOUS_FAILURE_PATH
         with self.mod._temporary_bindings():
             self.assertTrue(base.SUITE_PATH.name.endswith("qualification_suite_frozen_v0_1.json"))
             self.assertTrue(base.GOLD_PATH.name.endswith("human_gold_frozen_v0_1.json"))
@@ -74,6 +89,7 @@ class SemModelComparisonGemmaV01Tests(unittest.TestCase):
             self.assertEqual(base.CONTRACT_VERSION, "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.2")
             self.assertEqual(base.RUNNER_VERSION, self.mod.RUNNER_VERSION)
         self.assertEqual(base.RUNNER_VERSION, before_version)
+        self.assertEqual(self.mod.v11.v10.v09.PREVIOUS_FAILURE_PATH, before_failure)
 
 
 if __name__ == "__main__":
