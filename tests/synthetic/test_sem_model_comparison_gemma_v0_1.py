@@ -14,9 +14,6 @@ class SemModelComparisonGemmaV01Tests(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        # The comparison wrapper deliberately reuses historical runner modules.
-        # Reload them bottom-up after this class so full-suite test order cannot
-        # inherit any transient comparison binding or nested _configure() state.
         base = cls.mod.v11.v10.v09.base
         v09 = cls.mod.v11.v10.v09
         v10 = cls.mod.v11.v10
@@ -74,6 +71,8 @@ class SemModelComparisonGemmaV01Tests(unittest.TestCase):
         self.assertEqual(manifest["reference_model"], "qwen3-14b")
         self.assertFalse(manifest["execution_attempted"])
         self.assertEqual(manifest["observed_model_request_count"], 0)
+        self.assertFalse(manifest["prompt_change_only"])
+        self.assertTrue(manifest["comparison_only"])
         self.assertEqual(self.mod.v11.v10.RUNNER_VERSION, before_v10_version)
         self.assertEqual(self.mod.v11.RUNNER_VERSION, before_v11_version)
 
@@ -101,6 +100,8 @@ class SemModelComparisonGemmaV01Tests(unittest.TestCase):
             self.assertEqual(payload["mode"], "DRY_RUN_SEM_MODEL_COMPARISON_GEMMA_V0_1")
             self.assertEqual(payload["manifest"]["runner_version"], self.mod.RUNNER_VERSION)
             self.assertEqual(payload["manifest"]["comparison_model"], self.mod.MODEL)
+            self.assertFalse(payload["manifest"]["prompt_change_only"])
+            self.assertTrue(payload["manifest"]["comparison_only"])
         finally:
             self.mod.v11.validate_execution_authorization = original_validate
             self.mod.v11.build_dry_run_manifest = original_dry_run
