@@ -33,62 +33,16 @@ REQUIRED_LOADED_CONTEXT_LENGTH = 32768
 REQUEST_TIMEOUT_SECONDS = 1800.0
 COMPARISON_PLAN_VERSION = "ZS-KI-B-SEM-MODELLVERGLEICH-NACH-PF2-REPRODUKTION-2026-001_v0.1"
 
-# Capture the unpatched v1.1 callables once at import time. The comparison main()
-# temporarily replaces the public v11 hooks; wrapper functions must therefore call
-# these captured originals rather than v11.<hook>, otherwise they recurse into
-# themselves after _install_bindings().
 _ORIGINAL_V11_VALIDATE_AUTH = v11.validate_execution_authorization
 _ORIGINAL_V11_BUILD_DRY_RUN = v11.build_dry_run_manifest
 
 
 def _state_targets() -> tuple[tuple[object, tuple[str, ...]], ...]:
     return (
-        (
-            v11,
-            (
-                "RUN_TYPE",
-                "RUNNER_VERSION",
-                "AUTH_PATH",
-                "PREVIOUS_FAILURE_PATH",
-                "DEFAULT_OUTPUT",
-                "PROMPT_VERSION",
-                "PROMPT_PATH",
-            ),
-        ),
-        (
-            v11.v10,
-            (
-                "RUN_TYPE",
-                "RUNNER_VERSION",
-                "AUTH_PATH",
-                "PREVIOUS_FAILURE_PATH",
-                "DEFAULT_OUTPUT",
-                "REQUIRED_LOADED_CONTEXT_LENGTH",
-                "REQUEST_TIMEOUT_SECONDS",
-            ),
-        ),
-        (
-            v11.v10.v09,
-            (
-                "RUN_TYPE",
-                "RUNNER_VERSION",
-                "AUTH_PATH",
-                "PREVIOUS_FAILURE_PATH",
-                "DEFAULT_OUTPUT",
-                "REQUIRED_LOADED_CONTEXT_LENGTH",
-            ),
-        ),
-        (
-            v11.v10.v09.base,
-            (
-                "RUN_TYPE",
-                "RUNNER_VERSION",
-                "AUTH_PATH",
-                "DEFAULT_OUTPUT",
-                "PROMPT_VERSION",
-                "PROMPT_PATH",
-            ),
-        ),
+        (v11, ("RUN_TYPE", "RUNNER_VERSION", "AUTH_PATH", "PREVIOUS_FAILURE_PATH", "DEFAULT_OUTPUT", "PROMPT_VERSION", "PROMPT_PATH")),
+        (v11.v10, ("RUN_TYPE", "RUNNER_VERSION", "AUTH_PATH", "PREVIOUS_FAILURE_PATH", "DEFAULT_OUTPUT", "REQUIRED_LOADED_CONTEXT_LENGTH", "REQUEST_TIMEOUT_SECONDS")),
+        (v11.v10.v09, ("RUN_TYPE", "RUNNER_VERSION", "AUTH_PATH", "PREVIOUS_FAILURE_PATH", "DEFAULT_OUTPUT", "REQUIRED_LOADED_CONTEXT_LENGTH")),
+        (v11.v10.v09.base, ("RUN_TYPE", "RUNNER_VERSION", "AUTH_PATH", "DEFAULT_OUTPUT", "PROMPT_VERSION", "PROMPT_PATH")),
     )
 
 
@@ -164,11 +118,12 @@ def build_dry_run_manifest(*, model: str = MODEL, base_url: str = "http://127.0.
     manifest["comparison_plan_version"] = COMPARISON_PLAN_VERSION
     manifest["reference_model"] = "qwen3-14b"
     manifest["reference_failure"] = "PF2 missing required 2.2/PF2 reproduced in 2026-010 and 2026-011"
+    manifest["prompt_change_only"] = False
+    manifest["comparison_only"] = True
     return payload
 
 
 def _install_bindings() -> None:
-    """Install comparison hooks only for the duration of main()."""
     _configure()
     v11.validate_execution_authorization = validate_execution_authorization
     v11.build_dry_run_manifest = build_dry_run_manifest
