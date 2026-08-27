@@ -1,0 +1,28 @@
+{
+  "incident_version": "ZS-KI-B-SEM-V0-8-CONTEXT-PRECONDITION-FAILURE-2026-001_v0.1",
+  "status": "EXECUTED_ONCE_FAILED_TECHNICAL_PRECONDITION",
+  "observed_on": "2026-08-27",
+  "run_type": "ZS-KI-B-SEM-QUALIFIKATION-SYNTHETIC-V0-7-FROZEN-2026-008",
+  "runner_version": "v0.8",
+  "git_commit": "32eac9ff56169afea5079636d1f01d842e34bb2d",
+  "model": "qwen3-14b",
+  "base_url": "http://127.0.0.1:1234/v1",
+  "expected_model_request_count": 16,
+  "observed_model_request_count": 1,
+  "model_response_observed": false,
+  "failure_class": "LOCAL_CONTEXT_WINDOW_TOO_SMALL",
+  "http_status": 400,
+  "prompt_tokens_reported_by_engine": 16373,
+  "loaded_context_length_reported_by_engine": 8192,
+  "engine_error_type": "exceed_context_size_error",
+  "semantic_evaluation_reached": false,
+  "gold_evaluation_reached": false,
+  "model_qualified": false,
+  "interpretation": "The authorized run was consumed by a technical context-window precondition failure before any model response was produced. This is not evidence of semantic model failure or semantic model success.",
+  "rerun_authorized": false,
+  "required_follow_up": [
+    "Load qwen3-14b with 32768 context tokens.",
+    "Use a fail-closed preflight that verifies exact model identity and loaded context before the first generation request.",
+    "Require a new explicit user authorization for any additional qualification run."
+  ]
+}
