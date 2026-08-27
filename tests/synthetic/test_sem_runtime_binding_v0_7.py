@@ -139,7 +139,7 @@ class SemRuntimeBindingV07Tests(unittest.TestCase):
         )
         self.assertIn("UNKNOWN_QUESTION_ID", {issue.code for issue in issues})
 
-    def test_b08_v07_source_artifact_itself_still_declares_model_free_no-production_scope(self) -> None:
+    def test_b08_v07_source_artifact_itself_still_declares_model_free_no_production_scope(self) -> None:
         doc = json.loads(MEANINGS_V07.read_text(encoding="utf-8"))
         scope = doc["calibration_scope"].lower()
         self.assertEqual(doc["schema_version"], "v0.7")
