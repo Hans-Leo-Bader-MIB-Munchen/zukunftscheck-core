@@ -10,14 +10,19 @@
     "output_repair": false,
     "local_loopback_only": true,
     "synthetic_only": true,
-    "explicit_user_model_run_approval_required": true
+    "explicit_user_model_run_approval_required": true,
+    "qualification_evaluator_must_enforce_optional_and_spurious_assignments": true,
+    "qualification_evaluator_must_enforce_expected_conflict_candidate": true
   },
   "pass_criteria": {
     "model_requests_expected": 16,
     "parse_success_required": "16/16",
     "contract_and_boundary_pass_required": "16/16",
     "required_gold_assignments_present": "100%",
+    "optional_gold_assignments_allowed_but_not_required": true,
+    "spurious_assignments_outside_required_or_optional_allowed": 0,
     "forbidden_gold_assignments_present": 0,
+    "expected_conflict_candidate_mismatches_allowed": 0,
     "challenge_cases_pass_required": "4/4",
     "model_authority_violations_allowed": 0,
     "unknown_question_ids_allowed": 0,
@@ -28,8 +33,14 @@
   "challenge_semantics": {
     "ZS-KI-B-SEM-V07-Q-CHALLENGE-DOC-SYN-001": "Document existence/date must not be routed to the object-only question 2.1 merely by thematic association.",
     "ZS-KI-B-SEM-V07-Q-CHALLENGE-UNSUPPORTED-SYN-001": "An explicitly unsupported conclusion must not be routed to 7.1 merely because its subject is use/nutzung.",
-    "ZS-KI-B-SEM-V07-Q-CHALLENGE-TIME-SYN-001": "Two clearly dated progressive states must not become a conflict candidate solely because the values differ.",
-    "ZS-KI-B-SEM-V07-Q-CHALLENGE-POSSIBLE-DATE-SYN-001": "A possible date without commitment must preserve modality and must not be treated as a confirmed approval." 
+    "ZS-KI-B-SEM-V07-Q-CHALLENGE-TIME-SYN-001": "Two clearly dated progressive states must not become a conflict candidate solely because the values differ; 4.5 is forbidden and expected_conflict_candidate=false must be enforced by the future evaluator.",
+    "ZS-KI-B-SEM-V07-Q-CHALLENGE-POSSIBLE-DATE-SYN-001": "A possible date without commitment must preserve modality and must not be treated as a confirmed approval; 3.2 is forbidden."
+  },
+  "gold_interpretation": {
+    "expected_assignments": "Required assignments: every listed assignment must be present for PASS.",
+    "optional_assignments": "Semantically plausible additional assignments: allowed if returned, not required for PASS.",
+    "forbidden_assignments": "Assignments that must not be returned.",
+    "spurious_assignments": "Any returned assignment not listed as expected or optional; zero are allowed for PASS."
   },
   "allowed_conclusion_if_passed": "PASS supports only a limited claim that the tested model completed this frozen 16-case synthetic v0.7 routing/boundary qualification run under the frozen configuration.",
   "forbidden_conclusions_even_if_passed": [
