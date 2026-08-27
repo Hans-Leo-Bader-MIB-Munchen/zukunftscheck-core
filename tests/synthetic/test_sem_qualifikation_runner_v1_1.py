@@ -20,8 +20,33 @@ class SemQualificationRunnerV11Tests(unittest.TestCase):
         self.assertEqual(self.mod.v10.v09.base.PROMPT_PATH, self.mod.PROMPT_PATH)
 
     def test_r02_pending_authorization_blocks_execution(self) -> None:
-        with self.assertRaises(PermissionError):
-            self.mod.validate_execution_authorization("qwen3-14b")
+        auth = {
+            "status": "PENDING_USER_APPROVAL",
+            "run_type": self.mod.RUN_TYPE,
+            "model": "qwen3-14b",
+            "prompt_version": self.mod.PROMPT_VERSION,
+            "required_loaded_context_length": 32768,
+            "required_request_timeout_seconds": 1800,
+            "expected_model_request_count": 16,
+            "synthetic_only": True,
+            "local_loopback_only": True,
+            "single_run_only": True,
+            "retry_count": 0,
+            "output_repair": False,
+            "remote_cloud": False,
+            "real_data": False,
+        }
+        original = self.mod.AUTH_PATH
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "auth.json"
+            path.write_text(json.dumps(auth), encoding="utf-8")
+            try:
+                self.mod.AUTH_PATH = path
+                with self.assertRaises(PermissionError):
+                    self.mod.validate_execution_authorization("qwen3-14b")
+            finally:
+                self.mod.AUTH_PATH = original
+                self.mod._configure()
 
     def test_r03_authorization_must_bind_prompt_v06(self) -> None:
         auth = {
@@ -66,7 +91,32 @@ class SemQualificationRunnerV11Tests(unittest.TestCase):
         self.assertEqual(base.CONTRACT_VERSION, "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.2")
 
     def test_r05_dry_run_declares_prompt_change_only_and_no_execution(self) -> None:
-        payload = self.mod.build_dry_run_manifest(model="qwen3-14b")
+        auth = {
+            "status": "PENDING_USER_APPROVAL",
+            "run_type": self.mod.RUN_TYPE,
+            "model": "qwen3-14b",
+            "prompt_version": self.mod.PROMPT_VERSION,
+            "required_loaded_context_length": 32768,
+            "required_request_timeout_seconds": 1800,
+            "expected_model_request_count": 16,
+            "synthetic_only": True,
+            "local_loopback_only": True,
+            "single_run_only": True,
+            "retry_count": 0,
+            "output_repair": False,
+            "remote_cloud": False,
+            "real_data": False,
+        }
+        original = self.mod.AUTH_PATH
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "auth.json"
+            path.write_text(json.dumps(auth), encoding="utf-8")
+            try:
+                self.mod.AUTH_PATH = path
+                payload = self.mod.build_dry_run_manifest(model="qwen3-14b")
+            finally:
+                self.mod.AUTH_PATH = original
+                self.mod._configure()
         manifest = payload["manifest"]
         self.assertEqual(payload["mode"], "DRY_RUN_SEM_QUALIFICATION_V1_1")
         self.assertEqual(manifest["runner_version"], "v1.1")

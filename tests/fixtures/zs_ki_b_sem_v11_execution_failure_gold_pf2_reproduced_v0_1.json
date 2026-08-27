@@ -1,0 +1,23 @@
+{
+  "incident_version": "ZS-KI-B-SEM-V1-1-QUALIFIKATION-FAILURE-PF2-REPRODUCED-2026-001_v0.1",
+  "status": "EXECUTED_ONCE_FAILED_GOLD_SEMANTIC",
+  "run_type": "ZS-KI-B-SEM-QUALIFIKATION-SYNTHETIC-V1-1-PROMPT-V0-6-2026-011",
+  "runner_version": "v1.1",
+  "model": "qwen3-14b",
+  "prompt_version": "zs_ki_b_sem_qualifikation_system_v0_6",
+  "observed_model_request_count": 2,
+  "failed_case_id": "ZS-KI-B-SEM-V07-Q-PF2-SYN-001",
+  "boundary_passed": true,
+  "gold_passed": false,
+  "actual_assignments": [["2.1", "PF2"]],
+  "missing_required": [["2.2", "PF2"]],
+  "forbidden_present": [],
+  "spurious_assignments": [],
+  "previous_same_failure_run": "ZS-KI-B-SEM-QUALIFIKATION-SYNTHETIC-V0-7-FROZEN-2026-010",
+  "same_pf2_missing_assignment_reproduced": true,
+  "prompt_hardening_since_previous_run": true,
+  "prompt_hardening_resolved_pf2_failure": false,
+  "model_qualified": false,
+  "rerun_authorized": false,
+  "conclusion": "PF2 missing-required-assignment 2.2/PF2 was reproduced with qwen3-14b after prompt v0.6 hardening. This supports a model-comparison step and does not justify weakening Human-Gold or the frozen PF2 case."
+}

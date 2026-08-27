@@ -1,0 +1,27 @@
+{
+  "plan_version": "ZS-KI-B-SEM-MODELLVERGLEICH-NACH-PF2-REPRODUKTION-2026-001_v0.1",
+  "status": "MODEL_FREE_PREPARATION",
+  "reference_model": "qwen3-14b",
+  "reference_failure": "PF2 missing required 2.2/PF2 reproduced in 2026-010 and 2026-011",
+  "candidate_models": [
+    "gemma-3-12b-it-qat",
+    "qwen/qwen3-8b"
+  ],
+  "prompt_version": "zs_ki_b_sem_qualifikation_system_v0_6",
+  "qualification_suite": "ZS-KI-B-SEM-V0-7-QUALIFIKATION-SUITE-FROZEN-v0.1",
+  "human_gold": "ZS-KI-B-SEM-V0-7-HUMAN-GOLD-FROZEN-v0.1",
+  "qualification_policy": "ZS-KI-B-SEM-V0-7-QUALIFIKATION-POLICY-FROZEN-v0.1",
+  "meaning_layer": "reference_question_meanings_v0_7.json",
+  "semantic_contract": "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.2",
+  "semantic_boundary": "v0.2",
+  "retry_count": 0,
+  "output_repair": false,
+  "local_loopback_only": true,
+  "synthetic_only": true,
+  "execution_authorized": false,
+  "qwen3_14b_rerun_authorized": false,
+  "prompt_change_allowed_before_comparison": false,
+  "gold_change_allowed_before_comparison": false,
+  "case_change_allowed_before_comparison": false,
+  "per_model_explicit_authorization_required": true
+}
