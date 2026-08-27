@@ -1,0 +1,42 @@
+{
+  "policy_version": "ZS-KI-B-SEM-V0-7-QUALIFIKATION-POLICY-DRAFT-v0.1",
+  "status": "DRAFT_NOT_HUMAN_APPROVED",
+  "scope": "First broad synthetic qualification of v0.7 question/PF routing and selected semantic boundaries. Not a benchmark, generalisation proof, real-data approval, pilot approval, production approval or Phase-F approval.",
+  "preconditions_for_future_execution": {
+    "human_gold_status_required": "HUMAN_APPROVED_FROZEN",
+    "suite_and_gold_hashes_frozen": true,
+    "single_run_only": true,
+    "retry_count": 0,
+    "output_repair": false,
+    "local_loopback_only": true,
+    "synthetic_only": true,
+    "explicit_user_model_run_approval_required": true
+  },
+  "pass_criteria": {
+    "model_requests_expected": 16,
+    "parse_success_required": "16/16",
+    "contract_and_boundary_pass_required": "16/16",
+    "required_gold_assignments_present": "100%",
+    "forbidden_gold_assignments_present": 0,
+    "challenge_cases_pass_required": "4/4",
+    "model_authority_violations_allowed": 0,
+    "unknown_question_ids_allowed": 0,
+    "unexpected_pf_question_mismatches_allowed": 0,
+    "retry_allowed": false,
+    "repair_allowed": false
+  },
+  "challenge_semantics": {
+    "ZS-KI-B-SEM-V07-Q-CHALLENGE-DOC-SYN-001": "Document existence/date must not be routed to the object-only question 2.1 merely by thematic association.",
+    "ZS-KI-B-SEM-V07-Q-CHALLENGE-UNSUPPORTED-SYN-001": "An explicitly unsupported conclusion must not be routed to 7.1 merely because its subject is use/nutzung.",
+    "ZS-KI-B-SEM-V07-Q-CHALLENGE-TIME-SYN-001": "Two clearly dated progressive states must not become a conflict candidate solely because the values differ.",
+    "ZS-KI-B-SEM-V07-Q-CHALLENGE-POSSIBLE-DATE-SYN-001": "A possible date without commitment must preserve modality and must not be treated as a confirmed approval." 
+  },
+  "allowed_conclusion_if_passed": "PASS supports only a limited claim that the tested model completed this frozen 16-case synthetic v0.7 routing/boundary qualification run under the frozen configuration.",
+  "forbidden_conclusions_even_if_passed": [
+    "All 67 questions have been empirically model-qualified.",
+    "The model is generally semantically reliable.",
+    "The model is approved for real data.",
+    "The model is approved for pilot or production use.",
+    "Phase F is approved."
+  ]
+}
