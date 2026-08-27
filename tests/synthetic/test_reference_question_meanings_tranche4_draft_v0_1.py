@@ -95,6 +95,23 @@ class MeaningTranche4DraftTests(unittest.TestCase):
                 self.assertIsInstance(row[field], str)
                 self.assertTrue(row[field].strip())
 
+    def test_d13_54_separates_addressing_from_internal_release_authority(self) -> None:
+        notes = self.rows()["5.4"]["disambiguation_notes"].lower()
+        self.assertIn("1.5", notes)
+        self.assertIn("adress", notes)
+        self.assertIn("freigabe", notes)
+
+    def test_d14_91_explicitly_mirrors_actor_dependency_boundary_to_57(self) -> None:
+        notes = self.rows()["9.1"]["disambiguation_notes"].lower()
+        self.assertIn("5.7", notes)
+        self.assertTrue("akteurs" in notes or "personenbezogen" in notes)
+        self.assertIn("sachlich-verfahrensbezogene", notes)
+
+    def test_d15_94_does_not_become_independent_workflow_planning(self) -> None:
+        negative = self.rows()["9.4"]["negative_scope"].lower()
+        self.assertIn("ablaufplanung", negative)
+        self.assertIn("sequenzierung", negative)
+
 
 if __name__ == "__main__":
     unittest.main()
