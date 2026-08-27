@@ -1,0 +1,26 @@
+{
+  "authorization_version": "ZS-KI-B-SEM-V0-7-MODEL-RUN-AUTHORIZATION-2026-001_v0.1",
+  "status": "EXPLICIT_USER_APPROVED",
+  "approved_on": "2026-08-27",
+  "run_type": "ZS-KI-B-SEM-QUALIFIKATION-SYNTHETIC-V0-7-FROZEN-2026-008",
+  "model": "qwen3-14b",
+  "expected_model_request_count": 16,
+  "synthetic_only": true,
+  "local_loopback_only": true,
+  "single_run_only": true,
+  "retry_count": 0,
+  "output_repair": false,
+  "remote_cloud": false,
+  "real_data": false,
+  "approval_scope": "Exactly one local 16-request qualification run with qwen3-14b against the frozen v0.7 qualification package. No retry, no repair, no cloud model, no real data.",
+  "not_approved": [
+    "additional model runs",
+    "remote/cloud model execution",
+    "benchmark approval",
+    "generalisation approval",
+    "real-data use",
+    "pilot use",
+    "production use",
+    "Phase F"
+  ]
+}
