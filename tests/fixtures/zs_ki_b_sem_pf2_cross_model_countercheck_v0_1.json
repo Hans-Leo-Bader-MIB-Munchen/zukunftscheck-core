@@ -1,0 +1,43 @@
+{
+  "review_id": "ZS-KI-B-SEM-PF2-CROSS-MODEL-GEGENCHECK-2026-001_v0.1",
+  "status": "MODEL_FREE_REVIEW_RESULT",
+  "decision": "GOLD_CONFIRMED",
+  "case_id": "ZS-KI-B-SEM-V07-Q-PF2-SYN-001",
+  "case_text": "Betrachtet wird ausschließlich das bestehende Rathaus einschließlich des unmittelbar zugehörigen Vorplatzes.",
+  "required_assignments": [
+    {"question_id": "2.1", "pf_id": "PF2"},
+    {"question_id": "2.2", "pf_id": "PF2"}
+  ],
+  "optional_assignments": [
+    {"question_id": "2.4", "pf_id": "PF2"}
+  ],
+  "evidence": {
+    "qwen3_14b_failure_reproduced": true,
+    "qwen3_14b_runs": ["2026-010", "2026-011"],
+    "gemma_3_12b_failure_reproduced": true,
+    "gemma_run": "2026-012",
+    "shared_missing_required_assignment": {"question_id": "2.2", "pf_id": "PF2"}
+  },
+  "delta_required": {
+    "human_gold": false,
+    "qualification_case": false,
+    "meaning_layer_v0_7": false,
+    "prompt_v0_6": false,
+    "semantic_contract": false,
+    "runtime_binding": false,
+    "validators": false
+  },
+  "reasoning_summary": [
+    "2.2 explicitly covers documented inclusion/exclusion within the examination object.",
+    "The case contains the explicit scope markers 'ausschließlich' and 'einschließlich'.",
+    "2.4 is a spatial special question and can be additionally applicable, but it does not replace the explicit scope dimension captured by 2.2.",
+    "Prompt v0.6 already names 'ausschließlich' and 'einschließlich' as markers that trigger complete multi-assignment checking."
+  ],
+  "further_model_run_authorized": false,
+  "real_data_approved": false,
+  "pilot_approved": false,
+  "production_approved": false,
+  "benchmark_approved": false,
+  "generalisation_approved": false,
+  "phase_f_approved": false
+}
