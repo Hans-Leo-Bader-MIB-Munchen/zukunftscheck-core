@@ -1,0 +1,49 @@
+{
+  "record_version": "ZS-KI-B-SEM-GEMMA-2026-012-PF2-FAILURE_v0.1",
+  "run_type": "ZS-KI-B-SEM-MODELLVERGLEICH-GEMMA-SYNTHETIC-2026-012",
+  "status": "EXECUTED_ONCE_FAILED_GOLD",
+  "git_commit": "31ac085a5116cb0a3d6d7e4cfc14dcbcfc6feff7",
+  "model": "gemma-3-12b-it-qat",
+  "loaded_context_length": 32768,
+  "quantization": "Q4_0",
+  "format": "gguf",
+  "prompt_version": "zs_ki_b_sem_qualifikation_system_v0_6",
+  "meaning_layer": "reference_question_meanings_v0_7.json/67-of-67",
+  "contract_version": "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.2",
+  "qualification_suite": "ZS-KI-B-SEM-V0-7-QUALIFIKATION-SUITE-FROZEN-v0.1",
+  "human_gold": "ZS-KI-B-SEM-V0-7-HUMAN-GOLD-FROZEN-v0.1",
+  "retry_count": 0,
+  "output_repair": false,
+  "remote_cloud": false,
+  "real_data": false,
+  "observed_run_count": 1,
+  "observed_model_request_count": 2,
+  "authorization_consumed": true,
+  "pf1": {
+    "case_id": "ZS-KI-B-SEM-V07-Q-PF1-SYN-001",
+    "boundary_passed": true,
+    "gold_passed": true,
+    "actual_assignments": [["1.1", "PF1"]]
+  },
+  "pf2": {
+    "case_id": "ZS-KI-B-SEM-V07-Q-PF2-SYN-001",
+    "source_statement": "Betrachtet wird ausschließlich das bestehende Rathaus einschließlich des unmittelbar zugehörigen Vorplatzes.",
+    "boundary_passed": true,
+    "gold_passed": false,
+    "actual_assignments": [["2.1", "PF2"], ["2.4", "PF2"]],
+    "missing_required": [["2.2", "PF2"]],
+    "forbidden_present": [],
+    "spurious_assignments": []
+  },
+  "comparison_reference": {
+    "model": "qwen3-14b",
+    "reproduced_failure": "PF2 missing required 2.2/PF2 in 2026-010 and 2026-011"
+  },
+  "decision": "CROSS_MODEL_PF2_REPRODUCED_STOP_MODEL_RUNS_AND_REEVALUATE_MODEL_FREE",
+  "model_qualified": false,
+  "benchmark_approved": false,
+  "generalisation_approved": false,
+  "pilot_approved": false,
+  "production_approved": false,
+  "phase_f_approved": false
+}
