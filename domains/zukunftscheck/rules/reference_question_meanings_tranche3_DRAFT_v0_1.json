@@ -64,14 +64,14 @@
       "pf_id": "PF8",
       "positive_scope": "Erfasst erkennbare fachliche Schnittstellen oder inhaltliche Widersprüche zwischen mehreren vorhandenen Fachbeiträgen.",
       "negative_scope": "Nicht jede allgemeine Dokumentenabweichung ohne fachlichen Bezug und nicht die eigenständige fachliche Auflösung eines Widerspruchs oder einer Schnittstelle.",
-      "disambiguation_notes": "8.4 ist auf Beziehungen zwischen Fachbeiträgen spezialisiert. 4.5 erfasst allgemeine Widersprüche in Unterlagen oder Angaben, 11.1 deren Entscheidungserheblichkeit und PF9 die Abhängigkeit von Entscheidungen, Klärungen oder Fachschritten. 8.4 stellt die fachbeitragsbezogene Schnittstelle oder Widerspruchslage fest, löst sie aber nicht selbst auf."
+      "disambiguation_notes": "8.4 ist auf Beziehungen zwischen Fachbeiträgen spezialisiert. 4.5 erfasst allgemeine Widersprüche in Unterlagen oder Angaben, 11.1 deren Entscheidungserheblichkeit. Abzugrenzen von PF9: 8.4 stellt die Schnittstelle oder den Widerspruch zwischen Fachbeiträgen fest. 9.1 erfasst die daraus resultierende Abhängigkeit zwischen Entscheidungen oder Klärungen, 9.3 eine vorgelagert erforderliche Fachklärung und 9.5, ob die Schnittstellenlage eine koordinierte Stufe-2-Bearbeitung erfordert. 8.4 stellt fest; PF9 leitet die Verfahrensfolge ab."
     },
     {
       "question_id": "8.5",
       "pf_id": "PF8",
       "positive_scope": "Erfasst eine nach Sichtung der vorhandenen Fachbeiträge konkret offen verbleibende Fachfrage, für die ein funktional benannter fachlicher Anschluss erforderlich ist.",
       "negative_scope": "Nicht die fachliche Beantwortung dieser Frage, nicht die Beauftragung oder Freigabe eines Fachbeitrags und nicht jede einfache Informations- oder Unterlagenlücke.",
-      "disambiguation_notes": "8.5 verbindet eine konkrete offene Fachfrage mit dem Bedarf eines funktional benannten Fachanschlusses. 11.5 markiert allgemein eine auch nach Nachforderung fachlich offen verbleibende Frage; 12.4 überführt einen solchen Befund in den erforderlichen funktionalen Fachanschluss als nächsten Verfahrensschritt."
+      "disambiguation_notes": "8.5 verbindet eine konkrete offene Fachfrage mit dem Bedarf eines funktional benannten Fachanschlusses. 11.5 markiert allgemein eine auch nach Nachforderung fachlich offen verbleibende Frage; 12.4 überführt einen solchen Befund in den erforderlichen funktionalen Fachanschluss als nächsten Verfahrensschritt. Der Sichtungsbezug grenzt 8.5 als PF8-spezifische Anschlussfrage von der feldunabhängigen Aggregationsfrage 12.4 ab; ohne ihn wäre 8.5 mit 12.4 praktisch deckungsgleich."
     }
   ],
   "guardrail": "Dieser Draft ändert reference_question_meanings_v0_4.json nicht. Eine Übernahme in eine neue führende Meaning-Layer-Version setzt gebündelten Human Review, unabhängigen Gegencheck und ausdrückliche Versionierungsentscheidung voraus."
