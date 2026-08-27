@@ -32,7 +32,7 @@ class SemModelComparisonGemmaV01Tests(unittest.TestCase):
             "output_repair": False,
             "remote_cloud": False,
             "real_data": False,
-            "comparison_plan_version": "ZS-KI-B-SEM-MODELLVERGLEICH-NACH-PF2-REPRODUKTION-2026-001_v0.1",
+            "comparison_plan_version": self.mod.COMPARISON_PLAN_VERSION,
             "qwen3_14b_rerun_authorized": False,
         }
         original = self.mod.AUTH_PATH
@@ -45,13 +45,14 @@ class SemModelComparisonGemmaV01Tests(unittest.TestCase):
                     self.mod.validate_execution_authorization(self.mod.MODEL)
             finally:
                 self.mod.AUTH_PATH = original
-                self.mod._configure()
 
     def test_g03_wrong_model_is_blocked_even_with_approved_auth(self) -> None:
         with self.assertRaises(PermissionError):
             self.mod.validate_execution_authorization("qwen3-14b")
 
     def test_g04_dry_run_is_model_free_and_records_comparison(self) -> None:
+        before_v10_version = self.mod.v11.v10.RUNNER_VERSION
+        before_v11_version = self.mod.v11.RUNNER_VERSION
         payload = self.mod.build_dry_run_manifest(model=self.mod.MODEL)
         manifest = payload["manifest"]
         self.assertEqual(payload["mode"], "DRY_RUN_SEM_MODEL_COMPARISON_GEMMA_V0_1")
@@ -59,15 +60,20 @@ class SemModelComparisonGemmaV01Tests(unittest.TestCase):
         self.assertEqual(manifest["reference_model"], "qwen3-14b")
         self.assertFalse(manifest["execution_attempted"])
         self.assertEqual(manifest["observed_model_request_count"], 0)
+        self.assertEqual(self.mod.v11.v10.RUNNER_VERSION, before_v10_version)
+        self.assertEqual(self.mod.v11.RUNNER_VERSION, before_v11_version)
 
-    def test_g05_frozen_semantic_assets_remain_reused(self) -> None:
-        self.mod._configure()
+    def test_g05_frozen_semantic_assets_remain_reused_without_state_leak(self) -> None:
         base = self.mod.v11.v10.v09.base
-        self.assertTrue(base.SUITE_PATH.name.endswith("qualification_suite_frozen_v0_1.json"))
-        self.assertTrue(base.GOLD_PATH.name.endswith("human_gold_frozen_v0_1.json"))
-        self.assertTrue(base.POLICY_PATH.name.endswith("qualification_policy_frozen_v0_1.json"))
-        self.assertTrue(base.MEANINGS_PATH.name.endswith("reference_question_meanings_v0_7.json"))
-        self.assertEqual(base.CONTRACT_VERSION, "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.2")
+        before_version = base.RUNNER_VERSION
+        with self.mod._temporary_bindings():
+            self.assertTrue(base.SUITE_PATH.name.endswith("qualification_suite_frozen_v0_1.json"))
+            self.assertTrue(base.GOLD_PATH.name.endswith("human_gold_frozen_v0_1.json"))
+            self.assertTrue(base.POLICY_PATH.name.endswith("qualification_policy_frozen_v0_1.json"))
+            self.assertTrue(base.MEANINGS_PATH.name.endswith("reference_question_meanings_v0_7.json"))
+            self.assertEqual(base.CONTRACT_VERSION, "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.2")
+            self.assertEqual(base.RUNNER_VERSION, self.mod.RUNNER_VERSION)
+        self.assertEqual(base.RUNNER_VERSION, before_version)
 
 
 if __name__ == "__main__":
