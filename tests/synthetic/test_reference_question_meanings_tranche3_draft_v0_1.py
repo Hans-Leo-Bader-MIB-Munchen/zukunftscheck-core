@@ -92,6 +92,20 @@ class MeaningTranche3DraftTests(unittest.TestCase):
                 self.assertIsInstance(row[field], str)
                 self.assertTrue(row[field].strip())
 
+    def test_d12_84_explicitly_separates_pf9_procedural_consequences(self) -> None:
+        notes = self.rows()["8.4"]["disambiguation_notes"]
+        for expected in ("9.1", "9.3", "9.5"):
+            self.assertIn(expected, notes)
+        self.assertIn("verfahrensfolge", notes.lower())
+
+    def test_d13_85_documents_why_sighting_scope_is_retained(self) -> None:
+        row = self.rows()["8.5"]
+        self.assertIn("sichtung", row["positive_scope"].lower())
+        notes = row["disambiguation_notes"].lower()
+        self.assertIn("pf8", notes)
+        self.assertIn("feldunabhängig", notes)
+        self.assertIn("12.4", notes)
+
 
 if __name__ == "__main__":
     unittest.main()
