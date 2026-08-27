@@ -21,7 +21,7 @@ SUITE_PATH = ROOT / "tests" / "fixtures" / "zs_ki_b_sem_v07_qualification_suite_
 GOLD_PATH = ROOT / "tests" / "fixtures" / "zs_ki_b_sem_v07_human_gold_draft_v0_1.json"
 QUESTIONS_PATH = ROOT / "domains" / "zukunftscheck" / "rules" / "reference_questions_v0_1.json"
 EXPECTED_PFS = {f"PF{i}" for i in range(1, 13)}
-EXPECTED_CASE_COUNT = 12
+EXPECTED_CASE_COUNT = 16
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -36,6 +36,14 @@ def current_git_commit() -> str:
     return completed.stdout.strip().lower()
 
 
+def _validate_assignment(assignment: dict[str, Any], canonical_pf: dict[str, str], case_id: str) -> str:
+    qid = assignment.get("question_id")
+    pf_id = assignment.get("pf_id")
+    if qid not in canonical_pf or canonical_pf[qid] != pf_id:
+        raise ValueError(f"{case_id}: invalid gold question/PF binding")
+    return pf_id
+
+
 def validate_pre_run_bundle() -> dict[str, Any]:
     runtime_binding = runtime.validate_runtime_binding()
     suite = load(SUITE_PATH)
@@ -48,9 +56,9 @@ def validate_pre_run_bundle() -> dict[str, Any]:
     cases = suite.get("cases")
     gold_cases = gold.get("cases")
     if not isinstance(cases, list) or len(cases) != EXPECTED_CASE_COUNT:
-        raise ValueError("qualification suite must contain exactly 12 cases")
+        raise ValueError("qualification suite must contain exactly 16 cases")
     if not isinstance(gold_cases, list) or len(gold_cases) != EXPECTED_CASE_COUNT:
-        raise ValueError("human-gold draft must contain exactly 12 cases")
+        raise ValueError("human-gold draft must contain exactly 16 cases")
 
     case_ids = [case.get("case_id") for case in cases]
     gold_ids = [case.get("case_id") for case in gold_cases]
@@ -58,28 +66,35 @@ def validate_pre_run_bundle() -> dict[str, Any]:
         raise ValueError("suite/gold case ids must be unique and identically ordered")
 
     suite_pfs: set[str] = set()
+    challenge_count = 0
     for case, expected in zip(cases, gold_cases):
+        case_id = str(case.get("case_id"))
         if case.get("data_class") != "SYNTHETIC_ONLY":
-            raise ValueError(f"{case.get('case_id')}: data_class must be SYNTHETIC_ONLY")
+            raise ValueError(f"{case_id}: data_class must be SYNTHETIC_ONLY")
         locations = case.get("source_locations")
         if not isinstance(locations, list) or not locations:
-            raise ValueError(f"{case.get('case_id')}: source_locations missing")
+            raise ValueError(f"{case_id}: source_locations missing")
         if case.get("target_source_location_id") not in {row.get("source_location_id") for row in locations}:
-            raise ValueError(f"{case.get('case_id')}: target source location missing")
-        if any(key.startswith("expected_") for key in case):
-            raise ValueError(f"{case.get('case_id')}: gold information must not be model-visible")
+            raise ValueError(f"{case_id}: target source location missing")
+        if any(key.startswith("expected_") or key.startswith("forbidden_") for key in case):
+            raise ValueError(f"{case_id}: gold information must not be model-visible")
         assignments = expected.get("expected_assignments")
         if not isinstance(assignments, list) or not assignments:
-            raise ValueError(f"{case.get('case_id')}: expected assignments missing")
+            raise ValueError(f"{case_id}: expected assignments missing")
         for assignment in assignments:
-            qid = assignment.get("question_id")
-            pf_id = assignment.get("pf_id")
-            if qid not in canonical_pf or canonical_pf[qid] != pf_id:
-                raise ValueError(f"{case.get('case_id')}: invalid gold question/PF binding")
-            suite_pfs.add(pf_id)
+            suite_pfs.add(_validate_assignment(assignment, canonical_pf, case_id))
+        forbidden = expected.get("forbidden_assignments", [])
+        if not isinstance(forbidden, list):
+            raise ValueError(f"{case_id}: forbidden_assignments must be a list")
+        for assignment in forbidden:
+            _validate_assignment(assignment, canonical_pf, case_id)
+        if "CHALLENGE" in case_id:
+            challenge_count += 1
 
     if suite_pfs != EXPECTED_PFS:
         raise ValueError("qualification suite must span PF1-PF12 in its gold expectations")
+    if challenge_count != 4:
+        raise ValueError("qualification suite must contain exactly four explicit challenge cases")
     if gold.get("model_visible") is not False:
         raise ValueError("human gold must be explicitly model_visible=false")
     if gold.get("status") != "DRAFT_NOT_HUMAN_APPROVED":
@@ -88,6 +103,7 @@ def validate_pre_run_bundle() -> dict[str, Any]:
     return {
         "runtime_binding": runtime_binding["binding_version"],
         "case_count": len(cases),
+        "challenge_case_count": challenge_count,
         "pf_coverage": "12/12",
         "human_gold_status": gold["status"],
     }
@@ -114,6 +130,7 @@ def build_manifest() -> dict[str, Any]:
             "human_gold_status": validation["human_gold_status"],
             "human_gold_model_visible": False,
             "qualification_case_count": validation["case_count"],
+            "qualification_challenge_case_count": validation["challenge_case_count"],
             "qualification_pf_coverage": validation["pf_coverage"],
             "expected_run_count": 0,
             "expected_model_request_count": 0,
