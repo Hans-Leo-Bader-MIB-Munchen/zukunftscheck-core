@@ -1,0 +1,29 @@
+{
+  "incident_version": "ZS-KI-B-SEM-V0-7-QUALIFIKATION-FAILURE-PF2-2026-001_v0.1",
+  "run_type": "ZS-KI-B-SEM-QUALIFIKATION-SYNTHETIC-V0-7-FROZEN-2026-010",
+  "runner_version": "v1.0",
+  "status": "EXECUTED_ONCE_FAILED_GOLD_SEMANTIC",
+  "failure_class": "MISSING_REQUIRED_SEMANTIC_ASSIGNMENT",
+  "failed_case_id": "ZS-KI-B-SEM-V07-Q-PF2-SYN-001",
+  "observed_model_request_count": 2,
+  "model": "qwen3-14b",
+  "model_response_observed": true,
+  "boundary_evaluation_reached": true,
+  "boundary_passed": true,
+  "gold_evaluation_reached": true,
+  "gold_passed": false,
+  "actual_assignments": [["2.1", "PF2"]],
+  "missing_required": [["2.2", "PF2"]],
+  "forbidden_present": [],
+  "spurious_assignments": [],
+  "root_cause_assessment": {
+    "gold_error_supported": false,
+    "test_case_error_supported": false,
+    "model_underassignment_observed": true,
+    "prompt_model_interaction_candidate": true,
+    "reason": "The source explicitly names the object and also delimits its scope through 'ausschließlich' and 'einschließlich'. Human Gold therefore correctly requires both 2.1/PF2 and 2.2/PF2. The model returned only 2.1/PF2 despite a valid boundary-conformant response. Prompt v0.5 requires only assignments actually supported by the statement but does not explicitly instruct exhaustive checking of multiple independently supported question dimensions within one proposal."
+  },
+  "semantic_conclusion": "qwen3-14b did not pass the frozen 16-case v0.7 qualification. This failure is semantic, not a transport or context failure.",
+  "rerun_authorized": false,
+  "frozen_package_mutated": false
+}
