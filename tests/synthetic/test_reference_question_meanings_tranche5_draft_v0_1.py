@@ -90,5 +90,22 @@ class MeaningTranche5DraftTests(unittest.TestCase):
                 self.assertIsInstance(r[field], str)
                 self.assertTrue(r[field].strip())
 
+    def test_d13_101_does_not_invent_classification(self):
+        negative = self.rows()["10.1"]["negative_scope"].lower()
+        self.assertIn("eigenständige klassifizierung", negative)
+        self.assertIn("dokumentierte grundlage", negative)
+
+    def test_d14_102_does_not_create_processing_legal_basis(self):
+        row = self.rows()["10.2"]
+        self.assertNotIn("verarbeitet werden müssen", row["positive_scope"].lower())
+        negative = row["negative_scope"].lower()
+        self.assertTrue("verarbeitungsbefugnis" in negative or "rechtsgrundlage" in negative)
+
+    def test_d15_105_binds_red_data_and_stop_to_documented_external_rule(self):
+        negative = self.rows()["10.5"]["negative_scope"].lower()
+        self.assertIn("extern dokumentierte", negative)
+        self.assertIn("aussetzungsregel", negative)
+        self.assertIn("nicht die eigenständige festlegung", negative)
+
 if __name__ == "__main__":
     unittest.main()
