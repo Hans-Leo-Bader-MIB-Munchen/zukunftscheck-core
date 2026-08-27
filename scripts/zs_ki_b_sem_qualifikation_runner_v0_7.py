@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
-"""Additive SEM qualification runner v0.7 for Meaning Layer v0.7 runtime binding.
+"""Additive model-free SEM runtime-binding runner v0.7.
 
-This runner preserves the validated v0.5/v0.6 execution and boundary mechanics while
-binding prompt v0.5, semantic contract v0.2, and reference_question_meanings_v0_7.json.
-Meaning Layer v0.7 provides human-reviewed model-free coverage of all 67 frozen
-reference questions. That coverage is not a model qualification, benchmark,
-generalisation approval, real-data approval, pilot approval, or production approval.
-Dry run makes no model contact.
+Binds prompt v0.5, semantic contract v0.2, and reference_question_meanings_v0_7.json
+with complete human-reviewed model-free coverage of all 67 frozen reference questions.
+This block deliberately does not enable model execution. It establishes and verifies
+the runtime/qualification binding only. Meaning coverage is not model qualification,
+benchmark approval, generalisation approval, real-data approval, pilot approval,
+production approval, or Phase-F approval.
 """
 from __future__ import annotations
 
+import argparse
+import json
 import sys
 from pathlib import Path
 from typing import Any
@@ -26,11 +28,10 @@ _BASE_BUILD_DRY_RUN_MANIFEST = base.build_dry_run_manifest
 PROMPT_VERSION = "zs_ki_b_sem_qualifikation_system_v0_5"
 CONTRACT_VERSION = "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.2"
 BINDING_VERSION = "ZS-DEV-KI-B-SEM-RUNTIME-BINDING-V0-7-2026-001_v0.1"
-RUN_TYPE = "ZS-KI-B-SEM-QUALIFIKATION-SYNTHETIC-MEANING-LAYER-V0-7-RUNTIME-BINDING-2026-007"
+RUN_TYPE = "ZS-KI-B-SEM-RUNTIME-BINDING-MEANING-LAYER-V0-7-2026-007"
 RUNNER_VERSION = "v0.7"
-EXPECTED_RUN_COUNT = 1
-EXPECTED_MODEL_REQUEST_COUNT = 4
-DEFAULT_OUTPUT = "zs_ki_b_sem_qualifikation_result_v0_7.json"
+EXPECTED_RUN_COUNT = 0
+EXPECTED_MODEL_REQUEST_COUNT = 0
 PROMPT_PATH = ROOT / "llm" / "prompts" / "zs_ki_b_sem_qualifikation_system_v0_5.txt"
 QUESTIONS_PATH = ROOT / "domains" / "zukunftscheck" / "rules" / "reference_questions_v0_1.json"
 MEANINGS_PATH = ROOT / "domains" / "zukunftscheck" / "rules" / "reference_question_meanings_v0_7.json"
@@ -49,13 +50,11 @@ def _bind_base() -> None:
     base.RUNNER_VERSION = RUNNER_VERSION
     base.EXPECTED_RUN_COUNT = EXPECTED_RUN_COUNT
     base.EXPECTED_MODEL_REQUEST_COUNT = EXPECTED_MODEL_REQUEST_COUNT
-    base.DEFAULT_OUTPUT = DEFAULT_OUTPUT
     base.PROMPT_PATH = PROMPT_PATH
     base.QUESTIONS_PATH = QUESTIONS_PATH
     base.MEANINGS_PATH = MEANINGS_PATH
     base.FINDING_TYPES_PATH = FINDING_TYPES_PATH
     base.CASE_PATHS = CASE_PATHS
-    base.build_dry_run_manifest = build_dry_run_manifest
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -105,6 +104,7 @@ def validate_runtime_binding() -> dict[str, Any]:
 
 
 def build_messages(case: dict[str, Any], prompt_text: str) -> list[dict[str, str]]:
+    """Build the prospective qualification payload without contacting any model."""
     validate_runtime_binding()
     _bind_base()
     return base.build_messages(case, prompt_text)
@@ -118,6 +118,7 @@ def build_dry_run_manifest(*, model: str = "", base_url: str = "http://127.0.0.1
     binding = validate_runtime_binding()
     _bind_base()
     result = _BASE_BUILD_DRY_RUN_MANIFEST(model=model, base_url=base_url)
+    result["mode"] = "DRY_RUN_SEM_RUNTIME_BINDING_V0_7"
     manifest = result["manifest"]
     manifest.update({
         "binding_version": BINDING_VERSION,
@@ -132,6 +133,7 @@ def build_dry_run_manifest(*, model: str = "", base_url: str = "http://127.0.0.1
         "meaning_layer_coverage": binding["coverage"],
         "meaning_layer_full_reference_coverage": True,
         "meaning_layer_model_qualified": False,
+        "model_execution_enabled": False,
         "benchmark_approved": False,
         "generalisation_approved": False,
         "real_data_approved": False,
@@ -143,9 +145,20 @@ def build_dry_run_manifest(*, model: str = "", base_url: str = "http://127.0.0.1
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--execute", action="store_true")
+    parser.add_argument("--model", default="")
+    parser.add_argument("--base-url", default="http://127.0.0.1:1234/v1")
+    args = parser.parse_args()
+
     validate_runtime_binding()
-    _bind_base()
-    return base.main()
+    if args.execute:
+        parser.error(
+            "model execution is disabled in ZS-DEV-KI-B-SEM-RUNTIME-BINDING-V0-7-2026-001; "
+            "a separately versioned and explicitly approved qualification step is required"
+        )
+    print(json.dumps(build_dry_run_manifest(model=args.model, base_url=args.base_url), ensure_ascii=False, indent=2))
+    return 0
 
 
 if __name__ == "__main__":
