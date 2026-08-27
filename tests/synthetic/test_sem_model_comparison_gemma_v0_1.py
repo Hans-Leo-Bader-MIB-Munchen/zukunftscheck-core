@@ -91,6 +91,21 @@ class SemModelComparisonGemmaV01Tests(unittest.TestCase):
         self.assertEqual(base.RUNNER_VERSION, before_version)
         self.assertEqual(self.mod.v11.v10.v09.PREVIOUS_FAILURE_PATH, before_failure)
 
+    def test_g06_installed_dry_run_hook_does_not_recurse(self) -> None:
+        original_validate = self.mod.v11.validate_execution_authorization
+        original_dry_run = self.mod.v11.build_dry_run_manifest
+        snapshot = self.mod._snapshot_state()
+        try:
+            self.mod._install_bindings()
+            payload = self.mod.v11.build_dry_run_manifest(model=self.mod.MODEL)
+            self.assertEqual(payload["mode"], "DRY_RUN_SEM_MODEL_COMPARISON_GEMMA_V0_1")
+            self.assertEqual(payload["manifest"]["runner_version"], self.mod.RUNNER_VERSION)
+            self.assertEqual(payload["manifest"]["comparison_model"], self.mod.MODEL)
+        finally:
+            self.mod.v11.validate_execution_authorization = original_validate
+            self.mod.v11.build_dry_run_manifest = original_dry_run
+            self.mod._restore_state(snapshot)
+
 
 if __name__ == "__main__":
     unittest.main()
