@@ -7,8 +7,8 @@ formal semantic boundary validation first and, only after a formal PASS, the
 narrow PF2 semantic-completeness audit. A completeness hit is fail-closed for
 automatic downstream use and therefore stops qualification before Human-Gold.
 
-No model execution is authorized by this module. The separately versioned v1.2
-authorization fixture is deliberately NOT_AUTHORIZED until explicit user approval.
+Execution remains fail-closed and is permitted only when the separately versioned
+v1.2 authorization artifact is EXPLICIT_USER_APPROVED for the exact model and run.
 """
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ from core.validation.semantic_runtime_guard_v0_1 import evaluate_semantic_runtim
 
 RUN_TYPE = "ZS-KI-B-SEM-QUALIFIKATION-SYNTHETIC-V1-2-RUNTIME-GUARD-2026-012"
 RUNNER_VERSION = "v1.2"
-AUTH_PATH = ROOT / "tests/fixtures/zs_ki_b_sem_v12_model_run_authorization_v0_1.json"
+AUTH_PATH = ROOT / "tests/fixtures/zs_ki_b_sem_v12_model_run_authorization_v0_2.json"
 DEFAULT_OUTPUT = "zs_ki_b_sem_qualifikation_result_v1_2.json"
 
 _ORIGINAL_VALIDATE_AUTH = v11.validate_execution_authorization
@@ -116,6 +116,20 @@ def _configure() -> None:
     v11.v10.v09.base.evaluate_boundary = evaluate_runtime_guard
 
 
+def _authorization_status() -> bool:
+    try:
+        auth = v11.v10.v09.base.load(AUTH_PATH)
+    except (OSError, ValueError):
+        return False
+    return (
+        auth.get("status") == "EXPLICIT_USER_APPROVED"
+        and auth.get("run_type") == RUN_TYPE
+        and auth.get("runner_version") == RUNNER_VERSION
+        and auth.get("runtime_guard_required") is True
+        and auth.get("runtime_guard_version") == "semantic-runtime-guard-v0.1"
+    )
+
+
 def validate_execution_authorization(model: str) -> dict[str, Any]:
     _configure()
     auth = v11.v10.v09.base.load(AUTH_PATH)
@@ -125,6 +139,10 @@ def validate_execution_authorization(model: str) -> dict[str, Any]:
         raise PermissionError("v1.2 authorization does not match runner identity")
     if auth.get("model") != model:
         raise PermissionError("v1.2 authorization model mismatch")
+    if auth.get("runtime_guard_required") is not True:
+        raise PermissionError("v1.2 authorization requires the semantic runtime guard")
+    if auth.get("runtime_guard_version") != "semantic-runtime-guard-v0.1":
+        raise PermissionError("v1.2 authorization runtime guard version mismatch")
     return _ORIGINAL_VALIDATE_AUTH(model)
 
 
@@ -133,12 +151,13 @@ def build_dry_run_manifest(*, model: str = "", base_url: str = "http://127.0.0.1
     payload = _ORIGINAL_BUILD_DRY_RUN(model=model, base_url=base_url)
     payload["mode"] = "DRY_RUN_SEM_QUALIFICATION_V1_2"
     manifest = payload["manifest"]
+    authorized = _authorization_status()
     manifest["run_type"] = RUN_TYPE
     manifest["runner_version"] = RUNNER_VERSION
     manifest["runtime_guard_version"] = "semantic-runtime-guard-v0.1"
     manifest["runtime_guard_bound"] = True
-    manifest["execution_authorized"] = False
-    manifest["model_run_authorized"] = False
+    manifest["execution_authorized"] = authorized
+    manifest["model_run_authorized"] = authorized
     manifest["prompt_change_only"] = False
     return payload
 
