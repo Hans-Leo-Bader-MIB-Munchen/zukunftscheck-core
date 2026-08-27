@@ -1,0 +1,32 @@
+{
+  "authorization_version": "ZS-KI-B-SEM-V0-7-MODEL-RUN-AUTHORIZATION-2026-002_v0.2",
+  "status": "PENDING_USER_APPROVAL",
+  "prepared_on": "2026-08-27",
+  "run_type": "ZS-KI-B-SEM-QUALIFIKATION-SYNTHETIC-V0-7-FROZEN-2026-009",
+  "model": "qwen3-14b",
+  "required_loaded_context_length": 32768,
+  "expected_model_request_count": 16,
+  "synthetic_only": true,
+  "local_loopback_only": true,
+  "single_run_only": true,
+  "retry_count": 0,
+  "output_repair": false,
+  "remote_cloud": false,
+  "real_data": false,
+  "supersedes_for_new_execution": "ZS-KI-B-SEM-V0-7-MODEL-RUN-AUTHORIZATION-2026-001_v0.1",
+  "previous_run_status": "EXECUTED_ONCE_FAILED_TECHNICAL_PRECONDITION",
+  "approval_scope_if_approved": "Exactly one additional local 16-request qualification run with exact model identifier qwen3-14b, loaded with at least 32768 context tokens, against the unchanged frozen v0.7 qualification package. No retry, no repair, no cloud model, no real data.",
+  "not_approved": [
+    "execution before explicit user approval",
+    "more than one additional model run",
+    "a different model identifier",
+    "loaded context below 32768 tokens",
+    "remote/cloud model execution",
+    "benchmark approval",
+    "generalisation approval",
+    "real-data use",
+    "pilot use",
+    "production use",
+    "Phase F"
+  ]
+}

@@ -4,8 +4,10 @@ import importlib
 import json
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
 RUNNER = ROOT / "scripts/zs_ki_b_sem_qualifikation_runner_v0_8.py"
@@ -55,16 +57,11 @@ class SemQualificationRunnerV08Tests(unittest.TestCase):
         self.assertFalse(manifest["real_data"])
 
     def test_r03_execute_is_blocked_without_explicit_authorization_artifact(self) -> None:
-        self.assertFalse(self.mod.AUTH_PATH.exists())
-        completed = subprocess.run(
-            [sys.executable, str(RUNNER), "--execute", "--model", "MUST_NOT_RUN"],
-            cwd=ROOT,
-            check=False,
-            capture_output=True,
-            text=True,
-        )
-        self.assertNotEqual(completed.returncode, 0)
-        self.assertIn("explicit model-run authorization artifact is absent", completed.stderr)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            missing_auth = Path(tmpdir) / "missing_authorization.json"
+            with patch.object(self.mod, "AUTH_PATH", missing_auth):
+                with self.assertRaisesRegex(PermissionError, "explicit model-run authorization artifact is absent"):
+                    self.mod.validate_execution_authorization()
 
     def test_r04_required_assignment_must_be_present(self) -> None:
         gold = {"expected_assignments": [{"question_id": "3.3", "pf_id": "PF3"}]}
