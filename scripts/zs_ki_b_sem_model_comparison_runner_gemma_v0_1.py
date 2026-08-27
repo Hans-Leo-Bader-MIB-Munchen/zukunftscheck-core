@@ -8,7 +8,7 @@ Gemma authorization artifact is explicitly approved.
 
 Important: the comparison wrapper temporarily binds shared runner modules and
 restores their prior module state afterwards. This prevents import/test-order
-state leakage into the historical v1.0/v1.1 runners.
+state leakage into the historical v0.9/v1.0/v1.1 runners.
 """
 from __future__ import annotations
 
@@ -36,13 +36,25 @@ COMPARISON_PLAN_VERSION = "ZS-KI-B-SEM-MODELLVERGLEICH-NACH-PF2-REPRODUKTION-202
 
 def _state_targets() -> tuple[tuple[object, tuple[str, ...]], ...]:
     return (
-        (v11, ("RUN_TYPE", "RUNNER_VERSION", "AUTH_PATH", "DEFAULT_OUTPUT")),
+        (
+            v11,
+            (
+                "RUN_TYPE",
+                "RUNNER_VERSION",
+                "AUTH_PATH",
+                "PREVIOUS_FAILURE_PATH",
+                "DEFAULT_OUTPUT",
+                "PROMPT_VERSION",
+                "PROMPT_PATH",
+            ),
+        ),
         (
             v11.v10,
             (
                 "RUN_TYPE",
                 "RUNNER_VERSION",
                 "AUTH_PATH",
+                "PREVIOUS_FAILURE_PATH",
                 "DEFAULT_OUTPUT",
                 "REQUIRED_LOADED_CONTEXT_LENGTH",
                 "REQUEST_TIMEOUT_SECONDS",
@@ -54,13 +66,21 @@ def _state_targets() -> tuple[tuple[object, tuple[str, ...]], ...]:
                 "RUN_TYPE",
                 "RUNNER_VERSION",
                 "AUTH_PATH",
+                "PREVIOUS_FAILURE_PATH",
                 "DEFAULT_OUTPUT",
                 "REQUIRED_LOADED_CONTEXT_LENGTH",
             ),
         ),
         (
             v11.v10.v09.base,
-            ("RUN_TYPE", "RUNNER_VERSION", "AUTH_PATH", "DEFAULT_OUTPUT"),
+            (
+                "RUN_TYPE",
+                "RUNNER_VERSION",
+                "AUTH_PATH",
+                "DEFAULT_OUTPUT",
+                "PROMPT_VERSION",
+                "PROMPT_PATH",
+            ),
         ),
     )
 
