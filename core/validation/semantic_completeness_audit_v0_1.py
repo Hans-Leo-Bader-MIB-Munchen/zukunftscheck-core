@@ -39,7 +39,9 @@ def audit_pf2_scope_completeness(*, source_text: str, model_response: dict[str, 
     """
     original_snapshot = deepcopy(model_response)
     normalized_text = source_text.casefold() if isinstance(source_text, str) else ""
-    matched_markers = [marker for marker in PF2_SCOPE_MARKERS if marker in normalized_text]
+    matched_markers = [
+        marker for marker in PF2_SCOPE_MARKERS if marker.casefold() in normalized_text
+    ]
     assignments = _assignment_pairs(model_response)
     has_pf2_assignment = any(pf_id == "PF2" for _, pf_id in assignments)
     has_22 = ("2.2", "PF2") in assignments
