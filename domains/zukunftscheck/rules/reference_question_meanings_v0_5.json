@@ -1,0 +1,314 @@
+{
+  "schema_version": "v0.5",
+  "calibration_scope": "Human-reviewte modellfreie Erweiterung des Meaning Layers v0.4 um Tranche 3 in PF6 und PF8. Enthält 44 von 67 Referenzfragen. Die 34 Einträge aus v0.4 bleiben inhaltlich unverändert; 10 weitere Einträge wurden fachlich entworfen, modellfrei geprüft und unabhängig gegengeprüft. Keine Modellqualifikation, keine Generalisierung auf nicht aufgeführte question_ids und keine Produktivfreigabe.",
+  "meanings": [
+    {
+      "question_id": "2.1",
+      "pf_id": "PF2",
+      "positive_scope": "Erfasst den konkreten Gegenstand selbst, der betrachtet oder abgegrenzt wird.",
+      "negative_scope": "Nicht allein die Existenz, Benennung oder der Inhalt einer Unterlage oder eines Plans.",
+      "disambiguation_notes": "Bei Aussagen über einen Bestandsplan als vorhandenes Dokument ist 4.1 näher als 2.1."
+    },
+    {
+      "question_id": "3.1",
+      "pf_id": "PF3",
+      "positive_scope": "Erfasst die ausdrücklich dokumentierte Phase oder den formalen Bearbeitungsstand, in dem sich der betrachtete Gegenstand aktuell befindet.",
+      "negative_scope": "Nicht einzelne bereits getroffene oder noch offene Entscheidungen, Fristen oder abweichende Entscheidungsstände, sofern diese nicht selbst die dokumentierte Phase bezeichnen.",
+      "disambiguation_notes": "3.1 beschreibt den übergeordneten Verfahrens- oder Projektstand; 3.2 bis 3.5 erfassen demgegenüber konkrete Entscheidungen, offene Entscheidungen, Termine/Verfahren oder abweichende Entscheidungsstände."
+    },
+    {
+      "question_id": "3.2",
+      "pf_id": "PF3",
+      "positive_scope": "Erfasst dokumentierte Entscheidungen, Beschlüsse, Beauftragungen oder Freigaben, die tatsächlich vorliegen bzw. erteilt wurden.",
+      "negative_scope": "Nicht bloß offene, erwartete oder mögliche Entscheidungen und nicht allein ein historisch überholter Entscheidungsstand.",
+      "disambiguation_notes": "Gegenüber 3.3 ist das Vorliegen der Entscheidung entscheidend; gegenüber 3.5 geht es nicht primär um Abweichung, Vorläufigkeit oder Überholung, sondern um die dokumentierte Entscheidung selbst."
+    },
+    {
+      "question_id": "3.3",
+      "pf_id": "PF3",
+      "positive_scope": "Erfasst Entscheidungen, die noch ausstehen, nicht getroffen oder nicht verbindlich zugesagt sind.",
+      "negative_scope": "Nicht bereits erteilte Entscheidungen oder Freigaben und nicht bloß ein überholter früherer Entscheidungsstand.",
+      "disambiguation_notes": "Formulierungen wie 'noch offen', 'nicht entschieden' oder 'keine Zusage' sprechen für 3.3, wenn die Kernaussage der offene Entscheidungsstand ist."
+    },
+    {
+      "question_id": "3.4",
+      "pf_id": "PF3",
+      "positive_scope": "Erfasst für die Orientierungsfrage erhebliche Fristen, Termine oder laufende Verfahren einschließlich ausdrücklich als möglich oder ungewiss bezeichneten Zeitfenstern.",
+      "negative_scope": "Nicht allein eine Entscheidung selbst und nicht jede Datumsnennung ohne verfahrens- oder fristbezogene Relevanz.",
+      "disambiguation_notes": "Ein möglicher September-Termin kann 3.4 betreffen, ohne dadurch zu einer Zusage oder sicheren Prognose zu werden."
+    },
+    {
+      "question_id": "3.5",
+      "pf_id": "PF3",
+      "positive_scope": "Erfasst abweichende, vorläufige oder überholte Entscheidungsstände und deren zeitliche oder sachliche Einordnung.",
+      "negative_scope": "Nicht allein eine unbelegte Aussage, Prognose oder Schlussfolgerung ohne dokumentierten Entscheidungsstand.",
+      "disambiguation_notes": "Ein fehlender Beleg ist nicht automatisch ein abweichender oder überholter Entscheidungsstand."
+    },
+    {
+      "question_id": "4.1",
+      "pf_id": "PF4",
+      "positive_scope": "Erfasst vorhandene oder erforderliche Kernunterlagen, Pläne, Dokumente und sonstige Unterlagen für die Ausgangsfrage.",
+      "negative_scope": "Nicht den betrachteten Gegenstand selbst nur deshalb, weil er in einer Unterlage beschrieben ist.",
+      "disambiguation_notes": "Bestandsplan als vorhandene Kernunterlage fällt hierher; die Sache, Fläche oder Anlage selbst gehört nicht allein deswegen zu 4.1."
+    },
+    {
+      "question_id": "4.2",
+      "pf_id": "PF4",
+      "positive_scope": "Erfasst Datum, Version oder Status einer konkreten vorhandenen Unterlage bzw. eines dokumentierten Informationsstands.",
+      "negative_scope": "Nicht die sachliche Entscheidung oder Freigabe selbst nur deshalb, weil sie in einer datierten Unterlage erwähnt wird.",
+      "disambiguation_notes": "Bei mehreren zeitlich datierten Quellen kann 4.2 parallel zu einer fachlichen PF3-Zuordnung einschlägig sein, wenn der Dokument- oder Versionsstatus Teil des Informationswerts ist."
+    },
+    {
+      "question_id": "4.3",
+      "pf_id": "PF4",
+      "positive_scope": "Erfasst für die Ausgangsfrage wesentliche Angaben, die bislang nur mündlich, informell oder außerhalb belastbarer Kernunterlagen vorliegen.",
+      "negative_scope": "Nicht bereits belastbar dokumentierte Angaben und nicht allein das Fehlen einer Information, wenn überhaupt keine Angabe vorliegt.",
+      "disambiguation_notes": "4.3 setzt eine vorhandene, aber nur informelle Informationsquelle voraus; vollständiges Fehlen gehört näher zu 4.4 bzw. bei entscheidungserheblicher Restlücke zu 11.3."
+    },
+    {
+      "question_id": "4.4",
+      "pf_id": "PF4",
+      "positive_scope": "Erfasst erforderliche Informationen oder Unterlagen, die im vorliegenden Informationsbestand fehlen und deshalb die Dokumenten- oder Datengrundlage unvollständig machen.",
+      "negative_scope": "Nicht jede fachliche Restfrage und nicht bloß eine unbelegte Schlussfolgerung, wenn die zugrunde liegende Information vorhanden ist.",
+      "disambiguation_notes": "4.4 ist bestandsbezogen: Welche Information oder Unterlage fehlt in der Eingangslage? 11.3 ist stärker bewertungsbezogen: Welche entscheidungserhebliche Informationslücke bleibt als Befund der Prüfung bestehen? 12.3 betrifft die daraus abgeleitete konkrete Unterlage, Bestätigung oder Entscheidung, die als Beschaffungsschritt benötigt wird, nicht die Bestandslücke selbst. 4.4 und 11.3 können in demselben Fall einschlägig sein, dürfen aber nicht automatisch gleichgesetzt werden."
+    },
+    {
+      "question_id": "4.5",
+      "pf_id": "PF4",
+      "positive_scope": "Erfasst inhaltliche Widersprüche zwischen vorliegenden Unterlagen, Angaben oder dokumentierten Informationsständen.",
+      "negative_scope": "Nicht bloß unterschiedliche Versionen ohne sachlichen Widerspruch und nicht jeder entscheidungserhebliche Konflikt, der nicht aus widersprechenden Unterlagen oder Angaben hervorgeht.",
+      "disambiguation_notes": "4.5 benennt die Widerspruchslage in der Informationsbasis. 11.1 bewertet, ob ein Widerspruch für die Orientierungsentscheidung erheblich ist. Ein Dokumentwiderspruch ist daher nicht automatisch 11.1."
+    },
+    {
+      "question_id": "4.6",
+      "pf_id": "PF4",
+      "positive_scope": "Erfasst eine konkret begrenzte Nachforderung von Unterlagen, Angaben oder Bestätigungen, die erforderlich ist, um eine identifizierte Lücke der Informationsgrundlage zu schließen.",
+      "negative_scope": "Nicht allgemeine Rechercheaufträge, umfassende neue Fachprüfungen oder unbestimmte Forderungen nach weiteren Informationen.",
+      "disambiguation_notes": "4.6 knüpft an die Beschaffung einer konkret fehlenden Grundlage an. 11.4 formuliert die aus der Prüfungsbewertung ableitbare konkrete Nachforderung; beide können zusammenfallen, wenn dieselbe begrenzte Information zugleich Dokumentenlücke und entscheidungserhebliche Prüflücke ist."
+    },
+    {
+      "question_id": "7.1",
+      "pf_id": "PF7",
+      "positive_scope": "Erfasst dokumentierte derzeitige oder geplante Nutzungen als sachlichen Nutzungsinhalt.",
+      "negative_scope": "Nicht allein eine unbelegte Behauptung über künftige Bedarfsdeckung und nicht bloß ein fehlender Beleg.",
+      "disambiguation_notes": "Der thematische Bezug zu Nutzung genügt nicht, wenn die Kernaussage die fehlende Belegbarkeit einer Schlussfolgerung ist."
+    },
+    {
+      "question_id": "7.2",
+      "pf_id": "PF7",
+      "positive_scope": "Erfasst dokumentierte Nutzergruppen und/oder konkrete Nutzungszeiten, Betriebszeiten oder zeitliche Nutzungsmuster.",
+      "negative_scope": "Nicht bloß die Tatsache, dass eine Nutzung besteht oder geplant ist, wenn keine Nutzergruppe oder Zeitdimension die Kernaussage bildet.",
+      "disambiguation_notes": "'werktags von 8 bis 18 Uhr genutzt' ist spezifischer 7.2-Bezug; eine parallele 7.1-Zuordnung ist nur sinnvoll, wenn zusätzlich der Nutzungsinhalt selbst eigenständig relevant ist."
+    },
+    {
+      "question_id": "7.3",
+      "pf_id": "PF7",
+      "positive_scope": "Erfasst dokumentierte Nutzungskonflikte sowie Zugangs- oder Barrierefreiheitsfragen.",
+      "negative_scope": "Nicht bloß vorhandene Unterlagen oder allgemein dokumentierte Nutzung, wenn der eigentliche Befund Zugang oder Barrierefreiheit betrifft.",
+      "disambiguation_notes": "Die Formulierung 'laut Unterlage' macht einen Barrierefreiheitsbefund nicht zu 4.1/PF4; maßgeblich ist der semantische Inhalt des Befunds."
+    },
+    {
+      "question_id": "7.4",
+      "pf_id": "PF7",
+      "positive_scope": "Erfasst dokumentierte Abweichungen oder Widersprüche zwischen einer geplanten bzw. vorgesehenen Nutzung und der tatsächlich bestehenden Nutzung.",
+      "negative_scope": "Nicht allgemeine Nutzungskonflikte ohne Plan-Ist-Bezug und nicht bloß unterschiedliche Nutzungen verschiedener Bereiche oder Zeiten.",
+      "disambiguation_notes": "7.4 ist gegenüber 7.3 spezieller, wenn gerade der Plan-Ist-Widerspruch den Befund bildet. 7.3 bleibt für sonstige Nutzungskonflikte sowie Zugangs- und Barrierefreiheitsfragen zuständig."
+    },
+    {
+      "question_id": "7.5",
+      "pf_id": "PF7",
+      "positive_scope": "Erfasst das Vorliegen und den dokumentierten Inhalt eines Raumprogramms, Nutzungskonzepts oder ausdrücklich dokumentierter Nutzerbedarfe als Grundlage für die Nutzungsbewertung.",
+      "negative_scope": "Nicht einzelne bestehende Nutzungen, Nutzergruppen oder Nutzungszeiten allein und nicht die bloße Frage, ob eine weitergehende qualitative Prüfung erforderlich ist.",
+      "disambiguation_notes": "7.5 betrifft vorhandene konzeptionelle oder bedarfsbezogene Grundlagen; 7.1 und 7.2 betreffen konkrete Nutzungen, Nutzergruppen und Zeiten. 7.6 betrifft erst die Notwendigkeit einer weitergehenden Prüfung oder Planung."
+    },
+    {
+      "question_id": "7.6",
+      "pf_id": "PF7",
+      "positive_scope": "Erfasst die aus dem dokumentierten Nutzungsstand ableitbare Notwendigkeit einer qualitativen Raumfunktionsprüfung, Nutzerbedarfsanalyse oder Betriebsplanung als nachgelagerten Fachanschluss.",
+      "negative_scope": "Nicht die Durchführung oder fachliche Vorwegnahme einer solchen Prüfung und nicht allein das Vorliegen eines Raumprogramms oder Nutzungskonzepts.",
+      "disambiguation_notes": "7.6 ist eine Anschluss- bzw. Eskalationsfrage innerhalb des Nutzungsfelds. Stufe 1 darf den Bedarf benennen, aber die qualitative Fachprüfung nicht selbst ersetzen."
+    },
+    {
+      "question_id": "11.1",
+      "pf_id": "PF11",
+      "positive_scope": "Erfasst entscheidungserhebliche Widersprüche, die für die Orientierungsfrage oder einen nächsten Entscheidungsschritt tatsächlich erheblich sind und deshalb als Prüfbefund sichtbar gemacht werden müssen.",
+      "negative_scope": "Nicht jede formale Abweichung, Versionsdifferenz oder widersprechende Angabe ohne erkennbare Entscheidungsrelevanz.",
+      "disambiguation_notes": "11.1 bewertet die Entscheidungserheblichkeit eines Widerspruchs. 4.5 erfasst dagegen zunächst, dass Unterlagen oder Angaben einander widersprechen. Ein Fall kann beide Zuordnungen tragen, wenn beides eigenständig zutrifft."
+    },
+    {
+      "question_id": "11.2",
+      "pf_id": "PF11",
+      "positive_scope": "Erfasst unbelegte oder nicht zuständig bestätigte Aussagen, Behauptungen und Schlussfolgerungen.",
+      "negative_scope": "Nicht allein dokumentierte Nutzung oder ein dokumentierter Entscheidungsstand, wenn deren Belegbarkeit nicht die eigentliche Aussage ist.",
+      "disambiguation_notes": "Bei einer eigenständig unbelegten Schlussfolgerung ist 11.2 gegenüber rein thematischen Nachbarn zu bevorzugen."
+    },
+    {
+      "question_id": "11.3",
+      "pf_id": "PF11",
+      "positive_scope": "Erfasst fehlende Informationen, die für die Orientierungsfrage oder den nächsten Entscheidungsschritt entscheidungserheblich sind und als verbleibende Prüflücke benannt werden müssen.",
+      "negative_scope": "Nicht jede fehlende Unterlage oder Detailangabe ohne erkennbare Relevanz für die Orientierung und nicht bloß eine fachlich offene Frage trotz vollständiger Informationsbasis.",
+      "disambiguation_notes": "11.3 setzt die Relevanz der Informationslücke für den Prüfbefund voraus. 4.4 beschreibt demgegenüber zunächst die Unvollständigkeit der vorhandenen Informations- oder Dokumentengrundlage. 12.3 übersetzt eine bestätigte Lücke in die konkret benötigte Unterlage, Bestätigung oder Entscheidung als Beschaffungsschritt; 11.3 benennt die Lücke selbst als Prüfbefund. Gegenüber 11.5 gilt: 11.3 betrifft eine durch Nachforderung grundsätzlich schließbare Informationslücke; 11.5 eine auch nach Nachforderung verbleibende fachliche Offenheit."
+    },
+    {
+      "question_id": "11.4",
+      "pf_id": "PF11",
+      "positive_scope": "Erfasst die konkrete, verhältnismäßig begrenzte Nachforderung, die sich aus einer entscheidungserheblichen Prüflücke, Informationslücke oder Bestätigungslücke als nächster Prüfschritt ableiten lässt.",
+      "negative_scope": "Nicht pauschale Forderungen nach vollständiger Neuprüfung, nicht die Beauftragung einer umfassenden Fachplanung und nicht eine Nachforderung ohne Bezug zu einer identifizierten Prüflücke.",
+      "disambiguation_notes": "11.4 ist die bewertete Konsequenz aus einer relevanten Prüflücke. 4.6 betrachtet die konkret erforderliche Ergänzung der Informationsgrundlage; 12.x behandelt den übergeordneten nächsten Klärungsschritt und dessen funktionale Zuständigkeit."
+    },
+    {
+      "question_id": "11.5",
+      "pf_id": "PF11",
+      "positive_scope": "Erfasst eine Frage, die auch nach zumutbarer und konkret möglicher Nachforderung nicht allein durch weitere Unterlagen oder Bestätigungen geklärt werden kann und deshalb als fachlich offen verbleibt.",
+      "negative_scope": "Nicht eine bloße Informationslücke, die durch eine konkrete Nachforderung geschlossen werden kann, und nicht die fachliche Beantwortung der offenen Frage selbst.",
+      "disambiguation_notes": "11.5 markiert die Grenze der Stufe-1-Informationsklärung: Bleibt eine Fachfrage trotz geschlossener oder nicht weiter schließbarer Informationslücke offen, darf Stufe 1 sie nicht selbst fachlich entscheiden; ein funktional benannter Fachanschluss kann erforderlich werden. Abzugrenzen von 11.3: 11.3 betrifft eine durch Nachforderung grundsätzlich schließbare Informationslücke; 11.5 betrifft eine auch nach Nachforderung verbleibende fachliche Offenheit."
+    },
+    {
+      "question_id": "11.6",
+      "pf_id": "PF11",
+      "positive_scope": "Erfasst Unsicherheiten, Vorbehalte oder Gewissheitsgrenzen, die in der Orientierungsnotiz ausdrücklich sichtbar bleiben müssen.",
+      "negative_scope": "Nicht jede unbelegte Aussage automatisch und nicht ein dokumentierter überholter Entscheidungsstand allein wegen zeitlicher Veränderung.",
+      "disambiguation_notes": "'könnte' plus 'keine Zusage' ist primär eine sichtbar zu haltende Unsicherheit; 11.2 ist nur dann zusätzlich einschlägig, wenn die fehlende Beleg- oder Bestätigungslage selbst eigenständiger Aussagekern ist."
+    },
+    {
+      "question_id": "2.2",
+      "pf_id": "PF2",
+      "positive_scope": "Erfasst die ausdrücklich dokumentierte inhaltliche Zugehörigkeit zum Bearbeitungsgegenstand einschließlich klar benannter Ein- und Ausschlüsse.",
+      "negative_scope": "Nicht die bloße Benennung des Gegenstands selbst, nicht dessen räumliche Eindeutigkeit und nicht die Bewertung, ob mehrere Teilgegenstände eine weitergehende Prüfung erfordern.",
+      "disambiguation_notes": "2.2 konkretisiert den Umfang des in 2.1 benannten Gegenstands. 2.3 bewertet dessen sachliche und organisatorische Begrenzbarkeit, 2.4 bei Raumbezug die räumliche Eindeutigkeit und 2.5 die Abhängigkeit mehrerer Teilgegenstände."
+    },
+    {
+      "question_id": "2.3",
+      "pf_id": "PF2",
+      "positive_scope": "Erfasst, ob der dokumentierte Bearbeitungsgegenstand für eine begrenzte Stufe-1-Orientierungsprüfung sachlich und organisatorisch hinreichend abgrenzbar ist.",
+      "negative_scope": "Nicht die Durchführung einer Organisationsanalyse, nicht die Festlegung neuer Zuständigkeiten und nicht allein die räumliche Abgrenzung eines Gegenstands.",
+      "disambiguation_notes": "2.3 fragt nach der Begrenzbarkeit des Bearbeitungsgegenstands als Prüfeinheit. 2.2 beschreibt, was dazugehört oder ausgeschlossen ist; 2.4 ist bei Raumbezug auf die räumliche Grenze spezialisiert."
+    },
+    {
+      "question_id": "2.4",
+      "pf_id": "PF2",
+      "positive_scope": "Erfasst bei räumlichem Bezug, ob die räumliche Grenze des Bearbeitungsgegenstands aus den dokumentierten Angaben eindeutig hervorgeht.",
+      "negative_scope": "Nicht die eigenständige Vermessung oder planerische Rekonstruktion einer Grenze und nicht die allgemeine sachliche oder organisatorische Begrenzbarkeit ohne räumlichen Bezug.",
+      "disambiguation_notes": "2.4 ist die räumliche Spezialfrage innerhalb PF2. 2.3 bleibt für die sachliche und organisatorische Begrenzbarkeit zuständig. Abzugrenzen von 6.2/6.4: 2.4 ist die stets zu bearbeitende Eingangsfrage zur Abgrenzung des Bearbeitungsgegenstands; 6.2/6.4 prüfen bei Fallbezug substantiell Lage-, Plan- und Bestandsangaben."
+    },
+    {
+      "question_id": "2.5",
+      "pf_id": "PF2",
+      "positive_scope": "Erfasst dokumentierte wechselseitige Abhängigkeiten zwischen mehreren Teilgegenständen, die eine Prüfung eines Stufe-2-Anschlusses nahelegen.",
+      "negative_scope": "Nicht jede Mehrteiligkeit des Gegenstands und nicht die Entscheidung, Freigabe oder Beauftragung einer Stufe-2-Prüfung selbst.",
+      "disambiguation_notes": "2.5 ist gegenstandsstrukturell: Abhängige Teilgegenstände sind der Auslöser. 12.5 ist verfahrensbezogen und fragt, ob aus dem gesamten Prüfbefund die Prüfung einer Stufe-2-Beauftragung sachlich angezeigt ist."
+    },
+    {
+      "question_id": "12.1",
+      "pf_id": "PF12",
+      "positive_scope": "Erfasst den nächsten konkret begrenzten Klärungsschritt, der sich aus dem dokumentierten Informations- und Prüfbefund als sachgerechter Anschluss ergibt.",
+      "negative_scope": "Nicht die Durchführung einer umfassenden Fachprüfung, nicht eine Freigabe oder Fachentscheidung und nicht bloß die Wiederholung der festgestellten Lücke ohne benannten nächsten Schritt.",
+      "disambiguation_notes": "12.1 beschreibt den übergeordneten nächsten Klärungsschritt. 11.4 kann eine konkrete Nachforderung als Prüfbefund formulieren; 12.3 benennt die dabei konkret benötigte Unterlage, Bestätigung oder Entscheidung."
+    },
+    {
+      "question_id": "12.2",
+      "pf_id": "PF12",
+      "positive_scope": "Erfasst die funktionale Zuständigkeit für den nächsten begrenzten Klärungs- oder Verfahrensschritt, soweit sie aus dokumentierten Rollen, Aufgaben oder Zuständigkeiten ableitbar ist.",
+      "negative_scope": "Nicht die Erfindung einer organisatorischen Zuständigkeit, nicht die rechtliche Letztentscheidung über Kompetenzen und nicht die Durchführung des jeweiligen Fachschritts.",
+      "disambiguation_notes": "12.2 ordnet einem in PF12 benannten nächsten Schritt eine funktional zuständige Stelle zu. Eine konkrete Person oder Organisation darf nur benannt werden, wenn die Zuständigkeit dokumentiert oder belastbar ableitbar ist."
+    },
+    {
+      "question_id": "12.3",
+      "pf_id": "PF12",
+      "positive_scope": "Erfasst die konkrete Unterlage, Bestätigung oder Entscheidung, die zur Umsetzung eines begrenzten nächsten Klärungsschritts benötigt wird.",
+      "negative_scope": "Nicht die bloße Feststellung, dass Informationen fehlen, und nicht eine unbestimmte Forderung nach weiterer Prüfung oder vollständiger neuer Dokumentation.",
+      "disambiguation_notes": "12.3 übersetzt eine bestätigte Lücke in einen konkreten Beschaffungsschritt. 4.4 beschreibt die Bestandslücke der Informationsgrundlage; 11.3 benennt die entscheidungserhebliche Lücke als Prüfbefund; 11.4 kann die konkrete Nachforderung formulieren."
+    },
+    {
+      "question_id": "12.4",
+      "pf_id": "PF12",
+      "positive_scope": "Erfasst den funktional erforderlichen fachlichen Anschluss, wenn eine offene Frage innerhalb Stufe 1 nicht belastbar beantwortet werden darf oder kann.",
+      "negative_scope": "Nicht die Durchführung, Vorwegnahme oder fachliche Beantwortung dieses Anschlusses und nicht jede einfache Unterlagen- oder Bestätigungsnachforderung.",
+      "disambiguation_notes": "12.4 bezeichnet den Fachanschluss als nächsten Verfahrensschritt. 7.6 kann einen nutzungsbezogenen fachlichen Prüfbedarf anzeigen, 8.5 eine offene Frage mit Fachanschluss benennen und 11.5 die fachlich offen verbleibende Frage markieren; 12.4 überführt einen solchen Befund in den funktionalen Anschluss."
+    },
+    {
+      "question_id": "12.5",
+      "pf_id": "PF12",
+      "positive_scope": "Erfasst, ob der dokumentierte Gesamtbefund hinreichende sachliche Anhaltspunkte dafür enthält, eine Stufe-2-Beauftragung als nächsten möglichen Schritt zu prüfen.",
+      "negative_scope": "Nicht die Freigabe, Entscheidung oder Beauftragung von Stufe 2 selbst und nicht jede einzelne offene Fachfrage automatisch.",
+      "disambiguation_notes": "12.5 ist eine verfahrensbezogene Indikationsfrage am Ende von Stufe 1. 2.5 liefert einen möglichen gegenstandsstrukturellen Auslöser durch abhängige Teilgegenstände; weitere Prüffelder können zusätzliche Gründe liefern. Abzugrenzen von 9.5: 9.5 benennt eine schnittstellenspezifische Einzelindikation innerhalb PF9; 12.5 ist die aggregierende Abschlussfrage, die alle im Prüfverlauf aufgetretenen Gründe einschließlich 2.5 und gegebenenfalls 9.5 zusammenführt."
+    },
+    {
+      "question_id": "12.6",
+      "pf_id": "PF12",
+      "positive_scope": "Erfasst die aus dem Prüfbefund erkennbare Grenze von Stufe 1, indem ausdrücklich benannt wird, welche nachgelagerten Fachentscheidungen, Qualitätsbestätigungen, Freigaben oder umfassenden Fachprüfungen und Planungen durch die Orientierungsprüfung nicht ersetzt werden dürfen.",
+      "negative_scope": "Nicht die Durchführung dieser Schritte und nicht die Behauptung, Stufe 1 habe deren fachliche oder rechtliche Wirkung bereits erfüllt.",
+      "disambiguation_notes": "12.6 ist eine ausdrückliche Nicht-Ersetzungsgrenze. Sie darf erforderliche Anschlussleistungen funktional benennen, aber weder deren Ergebnis vorwegnehmen noch eine fachliche, rechtliche oder organisatorische Freigabewirkung erzeugen. Abzugrenzen von 1.6: 1.6 prüft eingangsseitig, ob der Auftrag selbst eine Fachentscheidung, Qualitätsbestätigung oder Freigabe verlangt; 12.6 stellt ausgangsseitig die kategorische Nicht-Ersetzungsgrenze fest. Gegenüber 12.4: 12.4 benennt den konkret erforderlichen Fachanschluss im Einzelfall; 12.6 ist die generelle, zusammenfassende Grenzaussage."
+    },
+    {
+      "question_id": "6.1",
+      "pf_id": "PF6",
+      "positive_scope": "Erfasst die konkret betroffenen räumlichen oder infrastrukturellen Einheiten, etwa Gebäude, Gebäudeteile, Räume, Flächen, Anlagen oder Infrastrukturen, soweit sie für den Fallbezug dokumentiert sind.",
+      "negative_scope": "Nicht allein die abstrakte Benennung des Gesamtgegenstands und nicht die Bewertung, ob dessen räumliche Grenze eindeutig oder anhand von Unterlagen nachvollziehbar ist.",
+      "disambiguation_notes": "6.1 benennt die tatsächlich betroffenen räumlichen Einheiten innerhalb eines fallbezogenen Gegenstands. 2.1 benennt demgegenüber den Bearbeitungsgegenstand insgesamt; 6.2 prüft erst die Nachvollziehbarkeit von Lage und räumlicher Abgrenzung."
+    },
+    {
+      "question_id": "6.2",
+      "pf_id": "PF6",
+      "positive_scope": "Erfasst, ob Lage und räumliche Abgrenzung der betroffenen Einheiten anhand der vorliegenden Unterlagen nachvollziehbar und prüfbar dargestellt sind.",
+      "negative_scope": "Nicht die eigenständige Vermessung, Rekonstruktion oder planerische Festlegung einer Grenze und nicht allein die Eingangsfrage, ob der Bearbeitungsgegenstand räumlich eindeutig abgegrenzt ist.",
+      "disambiguation_notes": "6.2 ist unterlagenbezogen und fallbezogen: Sind Lage und Grenze aus Plan-, Bestands- oder sonstigen räumlichen Unterlagen nachvollziehbar? 2.4 ist die vorgelagerte Eingangsfrage zur eindeutigen räumlichen Abgrenzung des Bearbeitungsgegenstands."
+    },
+    {
+      "question_id": "6.3",
+      "pf_id": "PF6",
+      "positive_scope": "Erfasst erkennbare Übereinstimmung oder Abweichung zwischen vorliegenden Plan-, Bestands- und Flächenangaben zum räumlichen Gegenstand.",
+      "negative_scope": "Nicht jede allgemeine Dokumentenabweichung ohne räumlichen Bezug und nicht bloß das Fehlen einer erforderlichen räumlichen Basisangabe.",
+      "disambiguation_notes": "6.3 prüft spezifisch die Konsistenz räumlicher Plan-, Bestands- und Flächenangaben. 4.5 erfasst allgemeine Widersprüche in Unterlagen oder Angaben; 6.4 bündelt fehlende oder widersprüchliche räumliche Basisangaben als räumlichen Befund."
+    },
+    {
+      "question_id": "6.4",
+      "pf_id": "PF6",
+      "positive_scope": "Erfasst fehlende oder widersprüchliche räumliche Basisangaben, die für die Nachvollziehbarkeit des fallbezogenen räumlichen Gegenstands benötigt werden.",
+      "negative_scope": "Nicht jede fehlende Information oder jeder allgemeine Dokumentenwiderspruch ohne räumlichen Bezug und nicht automatisch jede entscheidungserhebliche Prüflücke.",
+      "disambiguation_notes": "6.4 ist räumlich spezialisiert. 4.4 betrifft fehlende Informationen oder Unterlagen in der Informationsbasis allgemein, 4.5 allgemeine Widersprüche zwischen Unterlagen oder Angaben, 11.1 entscheidungserhebliche Widersprüche und 11.3 entscheidungserhebliche Informationslücken als Prüfbefund. Derselbe Sachverhalt kann parallel einschlägig sein, wenn räumlicher Befund und allgemeine bzw. entscheidungserhebliche Bewertung jeweils eigenständig vorliegen."
+    },
+    {
+      "question_id": "6.5",
+      "pf_id": "PF6",
+      "positive_scope": "Erfasst, ob der dokumentierte räumliche Informationsstand einen möglichen Anschluss an Planung oder eine qualitative Raumfunktionsprüfung erkennen lässt.",
+      "negative_scope": "Nicht die Durchführung, fachliche Vorwegnahme oder Beauftragung einer Planung oder Raumfunktionsprüfung und nicht allein das Vorliegen einer offenen räumlichen Basisangabe.",
+      "disambiguation_notes": "6.5 ist die räumlich ausgelöste Anschlussindikation. 7.6 betrifft den aus dem Nutzungsstand abgeleiteten Bedarf an qualitativer Raumfunktionsprüfung, Nutzerbedarfsanalyse oder Betriebsplanung; 12.4 benennt den funktional erforderlichen Fachanschluss als nächsten Verfahrensschritt."
+    },
+    {
+      "question_id": "8.1",
+      "pf_id": "PF8",
+      "positive_scope": "Erfasst vorhandene Fachplanungen, Gutachten, Beratungen oder Untersuchungen als bereits vorliegende fachliche Beiträge zum Gegenstand.",
+      "negative_scope": "Nicht jede Kernunterlage ohne fachplanerischen oder fachprüfenden Charakter und nicht die inhaltliche Bewertung, welchen Gegenstand oder Status ein Fachbeitrag abdeckt.",
+      "disambiguation_notes": "8.1 fragt nach dem Vorliegen fachlicher Beiträge als eigener Dokumentenkategorie. 4.1 erfasst Kernunterlagen allgemein; 8.2 beschreibt Gegenstand und Status der bereits vorliegenden Fachbeiträge."
+    },
+    {
+      "question_id": "8.2",
+      "pf_id": "PF8",
+      "positive_scope": "Erfasst den dokumentierten Gegenstand, Bearbeitungsumfang und Status eines vorhandenen Fachbeitrags.",
+      "negative_scope": "Nicht allein Datum, Version oder Dokumentstatus einer beliebigen Unterlage und nicht die Detailfrage, welche Fachfragen innerhalb des Beitrags bearbeitet oder ausgespart wurden.",
+      "disambiguation_notes": "8.2 beschreibt Reichweite und fachlichen Bearbeitungsstatus des Fachbeitrags. 4.2 erfasst Datum, Version oder Status einer konkreten Unterlage allgemein; 8.3 trennt innerhalb des Fachbeitrags bearbeitete von ausdrücklich nicht bearbeiteten Fachfragen."
+    },
+    {
+      "question_id": "8.3",
+      "pf_id": "PF8",
+      "positive_scope": "Erfasst, welche konkreten Fachfragen ein vorhandener Fachbeitrag tatsächlich bearbeitet hat und welche Fragen ausdrücklich außerhalb seines Bearbeitungsumfangs liegen.",
+      "negative_scope": "Nicht die eigene fachliche Beantwortung offener Fragen und nicht allein der formale Status oder Titel eines Fachbeitrags.",
+      "disambiguation_notes": "8.3 ist eine Reichweitenprüfung vorhandener Facharbeit: Was wurde fachlich behandelt und was ausdrücklich nicht? Eine danach verbleibende fachlich offene Frage kann 11.5 betreffen; ein daraus erforderlicher funktionaler Anschluss kann über 8.5 bzw. 12.4 benannt werden."
+    },
+    {
+      "question_id": "8.4",
+      "pf_id": "PF8",
+      "positive_scope": "Erfasst erkennbare fachliche Schnittstellen oder inhaltliche Widersprüche zwischen mehreren vorhandenen Fachbeiträgen.",
+      "negative_scope": "Nicht jede allgemeine Dokumentenabweichung ohne fachlichen Bezug und nicht die eigenständige fachliche Auflösung eines Widerspruchs oder einer Schnittstelle.",
+      "disambiguation_notes": "8.4 ist auf Beziehungen zwischen Fachbeiträgen spezialisiert. 4.5 erfasst allgemeine Widersprüche in Unterlagen oder Angaben, 11.1 deren Entscheidungserheblichkeit. Abzugrenzen von PF9: 8.4 stellt die Schnittstelle oder den Widerspruch zwischen Fachbeiträgen fest. 9.1 erfasst die daraus resultierende Abhängigkeit zwischen Entscheidungen oder Klärungen, 9.3 eine vorgelagert erforderliche Fachklärung und 9.5, ob die Schnittstellenlage eine koordinierte Stufe-2-Bearbeitung erfordert. 8.4 stellt fest; PF9 leitet die Verfahrensfolge ab."
+    },
+    {
+      "question_id": "8.5",
+      "pf_id": "PF8",
+      "positive_scope": "Erfasst eine nach Sichtung der vorhandenen Fachbeiträge konkret offen verbleibende Fachfrage, für die ein funktional benannter fachlicher Anschluss erforderlich ist.",
+      "negative_scope": "Nicht die fachliche Beantwortung dieser Frage, nicht die Beauftragung oder Freigabe eines Fachbeitrags und nicht jede einfache Informations- oder Unterlagenlücke.",
+      "disambiguation_notes": "8.5 verbindet eine konkrete offene Fachfrage mit dem Bedarf eines funktional benannten Fachanschlusses. 11.5 markiert allgemein eine auch nach Nachforderung fachlich offen verbleibende Frage; 12.4 überführt einen solchen Befund in den erforderlichen funktionalen Fachanschluss als nächsten Verfahrensschritt. Der Sichtungsbezug grenzt 8.5 als PF8-spezifische Anschlussfrage von der feldunabhängigen Aggregationsfrage 12.4 ab; ohne ihn wäre 8.5 mit 12.4 praktisch deckungsgleich."
+    }
+  ]
+}
