@@ -1,10 +1,12 @@
 import json
+import subprocess
 import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 AUTH = ROOT / "tests/fixtures/zs_ki_b_sem_v13_model_run_authorization_candidate_v0_2.json"
 PRERUN = ROOT / "tests/fixtures/zs_ki_b_sem_v13_model_run_prerun_package_v0_1.json"
+EXPECTED_MAIN = "dde750434a4f861914708aa315e1aaccc2bb5e19"
 
 
 def load(path):
@@ -22,6 +24,9 @@ class V13ModelRunAuthorizationCandidateV02Tests(unittest.TestCase):
         self.assertFalse(self.auth["model_run_authorized"])
         self.assertFalse(self.auth["model_contact_authorized"])
         self.assertTrue(self.auth["approval_gate"]["no_execution_from_candidate"])
+
+    def test_bound_main_is_post_hash_repair_main(self):
+        self.assertEqual(self.auth["bound_main_commit"], EXPECTED_MAIN)
 
     def test_exact_single_run_scope(self):
         self.assertEqual(self.auth["expected_run_count"], 1)
@@ -51,6 +56,7 @@ class V13ModelRunAuthorizationCandidateV02Tests(unittest.TestCase):
 
     def test_composition_scope_is_limited(self):
         self.assertEqual(self.auth["semantic_boundary_version"], "semantic-boundary-v0.2")
+        self.assertTrue(self.auth["generic_system_composition_required"])
         self.assertEqual(self.auth["generic_system_composition_version"], "semantic-system-composition-v0.1")
         self.assertEqual(self.auth["qualified_completeness_pfs"], ["PF2", "PF9", "PF12"])
         self.assertTrue(self.auth["non_profile_cases_boundary_only"])
@@ -60,6 +66,15 @@ class V13ModelRunAuthorizationCandidateV02Tests(unittest.TestCase):
         self.assertEqual(self.prerun["status"], "PREPARED_NOT_AUTHORIZED")
         self.assertFalse(self.prerun["execution_authorized"])
         self.assertFalse(self.prerun["model_run_authorized"])
+
+    def test_prerun_blob_binding_matches_repository_object(self):
+        path = self.auth["prerun_package"]["path"]
+        actual_blob_sha = subprocess.check_output(
+            ["git", "rev-parse", f"HEAD:{path}"],
+            cwd=ROOT,
+            text=True,
+        ).strip()
+        self.assertEqual(actual_blob_sha, self.auth["prerun_package"]["git_blob_sha"])
 
     def test_no_downstream_release_is_implied(self):
         for key in (
