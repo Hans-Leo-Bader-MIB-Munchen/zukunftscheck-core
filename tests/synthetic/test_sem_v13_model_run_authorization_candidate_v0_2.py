@@ -34,6 +34,13 @@ class V13ModelRunAuthorizationCandidateV02Tests(unittest.TestCase):
         self.assertEqual(self.auth["runner_version"], "v1.3")
         self.assertEqual(self.auth["prompt_version"], "zs_ki_b_sem_qualifikation_system_v0_6")
 
+    def test_run_type_matches_prerun_package(self):
+        self.assertEqual(self.auth["run_type"], self.prerun["run_type"])
+        self.assertEqual(
+            self.auth["run_type"],
+            "ZS-KI-B-SEM-QUALIFIKATION-SYNTHETIC-V1-3-GENERIC-COMPOSITION-2026-013",
+        )
+
     def test_local_synthetic_no_retry_no_repair(self):
         self.assertTrue(self.auth["synthetic_only"])
         self.assertTrue(self.auth["local_loopback_only"])
