@@ -8,7 +8,7 @@
     "git_blob_sha": "be29fb0186b0f51eeb2e2df1fb00a1977597ab85",
     "status": "PREPARED_NOT_AUTHORIZED"
   },
-  "run_type": "ZS-KI-B-SEM-QUALIFIKATION-SYNTHETIC-V1-3-GENERIC-COMPOSITION-2026-014",
+  "run_type": "ZS-KI-B-SEM-QUALIFIKATION-SYNTHETIC-V1-3-GENERIC-COMPOSITION-2026-013",
   "runner_version": "v1.3",
   "model": "qwen3-14b",
   "prompt_version": "zs_ki_b_sem_qualifikation_system_v0_6",
