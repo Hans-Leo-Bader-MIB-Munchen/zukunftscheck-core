@@ -5,6 +5,8 @@ import string
 import unittest
 from pathlib import Path
 
+from core.validation.semantic_completeness_audit_v0_2 import AUDIT_VERSION
+from core.validation.semantic_runtime_guard_v0_2 import RUNTIME_GUARD_VERSION
 from scripts.zs_ki_b_sem_system_qualification_freeze_v0_2 import (
     load_manifest,
     materialize_hashes,
@@ -14,6 +16,18 @@ ROOT = Path(__file__).resolve().parents[2]
 POLICY_PATH = ROOT / "tests" / "fixtures" / "zs_ki_b_sem_system_qualification_policy_candidate_v0_2.json"
 SUITE_PATH = ROOT / "tests" / "fixtures" / "zs_ki_b_sem_system_qualification_suite_candidate_v0_2.json"
 MANIFEST_PATH = ROOT / "tests" / "fixtures" / "zs_ki_b_sem_system_qualification_freeze_manifest_candidate_v0_2.json"
+
+EXPECTED_ARTIFACT_PATHS = {
+    "policy": "tests/fixtures/zs_ki_b_sem_system_qualification_policy_candidate_v0_2.json",
+    "suite": "tests/fixtures/zs_ki_b_sem_system_qualification_suite_candidate_v0_2.json",
+    "generic_completeness_engine": "core/validation/semantic_completeness_profile_engine_v0_1.py",
+    "qualification_oracle_harness": "core/validation/semantic_qualification_oracle_harness_v0_1.py",
+    "semantic_boundary": "core/validation/semantic_boundary_v0_2.py",
+    "semantic_runtime_guard": "core/validation/semantic_runtime_guard_v0_2.py",
+    "semantic_completeness_audit_pf2": "core/validation/semantic_completeness_audit_v0_2.py",
+    "source_human_gold": "tests/fixtures/zs_ki_b_sem_v07_human_gold_frozen_v0_1.json",
+    "suite_contract_tests": "tests/synthetic/test_sem_system_qualification_suite_v0_2.py",
+}
 
 
 def load(path: Path) -> dict:
@@ -53,21 +67,9 @@ class SemanticSystemQualificationFreezeV02Tests(unittest.TestCase):
         self.assertTrue(rule["must_not_be_interpreted_as_model_pass"])
         self.assertTrue(rule["must_not_be_interpreted_as_global_runtime_release"])
 
-    def test_f05_manifest_binds_required_artifact_roles(self) -> None:
-        roles = {entry["role"] for entry in self.manifest["artifacts"]}
-        self.assertEqual(
-            roles,
-            {
-                "policy",
-                "suite",
-                "generic_completeness_engine",
-                "qualification_oracle_harness",
-                "semantic_boundary",
-                "semantic_runtime_guard",
-                "source_human_gold",
-                "suite_contract_tests",
-            },
-        )
+    def test_f05_manifest_binds_exact_required_artifacts(self) -> None:
+        observed = {entry["role"]: entry["path"] for entry in self.manifest["artifacts"]}
+        self.assertEqual(observed, EXPECTED_ARTIFACT_PATHS)
         self.assertEqual(self.manifest["hash_algorithm"], "SHA-256")
         self.assertFalse(self.manifest["hashes_materialized"])
 
@@ -103,6 +105,19 @@ class SemanticSystemQualificationFreezeV02Tests(unittest.TestCase):
     def test_f09_model_qualification_status_is_preserved(self) -> None:
         self.assertEqual(self.manifest["model_qualification_status_preserved"], "NOT_QUALIFIED")
         self.assertEqual(self.manifest["guarded_system_qualification_status"], "NOT_YET_EXECUTED")
+
+    def test_f10_policy_versions_match_hardened_guard_and_audit(self) -> None:
+        required = self.policy["required_components"]
+        self.assertEqual(RUNTIME_GUARD_VERSION, "semantic-runtime-guard-v0.2")
+        self.assertEqual(AUDIT_VERSION, "semantic-completeness-audit-v0.2")
+        self.assertEqual(required["semantic_runtime_guard"], RUNTIME_GUARD_VERSION)
+        self.assertEqual(required["semantic_completeness_audit_pf2"], AUDIT_VERSION)
+
+    def test_f11_generic_composition_is_explicitly_not_yet_implemented(self) -> None:
+        boundary = self.policy["component_composition_boundary"]
+        self.assertEqual(boundary["generic_v0_2_system_composition_status"], "NOT_YET_IMPLEMENTED")
+        self.assertTrue(boundary["must_not_claim_runtime_guard_v0_2_is_generic_composition"])
+        self.assertIn("PF2/PF9/PF12", boundary["required_future_behavior"])
 
 
 if __name__ == "__main__":
