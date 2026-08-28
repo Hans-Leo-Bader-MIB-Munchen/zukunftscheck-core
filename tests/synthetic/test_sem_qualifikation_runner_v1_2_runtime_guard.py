@@ -47,15 +47,15 @@ CASE = {
 
 
 class SemQualificationRunnerV12RuntimeGuardTests(unittest.TestCase):
-    def test_r01_dry_run_binds_guard_and_reflects_explicit_one_shot_authorization(self) -> None:
+    def test_r01_dry_run_binds_guard_and_consumed_authorization_blocks_execution(self) -> None:
         payload = runner.build_dry_run_manifest(model="qwen3-14b")
         manifest = payload["manifest"]
         self.assertEqual(payload["mode"], "DRY_RUN_SEM_QUALIFICATION_V1_2")
         self.assertEqual(manifest["runner_version"], "v1.2")
         self.assertEqual(manifest["runtime_guard_version"], "semantic-runtime-guard-v0.1")
         self.assertTrue(manifest["runtime_guard_bound"])
-        self.assertTrue(manifest["execution_authorized"])
-        self.assertTrue(manifest["model_run_authorized"])
+        self.assertFalse(manifest["execution_authorized"])
+        self.assertFalse(manifest["model_run_authorized"])
         self.assertFalse(manifest["execution_attempted"])
         self.assertEqual(manifest["observed_model_request_count"], 0)
 
@@ -78,12 +78,9 @@ class SemQualificationRunnerV12RuntimeGuardTests(unittest.TestCase):
         self.assertFalse(result["human_review_required"])
         self.assertTrue(result["automatic_downstream_use_allowed"])
 
-    def test_r04_runner_accepts_only_the_explicitly_authorized_model_and_guard(self) -> None:
-        auth = runner.validate_execution_authorization("qwen3-14b")
-        self.assertEqual(auth["status"], "EXPLICIT_USER_APPROVED")
-        self.assertEqual(auth["model"], "qwen3-14b")
-        self.assertTrue(auth["runtime_guard_required"])
-        self.assertEqual(auth["runtime_guard_version"], "semantic-runtime-guard-v0.1")
+    def test_r04_consumed_authorization_rejects_any_second_run(self) -> None:
+        with self.assertRaises(PermissionError):
+            runner.validate_execution_authorization("qwen3-14b")
         with self.assertRaises(PermissionError):
             runner.validate_execution_authorization("gemma-3-12b-it-qat")
 
@@ -93,6 +90,20 @@ class SemQualificationRunnerV12RuntimeGuardTests(unittest.TestCase):
         self.assertEqual(result["decision_authority"], "NONE")
         self.assertFalse(result["model_output_mutated"])
         self.assertEqual([a["question_id"] for a in response["proposals"][0]["assignment_candidates"]], ["2.1", "2.4"])
+
+    def test_r06_v12_persist_mode_map_removes_inherited_v09_labels(self) -> None:
+        self.assertEqual(
+            runner._MODE_MAP["EXECUTING_SEM_QUALIFICATION_V0_9"],
+            "EXECUTING_SEM_QUALIFICATION_V1_2",
+        )
+        self.assertEqual(
+            runner._MODE_MAP["EXECUTED_ONCE_FAILED_SEM_QUALIFICATION_V0_9"],
+            "EXECUTED_ONCE_FAILED_SEM_QUALIFICATION_V1_2",
+        )
+        self.assertEqual(
+            runner._MODE_MAP["EXECUTED_ONCE_FAILED_GOLD_SEM_QUALIFICATION_V0_9"],
+            "EXECUTED_ONCE_FAILED_GOLD_SEM_QUALIFICATION_V1_2",
+        )
 
 
 if __name__ == "__main__":
