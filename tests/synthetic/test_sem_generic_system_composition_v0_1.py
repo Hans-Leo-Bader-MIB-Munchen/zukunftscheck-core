@@ -7,6 +7,7 @@ from pathlib import Path
 
 from core.validation.semantic_qualification_oracle_harness_v0_1 import build_qualification_oracle_bundle
 from core.validation.semantic_system_composition_v0_1 import (
+    FAIL_CLOSED_STOP,
     NO_COMPLETENESS_ASSESSMENT,
     NO_COMPLETENESS_STOP,
     SEMANTIC_COMPLETENESS_STOP,
@@ -207,7 +208,8 @@ class SemanticGenericSystemCompositionV01Tests(unittest.TestCase):
         response = response_with((("9.1", "PF9"),))
         response["proposals"][0]["assignment_candidates"] = "malformed"
         result = compose(response=response, pf_id="PF9", trigger_state="ACTIVE")
-        self.assertEqual(result["behavior"], TECHNICAL_BOUNDARY_STOP)
+        self.assertEqual(result["behavior"], FAIL_CLOSED_STOP)
+        self.assertEqual(result["stop_class"], FAIL_CLOSED_STOP)
         self.assertFalse(result["completeness_assessed"])
 
     def test_c12_model_output_is_never_mutated_or_repaired(self) -> None:
