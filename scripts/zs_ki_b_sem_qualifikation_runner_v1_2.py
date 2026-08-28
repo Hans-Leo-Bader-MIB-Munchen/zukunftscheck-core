@@ -30,6 +30,15 @@ DEFAULT_OUTPUT = "zs_ki_b_sem_qualifikation_result_v1_2.json"
 
 _ORIGINAL_VALIDATE_AUTH = v11.validate_execution_authorization
 _ORIGINAL_BUILD_DRY_RUN = v11.build_dry_run_manifest
+_ORIGINAL_PERSIST = v11.v10.v09._persist
+
+_MODE_MAP = {
+    "PRECONDITION_FAILED_SEM_QUALIFICATION_V0_9": "PRECONDITION_FAILED_SEM_QUALIFICATION_V1_2",
+    "EXECUTING_SEM_QUALIFICATION_V0_9": "EXECUTING_SEM_QUALIFICATION_V1_2",
+    "EXECUTED_ONCE_FAILED_SEM_QUALIFICATION_V0_9": "EXECUTED_ONCE_FAILED_SEM_QUALIFICATION_V1_2",
+    "EXECUTED_ONCE_FAILED_GOLD_SEM_QUALIFICATION_V0_9": "EXECUTED_ONCE_FAILED_GOLD_SEM_QUALIFICATION_V1_2",
+    "EXECUTED_ONCE_PASSED_FROZEN_SEM_QUALIFICATION_V0_9": "EXECUTED_ONCE_PASSED_FROZEN_SEM_QUALIFICATION_V1_2",
+}
 
 
 def _target_source_text(case: dict[str, Any]) -> str:
@@ -45,7 +54,6 @@ def _target_source_text(case: dict[str, Any]) -> str:
 
 
 def evaluate_runtime_guard(case: dict[str, Any], response: dict[str, Any]) -> dict[str, Any]:
-    """Adapter matching the inherited evaluate_boundary(case, response) hook."""
     source_locations = case.get("source_locations") or []
     allowed_ids = {
         row.get("source_location_id")
@@ -72,9 +80,7 @@ def evaluate_runtime_guard(case: dict[str, Any], response: dict[str, Any]) -> di
         target_source_location_id=target,
     )
     completeness = guard.get("completeness_audit")
-    completeness_stop = bool(
-        completeness and completeness.get("stop_automatic_downstream_use") is True
-    )
+    completeness_stop = bool(completeness and completeness.get("stop_automatic_downstream_use") is True)
     issues = list(guard.get("boundary_issues") or [])
     if completeness_stop:
         issues.append({
@@ -162,12 +168,20 @@ def build_dry_run_manifest(*, model: str = "", base_url: str = "http://127.0.0.1
     return payload
 
 
+def _persist_v12(payload: dict[str, Any], output: str) -> None:
+    legacy_mode = payload.get("mode")
+    if isinstance(legacy_mode, str) and legacy_mode in _MODE_MAP:
+        payload["mode"] = _MODE_MAP[legacy_mode]
+    _ORIGINAL_PERSIST(payload, output)
+
+
 def _install_bindings() -> None:
     _configure()
     v11.validate_execution_authorization = validate_execution_authorization
     v11.build_dry_run_manifest = build_dry_run_manifest
     v11.v10.validate_execution_authorization = validate_execution_authorization
     v11.v10.build_dry_run_manifest = build_dry_run_manifest
+    v11.v10.v09._persist = _persist_v12
 
 
 def main() -> int:
