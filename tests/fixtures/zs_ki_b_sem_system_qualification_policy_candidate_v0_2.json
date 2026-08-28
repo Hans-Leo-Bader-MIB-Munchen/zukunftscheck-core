@@ -13,9 +13,17 @@
   },
   "required_components": {
     "semantic_boundary": "v0.2",
-    "semantic_runtime_guard": "semantic-runtime-guard-v0.1",
+    "semantic_runtime_guard": "semantic-runtime-guard-v0.2",
+    "semantic_completeness_audit_pf2": "semantic-completeness-audit-v0.2",
     "generic_completeness_engine": "semantic-completeness-profile-engine-v0.1",
     "qualification_oracle_harness": "semantic-qualification-oracle-harness-v0.1"
+  },
+  "component_composition_boundary": {
+    "semantic_runtime_guard_v0_2_scope": "Legacy PF2-specific guarded path using Boundary v0.2 plus semantic-completeness-audit-v0.2.",
+    "generic_completeness_engine_scope": "PF-agnostic completeness evaluator for declarative profiles; it does not itself evaluate trigger policy or grant global downstream authority.",
+    "generic_v0_2_system_composition_status": "NOT_YET_IMPLEMENTED",
+    "required_future_behavior": "A separately versioned deterministic system-composition layer must combine Boundary/Unknown-State routing with the generic completeness engine and declared trigger policies for PF2/PF9/PF12 before the 29-case suite can be executed as guarded-system qualification evidence.",
+    "must_not_claim_runtime_guard_v0_2_is_generic_composition": true
   },
   "allowed_expected_behaviors": [
     "NO_COMPLETENESS_STOP",
