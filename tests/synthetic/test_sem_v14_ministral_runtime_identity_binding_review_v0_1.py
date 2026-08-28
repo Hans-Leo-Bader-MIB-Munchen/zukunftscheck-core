@@ -60,7 +60,12 @@ class MinistralRuntimeIdentityBindingReviewTests(unittest.TestCase):
         self.assertFalse(v14._authorization_matches(auth, v14.MODEL_REPOSITORY))
 
     def test_b07_dry_run_records_both_identities_and_stays_closed(self) -> None:
-        payload = v14.build_dry_run_manifest()
+        with patch.object(
+            v14.v13.v11.v10.v09.base,
+            "current_git_commit",
+            return_value="MODEL_FREE_TEST_COMMIT",
+        ):
+            payload = v14.build_dry_run_manifest()
         manifest = payload["manifest"]
         self.assertEqual(manifest["model_repository"], v14.MODEL_REPOSITORY)
         self.assertEqual(manifest["runtime_model_id"], v14.RUNTIME_MODEL_ID)
