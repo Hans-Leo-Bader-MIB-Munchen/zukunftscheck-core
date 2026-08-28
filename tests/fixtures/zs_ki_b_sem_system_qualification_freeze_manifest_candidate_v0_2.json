@@ -1,0 +1,32 @@
+{
+  "freeze_version": "ZS-KI-B-SEM-SYSTEMQUALIFIKATION-FREEZE-2026-002_v0.2",
+  "status": "FREEZE_CANDIDATE",
+  "data_class": "SYNTHETIC_ONLY",
+  "base_main_commit": "0af9cc656a48eb79dc5186964a38c86f7f69ae48",
+  "hash_algorithm": "SHA-256",
+  "hashes_materialized": false,
+  "final_freeze_requires_explicit_human_approval": true,
+  "artifacts": [
+    {"role":"policy","path":"tests/fixtures/zs_ki_b_sem_system_qualification_policy_candidate_v0_2.json","sha256":null},
+    {"role":"suite","path":"tests/fixtures/zs_ki_b_sem_system_qualification_suite_candidate_v0_2.json","sha256":null},
+    {"role":"generic_completeness_engine","path":"core/validation/semantic_completeness_profile_engine_v0_1.py","sha256":null},
+    {"role":"qualification_oracle_harness","path":"core/validation/semantic_qualification_oracle_harness_v0_1.py","sha256":null},
+    {"role":"semantic_boundary","path":"core/validation/semantic_boundary_v0_2.py","sha256":null},
+    {"role":"semantic_runtime_guard","path":"core/validation/semantic_runtime_guard_v0_1.py","sha256":null},
+    {"role":"source_human_gold","path":"tests/fixtures/zs_ki_b_sem_v07_human_gold_frozen_v0_1.json","sha256":null},
+    {"role":"suite_contract_tests","path":"tests/synthetic/test_sem_system_qualification_suite_v0_2.py","sha256":null}
+  ],
+  "system_case_count": 29,
+  "model_qualification_status_preserved": "NOT_QUALIFIED",
+  "guarded_system_qualification_status": "NOT_YET_EXECUTED",
+  "decision_authority": "NONE",
+  "execution_authorized": false,
+  "model_contact_authorized": false,
+  "real_data_authorized": false,
+  "pilot_authorized": false,
+  "production_authorized": false,
+  "benchmark_generalization_authorized": false,
+  "phase_f_authorized": false,
+  "next_gate": "Materialize SHA-256 hashes, run model-free freeze tests, then obtain explicit human approval before creating HUMAN_APPROVED_FROZEN copies.",
+  "note": "This manifest is deliberately not frozen. Null hashes are placeholders to be deterministically materialized by the freeze preparation script; no model contact occurs."
+}
