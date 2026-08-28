@@ -1,6 +1,8 @@
 {
   "policy_version": "ZS-KI-B-SEM-SYSTEMQUALIFIKATION-POLICY-2026-001_v0.1",
-  "status": "FREEZE_CANDIDATE",
+  "status": "HUMAN_APPROVED_FROZEN",
+  "approved_on": "2026-08-28",
+  "approval_basis": "Explicit user approval for HUMAN_APPROVED_FROZEN on 2026-08-28 after model-free tests passed.",
   "data_class": "SYNTHETIC_ONLY",
   "architecture_reference": "ZS-DEV-KI-B-SEM-SYSTEMQUALIFIKATION-ARCHITEKTUR-2026-001_v0.1",
   "scope": "Qualification policy for the guarded semantic system composed of model output, Semantic Boundary v0.2, semantic-runtime-guard-v0.1 and fail-closed human-review stops. It is separate from model qualification.",
@@ -59,5 +61,5 @@
   ],
   "execution_authorized": false,
   "model_run_authorized": false,
-  "note": "Model-free freeze candidate only. Explicit human freeze approval is still required before this policy can be treated as HUMAN_APPROVED_FROZEN."
+  "note": "Human-approved frozen policy only. This freeze does not authorize any system qualification execution or model contact."
 }
