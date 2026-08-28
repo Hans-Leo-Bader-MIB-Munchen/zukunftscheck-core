@@ -47,6 +47,17 @@ def response_with(*groups: tuple[tuple[str, str], ...]) -> dict:
     }
 
 
+def multi_source_response() -> dict:
+    response = response_with(
+        (("9.1", "PF9"),),
+        (("9.2", "PF9"), ("9.3", "PF9")),
+    )
+    response["proposals"][0]["source_location_id"] = "SL-A"
+    response["proposals"][1]["source_location_id"] = "SL-B"
+    response["source_location_id"] = "SL-A"
+    return response
+
+
 def profile(pf_id: str, required: list[str]) -> dict:
     return {
         "profile_id": f"{pf_id}_TEST_PROFILE",
@@ -72,37 +83,48 @@ class SemanticGenericCompletenessEngineV01Tests(unittest.TestCase):
             profile=profile("PF9", ["9.1", "9.2", "9.3"]),
             trigger_active=True,
             model_response=response_with((("9.1", "PF9"), ("9.3", "PF9"))),
+            target_source_location_id="SL-001",
         )
         self.assertTrue(result["human_review_required"])
-        self.assertFalse(result["automatic_downstream_use_allowed"])
+        self.assertTrue(result["completeness_stop_required"])
+        self.assertTrue(result["completeness_downstream_blocked"])
         self.assertEqual(result["missing_required_assignments"], [["9.2", "PF9"]])
         self.assertEqual(result["stop_class"], "SEMANTIC_COMPLETENESS_STOP")
         self.assertEqual(result["review_metadata"]["review_class"], "SEMANTIC_COMPLETENESS_STOP")
 
-    def test_g03_pf12_complete_required_set_does_not_stop(self) -> None:
+    def test_g03_pf12_complete_required_set_does_not_stop_without_granting_global_authority(self) -> None:
         result = evaluate_completeness_profile(
             profile=profile("PF12", ["12.1", "12.2", "12.3"]),
             trigger_active=True,
             model_response=response_with(
                 (("12.1", "PF12"), ("12.2", "PF12"), ("12.3", "PF12"))
             ),
+            target_source_location_id="SL-001",
         )
         self.assertFalse(result["human_review_required"])
-        self.assertTrue(result["automatic_downstream_use_allowed"])
+        self.assertFalse(result["completeness_stop_required"])
+        self.assertFalse(result["completeness_downstream_blocked"])
+        self.assertEqual(result["global_downstream_authority"], "NONE")
+        self.assertNotIn("automatic_downstream_use_allowed", result)
         self.assertEqual(result["missing_required_assignments"], [])
         self.assertIsNone(result["stop_class"])
 
-    def test_g04_inactive_trigger_makes_no_completeness_stop(self) -> None:
+    def test_g04_inactive_trigger_makes_no_completeness_assessment_or_global_release(self) -> None:
         result = evaluate_completeness_profile(
             profile=profile("PF9", ["9.1", "9.2", "9.3"]),
             trigger_active=False,
             model_response=response_with((("9.1", "PF9"),)),
+            target_source_location_id="SL-001",
         )
+        self.assertFalse(result["completeness_evaluated"])
         self.assertFalse(result["human_review_required"])
-        self.assertTrue(result["automatic_downstream_use_allowed"])
+        self.assertFalse(result["completeness_stop_required"])
+        self.assertFalse(result["completeness_downstream_blocked"])
+        self.assertEqual(result["global_downstream_authority"], "NONE")
+        self.assertNotIn("automatic_downstream_use_allowed", result)
         self.assertEqual(result["missing_required_assignments"], [])
 
-    def test_g05_assignments_across_multiple_proposals_are_aggregated(self) -> None:
+    def test_g05_assignments_across_multiple_proposals_same_source_are_aggregated(self) -> None:
         result = evaluate_completeness_profile(
             profile=profile("PF12", ["12.1", "12.2", "12.3"]),
             trigger_active=True,
@@ -110,6 +132,7 @@ class SemanticGenericCompletenessEngineV01Tests(unittest.TestCase):
                 (("12.1", "PF12"),),
                 (("12.2", "PF12"), ("12.3", "PF12")),
             ),
+            target_source_location_id="SL-001",
         )
         self.assertFalse(result["human_review_required"])
         self.assertEqual(result["missing_required_assignments"], [])
@@ -121,12 +144,14 @@ class SemanticGenericCompletenessEngineV01Tests(unittest.TestCase):
             profile=profile("PF9", ["9.1", "9.2", "9.3"]),
             trigger_active=True,
             model_response=response,
+            target_source_location_id="SL-001",
         )
         self.assertEqual(response, before)
         self.assertFalse(result["model_output_mutated"])
         self.assertFalse(result["auto_assignment_performed"])
         self.assertFalse(result["semantic_repair_performed"])
         self.assertEqual(result["decision_authority"], "NONE")
+        self.assertEqual(result["global_downstream_authority"], "NONE")
         self.assertFalse(result["model_qualification_changed"])
 
     def test_g07_loader_rejects_human_gold_runtime_dependency(self) -> None:
@@ -147,6 +172,30 @@ class SemanticGenericCompletenessEngineV01Tests(unittest.TestCase):
         self.assertIsNone(payload["profiles"][1]["trigger_policy"])
         with self.assertRaises(ValueError):
             validate_profile_set(payload)
+
+    def test_g10_multi_source_assignments_cannot_complete_target_source(self) -> None:
+        result = evaluate_completeness_profile(
+            profile=profile("PF9", ["9.1", "9.2", "9.3"]),
+            trigger_active=True,
+            model_response=multi_source_response(),
+            target_source_location_id="SL-A",
+        )
+        self.assertTrue(result["completeness_stop_required"])
+        self.assertEqual(
+            result["missing_required_assignments"],
+            [["9.2", "PF9"], ["9.3", "PF9"]],
+        )
+        self.assertEqual(result["observed_assignments"], [["9.1", "PF9"]])
+        self.assertEqual(result["review_metadata"]["target_source_location_id"], "SL-A")
+
+    def test_g11_trigger_active_must_be_bool(self) -> None:
+        with self.assertRaises(ValueError):
+            evaluate_completeness_profile(
+                profile=profile("PF9", ["9.1", "9.2", "9.3"]),
+                trigger_active="false",  # type: ignore[arg-type]
+                model_response=response_with((("9.1", "PF9"),)),
+                target_source_location_id="SL-001",
+            )
 
 
 if __name__ == "__main__":
