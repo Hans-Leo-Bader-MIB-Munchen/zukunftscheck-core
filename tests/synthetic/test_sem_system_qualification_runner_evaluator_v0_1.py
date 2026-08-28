@@ -103,6 +103,32 @@ class SemSystemQualificationRunnerEvaluatorV01Tests(unittest.TestCase):
         self.assertFalse(evaluation["checks"]["no_model_output_mutation"])
         self.assertEqual(guard_result, original)
 
+    def test_r08_target_mismatch_precedes_generic_companion_boundary_issue(self) -> None:
+        spec = {
+            "system_case_id": "TARGET",
+            "expected_behavior": "FAIL_CLOSED_STOP",
+            "expected_boundary_code": "TARGET_SOURCE_LOCATION_MISMATCH",
+            "human_review_required": True,
+            "automatic_downstream_use_allowed": False,
+        }
+        guard_result = {
+            "boundary_passed": False,
+            "boundary_issues": [
+                {"code": "UNKNOWN_SOURCE_LOCATION_REF"},
+                {"code": "TARGET_SOURCE_LOCATION_MISMATCH"},
+            ],
+            "automatic_downstream_use_allowed": False,
+            "human_review_required": False,
+            "model_output_mutated": False,
+            "completeness_audit": None,
+        }
+        original = copy.deepcopy(guard_result)
+        evaluation = evaluate_system_case(case_spec=spec, guard_result=guard_result)
+        self.assertTrue(evaluation["case_passed"])
+        self.assertEqual(evaluation["stop_code"], "TARGET_SOURCE_LOCATION_MISMATCH")
+        self.assertTrue(evaluation["human_review_required"])
+        self.assertEqual(guard_result, original)
+
 
 if __name__ == "__main__":
     unittest.main()
