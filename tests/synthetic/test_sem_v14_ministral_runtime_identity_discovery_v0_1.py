@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import io
 import json
 import unittest
 from pathlib import Path
@@ -26,20 +25,46 @@ class _FakeResponse:
 
 
 class MinistralRuntimeIdentityDiscoveryTests(unittest.TestCase):
-    def test_d01_live_candidate_is_closed_by_default(self) -> None:
+    def test_d01_live_gate_matches_exact_discovery_only_approval(self) -> None:
         auth = json.loads(discovery.AUTH_PATH.read_text(encoding="utf-8"))
-        self.assertEqual(auth["status"], "PREPARED_NOT_APPROVED")
-        self.assertFalse(auth["localhost_inventory_contact_authorized"])
-        self.assertFalse(auth["model_contact_authorized"])
+        self.assertEqual(auth["status"], "EXPLICIT_USER_APPROVED_DISCOVERY_ONLY")
+        self.assertTrue(auth["localhost_inventory_contact_authorized"])
+        self.assertTrue(auth["model_contact_authorized"])
         self.assertFalse(auth["generation_authorized"])
         self.assertFalse(auth["qualification_execution_authorized"])
         self.assertEqual(auth["generation_request_count_max"], 0)
         self.assertEqual(auth["inventory_request_count_max"], 1)
+        self.assertTrue(auth["single_use_discovery_only"])
+        self.assertFalse(auth["authorization_consumed"])
         self.assertFalse(auth["runtime_identity_bound"])
         self.assertFalse(auth["model_qualified"])
+        self.assertTrue(auth["explicit_user_approval_received"])
 
     def test_d02_closed_gate_stops_before_inventory_contact(self) -> None:
-        with patch.object(discovery.urllib.request, "urlopen") as contact:
+        denied = {
+            "status": "PREPARED_NOT_APPROVED",
+            "discovery_version": discovery.DISCOVERY_VERSION,
+            "discovery_type": discovery.DISCOVERY_TYPE,
+            "model_repository": discovery.MODEL_REPOSITORY,
+            "required_quantization": discovery.REQUIRED_QUANTIZATION,
+            "required_base_url": discovery.REQUIRED_BASE_URL,
+            "required_loaded_context_length": discovery.REQUIRED_CONTEXT,
+            "localhost_inventory_contact_authorized": False,
+            "model_contact_authorized": False,
+            "generation_authorized": False,
+            "qualification_execution_authorized": False,
+            "generation_request_count_max": 0,
+            "inventory_request_count_max": 1,
+            "single_use_discovery_only": True,
+            "synthetic_only": True,
+            "local_loopback_only": True,
+            "remote_cloud": False,
+            "real_data": False,
+            "authorization_consumed": False,
+        }
+        with patch.object(discovery, "load", return_value=denied), patch.object(
+            discovery.urllib.request, "urlopen"
+        ) as contact:
             with self.assertRaises(PermissionError):
                 discovery.perform_discovery_only()
             contact.assert_not_called()
