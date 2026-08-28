@@ -1,0 +1,51 @@
+{
+  "completion_version": "ZS-KI-B-SEM-SYSTEMQUALIFIKATION-COMPLETION-2026-001_v0.2",
+  "status": "GUARDED_SYSTEM_QUALIFIED_FROZEN",
+  "completed_on": "2026-08-28",
+  "data_class": "SYNTHETIC_ONLY",
+  "frozen_basis": {
+    "freeze_manifest": "tests/fixtures/zs_ki_b_sem_system_qualification_freeze_manifest_frozen_v0_2.json",
+    "freeze_version": "ZS-KI-B-SEM-SYSTEMQUALIFIKATION-FREEZE-2026-002_v0.2",
+    "suite": "tests/fixtures/zs_ki_b_sem_system_qualification_suite_frozen_v0_2.json",
+    "suite_version": "ZS-KI-B-SEM-SYSTEMQUALIFIKATION-SUITE-2026-002_v0.2",
+    "system_case_count": 29
+  },
+  "evaluated_system": {
+    "composition": "core/validation/semantic_system_composition_v0_1.py",
+    "evaluated_commit": "e68dbf656dc47138dfda9f4f6297c28a44edda97",
+    "execution_harness": "core/validation/semantic_system_qualification_execution_harness_v0_1.py",
+    "execution_harness_version": "semantic-system-qualification-execution-harness-v0.1",
+    "execution_entrypoint": "scripts/zs_ki_b_sem_system_qualification_execute_v0_2.py"
+  },
+  "qualification_result": {
+    "result_path": "tests/fixtures/zs_ki_b_sem_system_qualification_execution_result_2026_002_v0_1.json",
+    "case_count": 29,
+    "passed_case_count": 29,
+    "failed_case_count": 0,
+    "qualification_passed": true,
+    "decision_authority": "NONE",
+    "model_contact_authorized": false,
+    "model_contact_observed": false,
+    "model_qualification_changed": false
+  },
+  "remediation_trace": {
+    "first_authorized_run_result": "26/29 PASS; 3/29 FAIL",
+    "first_run_failure_scope": "MALFORMED_NESTED_TYPE routing only",
+    "remediation_pr": 62,
+    "remediation_merge_commit": "e68dbf656dc47138dfda9f4f6297c28a44edda97",
+    "second_authorized_run_result": "29/29 PASS"
+  },
+  "preserved_limits": {
+    "model_qualification_status": "NOT_QUALIFIED",
+    "decision_authority": "NONE",
+    "global_downstream_authority": "NONE",
+    "real_data_authorized": false,
+    "pilot_authorized": false,
+    "production_authorized": false,
+    "benchmark_generalization_authorized": false,
+    "phase_f_authorized": false,
+    "additional_model_run_authorized": false
+  },
+  "next_gate": "Guarded-system qualification v0.2 is complete. Any return to the separate model-qualification axis requires a separately scoped plan and explicit model-run authorization. No real-data, pilot, production, benchmark-generalization or Phase-F authority follows from this completion.",
+  "note": "This completion record supplements but does not modify the previously HUMAN_APPROVED_FROZEN v0.2 basis. It records the successful model-free 29-case qualification of Generic System Composition v0.1 after the malformed-routing remediation. MODEL_QUALIFIED remains unchanged and no downstream authority is granted."
+}
