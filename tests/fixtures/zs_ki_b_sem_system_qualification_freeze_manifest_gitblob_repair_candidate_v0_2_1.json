@@ -1,0 +1,86 @@
+{
+  "freeze_version": "ZS-KI-B-SEM-SYSTEMQUALIFIKATION-FREEZE-2026-002_v0.2.1-GITBLOB-REPAIR-CANDIDATE",
+  "status": "TECHNICAL_REPAIR_CANDIDATE",
+  "approved_on": "2026-08-28",
+  "approval_basis": "Explicit user approval: \"Ich genehmige den v0.2-Freeze als HUMAN_APPROVED_FROZEN.\"",
+  "approved_main_commit": "2e9cb193c1a48e18e08d060c1f11a95505934a8a",
+  "source_candidate_declared_base_main_commit": "0af9cc656a48eb79dc5186964a38c86f7f69ae48",
+  "hash_algorithm": "SHA-256",
+  "hashes_materialized": true,
+  "hash_materialization_basis": "User-provided stdout from scripts/zs_ki_b_sem_system_qualification_freeze_v0_2.py after updating local main following merge of PR #58.",
+  "data_class": "SYNTHETIC_ONLY",
+  "artifacts": [
+    {
+      "role": "policy",
+      "path": "tests/fixtures/zs_ki_b_sem_system_qualification_policy_candidate_v0_2.json",
+      "sha256": "43ba84a22cf2b9681f70052e468e299517e650b8cd9e92371b10218c23080d7c"
+    },
+    {
+      "role": "suite",
+      "path": "tests/fixtures/zs_ki_b_sem_system_qualification_suite_candidate_v0_2.json",
+      "sha256": "6eb25e3c1119625578574f503fb5ff7badda64f1289bf2001d4d44cf5e3a6573"
+    },
+    {
+      "role": "generic_completeness_engine",
+      "path": "core/validation/semantic_completeness_profile_engine_v0_1.py",
+      "sha256": "a3e3e9fa7a0fe4d5026da3841df8986fc4efdac01a14620f0929b62fa9321700"
+    },
+    {
+      "role": "qualification_oracle_harness",
+      "path": "core/validation/semantic_qualification_oracle_harness_v0_1.py",
+      "sha256": "3b3bbb2e0a99411ba4c976e76f980ab9a9acaebe50ea712315083472cc3f8520"
+    },
+    {
+      "role": "semantic_boundary",
+      "path": "core/validation/semantic_boundary_v0_2.py",
+      "sha256": "5dd9d8e834aa464d991aecebd0f35db3412e4ac9b5ffeb723006648055dd6a97"
+    },
+    {
+      "role": "semantic_runtime_guard",
+      "path": "core/validation/semantic_runtime_guard_v0_2.py",
+      "sha256": "251241a9bafbec14418cf294ebb90ade9c99ed5916d5868abf24abbb1cf6375d"
+    },
+    {
+      "role": "semantic_completeness_audit_pf2",
+      "path": "core/validation/semantic_completeness_audit_v0_2.py",
+      "sha256": "ad1e0d7a3977287eaeaee5f9aa3a285ab58961b63857c83ff76b978cf34adacc"
+    },
+    {
+      "role": "source_human_gold",
+      "path": "tests/fixtures/zs_ki_b_sem_v07_human_gold_frozen_v0_1.json",
+      "sha256": "2098644c74d4fe8278d3c6362dde4411749cb83b31922c127d593c912df763d3"
+    },
+    {
+      "role": "suite_contract_tests",
+      "path": "tests/synthetic/test_sem_system_qualification_suite_v0_2.py",
+      "sha256": "cebbd944315368691b1470db2b6b34507876daf006c5002782ccad124eecd46f"
+    }
+  ],
+  "approval_records": {
+    "policy_frozen": "tests/fixtures/zs_ki_b_sem_system_qualification_policy_frozen_v0_2.json",
+    "suite_frozen": "tests/fixtures/zs_ki_b_sem_system_qualification_suite_frozen_v0_2.json"
+  },
+  "system_case_count": 29,
+  "model_qualification_status_preserved": "NOT_QUALIFIED",
+  "guarded_system_qualification_status": "NOT_YET_EXECUTED",
+  "generic_v0_2_system_composition_status": "NOT_YET_IMPLEMENTED",
+  "decision_authority": "NONE",
+  "execution_authorized": false,
+  "model_contact_authorized": false,
+  "real_data_authorized": false,
+  "pilot_authorized": false,
+  "production_authorized": false,
+  "benchmark_generalization_authorized": false,
+  "phase_f_authorized": false,
+  "next_gate": "Verify canonical Git-blob hashes model-free on at least the current Windows checkout and against repository blob bytes, then obtain explicit human approval before creating a replacement HUMAN_APPROVED_FROZEN manifest. No model contact is authorized.",
+  "note": "This is the human-approved frozen v0.2 basis. The bound policy and suite paths are the exact hash-materialized candidate artifacts approved by the user; separate frozen approval records preserve the human decision without changing those bound bytes. No system-qualification execution or model contact is authorized. Runtime guard v0.2 remains PF2-specific and is not the generic PF2/PF9/PF12 composition layer.",
+  "repair_of": "ZS-KI-B-SEM-SYSTEMQUALIFIKATION-FREEZE-2026-002_v0.2",
+  "repair_reason": "The v0.2 SHA-256 values were materialized from checked-out worktree bytes. On platforms with line-ending conversion this is not reproducible. This candidate re-materializes SHA-256 over the canonical Git blob bytes at the original approved_main_commit.",
+  "hash_basis": "CANONICAL_GIT_BLOB_BYTES",
+  "hash_basis_commit": "2e9cb193c1a48e18e08d060c1f11a95505934a8a",
+  "hash_materialization_command_semantics": "git rev-parse <commit>:<path> + git cat-file blob <blob_sha> + SHA-256",
+  "technical_repair_only": true,
+  "semantic_scope_changed": false,
+  "artifact_paths_changed": false,
+  "human_reapproval_required_before_replacing_frozen_manifest": true
+}
