@@ -1,6 +1,8 @@
 {
   "freeze_version": "ZS-KI-B-SEM-SYSTEMQUALIFIKATION-FREEZE-2026-001_v0.1",
-  "status": "FREEZE_CANDIDATE",
+  "status": "HUMAN_APPROVED_FROZEN",
+  "approved_on": "2026-08-28",
+  "approval_scope": "Explicit human freeze of the guarded-system qualification policy v0.1, 19-case synthetic system suite v0.1 and this manifest after model-free tests passed.",
   "data_class": "SYNTHETIC_ONLY",
   "architecture_reference": "ZS-DEV-KI-B-SEM-SYSTEMQUALIFIKATION-ARCHITEKTUR-2026-001_v0.1",
   "artifacts": {
@@ -23,10 +25,9 @@
   "production_authorized": false,
   "phase_f_authorized": false,
   "future_execution_requires": [
-    "explicit human freeze approval for this policy and suite",
     "separately versioned guarded-system qualification runner/evaluator",
     "model-free proof that the evaluator classifies all frozen deterministic variants correctly",
     "separate explicit user approval before any model contact"
   ],
-  "note": "This manifest records a freeze candidate only. It must not be interpreted as HUMAN_APPROVED_FROZEN until explicit human approval is recorded in a later controlled change."
+  "note": "Human-approved frozen system-qualification basis only. No guarded-system qualification execution and no model contact are authorized by this freeze."
 }
