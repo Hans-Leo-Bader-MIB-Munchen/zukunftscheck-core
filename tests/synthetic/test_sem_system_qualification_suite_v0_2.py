@@ -93,12 +93,13 @@ class SemanticSystemQualificationSuiteV02Tests(unittest.TestCase):
         }
         self.assertEqual(covered, {"PF2", "PF9", "PF12"})
 
-    def test_s09_cross_source_false_completion_is_adversarially_covered(self) -> None:
+    def test_s09_cross_source_false_completion_is_symmetric_for_all_target_pfs(self) -> None:
         matches = [
             case for case in self.cases
             if case.get("case_family") == "MULTI_SOURCE_PROVENANCE"
         ]
-        self.assertEqual({case["pf_id"] for case in matches}, {"PF9", "PF12"})
+        self.assertEqual({case["pf_id"] for case in matches}, {"PF2", "PF9", "PF12"})
+        self.assertEqual(len(matches), 3)
         for case in matches:
             self.assertNotEqual(case["target_source_location_id"], case["other_source_location_id"])
             self.assertEqual(case["expected_behavior"], "SEMANTIC_COMPLETENESS_STOP")
