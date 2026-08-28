@@ -9,13 +9,17 @@ from __future__ import annotations
 
 import copy
 import json
+import sys
 from pathlib import Path
 from typing import Any
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from core.validation.semantic_runtime_guard_v0_1 import evaluate_semantic_runtime_guard
 from core.validation.semantic_system_qualification_evaluator_v0_1 import evaluate_system_case
 
-ROOT = Path(__file__).resolve().parents[1]
 POLICY_PATH = ROOT / "tests/fixtures/zs_ki_b_sem_system_qualification_policy_v0_1.json"
 SYSTEM_SUITE_PATH = ROOT / "tests/fixtures/zs_ki_b_sem_system_qualification_suite_v0_1.json"
 FREEZE_PATH = ROOT / "tests/fixtures/zs_ki_b_sem_system_qualification_freeze_manifest_v0_1.json"
@@ -75,20 +79,20 @@ def build_gold_complete_response(case: dict[str, Any], gold_case: dict[str, Any]
 
 
 def _apply_variant(response: dict[str, Any], variant: str) -> tuple[dict[str, Any], bool]:
-    mutated = copy.deepcopy(response)
+    variant_response = copy.deepcopy(response)
     if variant == "GOLD_COMPLETE_REQUIRED_ONLY":
-        return mutated, True
+        return variant_response, True
     if variant == "PF2_REMOVE_REQUIRED_2_2":
-        mutated["proposals"][0]["assignment_candidates"] = [
-            row for row in mutated["proposals"][0]["assignment_candidates"]
+        variant_response["proposals"][0]["assignment_candidates"] = [
+            row for row in variant_response["proposals"][0]["assignment_candidates"]
             if not (row["question_id"] == "2.2" and row["pf_id"] == "PF2")
         ]
-        return mutated, True
+        return variant_response, True
     if variant == "TARGET_SOURCE_LOCATION_MISMATCH":
-        mutated["source_location_id"] = "SL-WRONG-999"
-        return mutated, True
+        variant_response["source_location_id"] = "SL-WRONG-999"
+        return variant_response, True
     if variant == "UNCLASSIFIED_SYSTEM_STATE":
-        return mutated, False
+        return variant_response, False
     raise RuntimeError(f"unknown frozen response_variant: {variant}")
 
 
