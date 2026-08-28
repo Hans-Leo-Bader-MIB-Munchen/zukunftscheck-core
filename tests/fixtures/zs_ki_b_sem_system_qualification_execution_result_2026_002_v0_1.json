@@ -1,0 +1,539 @@
+{
+  "case_count": 29,
+  "data_class": "SYNTHETIC_ONLY",
+  "decision_authority": "NONE",
+  "evaluated_commit": "e68dbf656dc47138dfda9f4f6297c28a44edda97",
+  "failed_case_count": 0,
+  "harness_version": "semantic-system-qualification-execution-harness-v0.1",
+  "model_contact_authorized": false,
+  "model_contact_observed": false,
+  "model_qualification_changed": false,
+  "passed_case_count": 29,
+  "qualification_passed": true,
+  "results": [
+    {
+      "actual_behavior": "NO_COMPLETENESS_STOP",
+      "actual_code": null,
+      "case_family": "COMPLETE_REQUIRED_SET",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "NO_COMPLETENESS_STOP",
+      "expected_code": null,
+      "system_case_id": "V02-PF2-COMPLETE"
+    },
+    {
+      "actual_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "actual_code": "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED",
+      "case_family": "OMIT_ALL_REQUIRED",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "expected_code": null,
+      "system_case_id": "V02-PF2-OMIT-ALL"
+    },
+    {
+      "actual_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "actual_code": "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED",
+      "case_family": "OMIT_ONE_REQUIRED",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "expected_code": null,
+      "system_case_id": "V02-PF2-OMIT-2-1"
+    },
+    {
+      "actual_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "actual_code": "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED",
+      "case_family": "OMIT_ONE_REQUIRED",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "expected_code": null,
+      "system_case_id": "V02-PF2-OMIT-2-2"
+    },
+    {
+      "actual_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "actual_code": "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED",
+      "case_family": "OPTIONAL_PRESENT_REQUIRED_MISSING",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "expected_code": null,
+      "system_case_id": "V02-PF2-OPTIONAL-WITHOUT-REQUIRED"
+    },
+    {
+      "actual_behavior": "NO_COMPLETENESS_STOP",
+      "actual_code": null,
+      "case_family": "MULTI_PROPOSAL_SAME_SOURCE",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "NO_COMPLETENESS_STOP",
+      "expected_code": null,
+      "system_case_id": "V02-PF2-SAME-SOURCE-MULTI-PROPOSAL"
+    },
+    {
+      "actual_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "actual_code": "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED",
+      "case_family": "MULTI_SOURCE_PROVENANCE",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "expected_code": null,
+      "system_case_id": "V02-PF2-CROSS-SOURCE-FALSE-COMPLETION"
+    },
+    {
+      "actual_behavior": "NO_COMPLETENESS_STOP",
+      "actual_code": null,
+      "case_family": "COMPLETE_REQUIRED_SET",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "NO_COMPLETENESS_STOP",
+      "expected_code": null,
+      "system_case_id": "V02-PF9-COMPLETE"
+    },
+    {
+      "actual_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "actual_code": "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED",
+      "case_family": "OMIT_ALL_REQUIRED",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "expected_code": null,
+      "system_case_id": "V02-PF9-OMIT-ALL"
+    },
+    {
+      "actual_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "actual_code": "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED",
+      "case_family": "OMIT_ONE_REQUIRED",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "expected_code": null,
+      "system_case_id": "V02-PF9-OMIT-9-1"
+    },
+    {
+      "actual_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "actual_code": "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED",
+      "case_family": "OMIT_ONE_REQUIRED",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "expected_code": null,
+      "system_case_id": "V02-PF9-OMIT-9-2"
+    },
+    {
+      "actual_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "actual_code": "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED",
+      "case_family": "OMIT_ONE_REQUIRED",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "expected_code": null,
+      "system_case_id": "V02-PF9-OMIT-9-3"
+    },
+    {
+      "actual_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "actual_code": "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED",
+      "case_family": "OMIT_MULTIPLE_REQUIRED",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "expected_code": null,
+      "system_case_id": "V02-PF9-OMIT-MULTIPLE"
+    },
+    {
+      "actual_behavior": "NO_COMPLETENESS_STOP",
+      "actual_code": null,
+      "case_family": "MULTI_PROPOSAL_SAME_SOURCE",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "NO_COMPLETENESS_STOP",
+      "expected_code": null,
+      "system_case_id": "V02-PF9-SAME-SOURCE-MULTI-PROPOSAL"
+    },
+    {
+      "actual_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "actual_code": "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED",
+      "case_family": "MULTI_SOURCE_PROVENANCE",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "expected_code": null,
+      "system_case_id": "V02-PF9-CROSS-SOURCE-FALSE-COMPLETION"
+    },
+    {
+      "actual_behavior": "NO_COMPLETENESS_STOP",
+      "actual_code": null,
+      "case_family": "COMPLETE_REQUIRED_SET",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "NO_COMPLETENESS_STOP",
+      "expected_code": null,
+      "system_case_id": "V02-PF12-COMPLETE"
+    },
+    {
+      "actual_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "actual_code": "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED",
+      "case_family": "OMIT_ALL_REQUIRED",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "expected_code": null,
+      "system_case_id": "V02-PF12-OMIT-ALL"
+    },
+    {
+      "actual_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "actual_code": "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED",
+      "case_family": "OMIT_ONE_REQUIRED",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "expected_code": null,
+      "system_case_id": "V02-PF12-OMIT-12-1"
+    },
+    {
+      "actual_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "actual_code": "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED",
+      "case_family": "OMIT_ONE_REQUIRED",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "expected_code": null,
+      "system_case_id": "V02-PF12-OMIT-12-2"
+    },
+    {
+      "actual_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "actual_code": "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED",
+      "case_family": "OMIT_ONE_REQUIRED",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "expected_code": null,
+      "system_case_id": "V02-PF12-OMIT-12-3"
+    },
+    {
+      "actual_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "actual_code": "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED",
+      "case_family": "OMIT_MULTIPLE_REQUIRED",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "expected_code": null,
+      "system_case_id": "V02-PF12-OMIT-MULTIPLE"
+    },
+    {
+      "actual_behavior": "NO_COMPLETENESS_STOP",
+      "actual_code": null,
+      "case_family": "MULTI_PROPOSAL_SAME_SOURCE",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "NO_COMPLETENESS_STOP",
+      "expected_code": null,
+      "system_case_id": "V02-PF12-SAME-SOURCE-MULTI-PROPOSAL"
+    },
+    {
+      "actual_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "actual_code": "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED",
+      "case_family": "MULTI_SOURCE_PROVENANCE",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "SEMANTIC_COMPLETENESS_STOP",
+      "expected_code": null,
+      "system_case_id": "V02-PF12-CROSS-SOURCE-FALSE-COMPLETION"
+    },
+    {
+      "actual_behavior": "TECHNICAL_BOUNDARY_STOP",
+      "actual_code": "TARGET_SOURCE_LOCATION_MISMATCH",
+      "case_family": "TECHNICAL_BOUNDARY_STOP",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "TECHNICAL_BOUNDARY_STOP",
+      "expected_code": "TARGET_SOURCE_LOCATION_MISMATCH",
+      "system_case_id": "V02-BOUNDARY-TARGET-MISMATCH"
+    },
+    {
+      "actual_behavior": "FAIL_CLOSED_STOP",
+      "actual_code": "MISSING_SEMANTIC_PROPOSALS",
+      "case_family": "MALFORMED_NESTED_TYPE",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "FAIL_CLOSED_STOP",
+      "expected_code": null,
+      "system_case_id": "V02-MALFORMED-PROPOSALS-WRONG-TYPE"
+    },
+    {
+      "actual_behavior": "FAIL_CLOSED_STOP",
+      "actual_code": "INVALID_ASSIGNMENT_CANDIDATES",
+      "case_family": "MALFORMED_NESTED_TYPE",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "FAIL_CLOSED_STOP",
+      "expected_code": null,
+      "system_case_id": "V02-MALFORMED-ASSIGNMENTS-WRONG-TYPE"
+    },
+    {
+      "actual_behavior": "FAIL_CLOSED_STOP",
+      "actual_code": "INVALID_ASSIGNMENT_CANDIDATE",
+      "case_family": "MALFORMED_NESTED_TYPE",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "FAIL_CLOSED_STOP",
+      "expected_code": null,
+      "system_case_id": "V02-MALFORMED-ASSIGNMENT-ITEM-WRONG-TYPE"
+    },
+    {
+      "actual_behavior": "UNKNOWN_STATE_STOP",
+      "actual_code": "UNKNOWN_SYSTEM_STATE_REVIEW_REQUIRED",
+      "case_family": "UNKNOWN_STATE_STOP",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "UNKNOWN_STATE_STOP",
+      "expected_code": "UNKNOWN_SYSTEM_STATE_REVIEW_REQUIRED",
+      "system_case_id": "V02-UNKNOWN-SYSTEM-STATE"
+    },
+    {
+      "actual_behavior": "NO_COMPLETENESS_ASSESSMENT",
+      "actual_code": null,
+      "case_family": "INACTIVE_TRIGGER_AUTHORITY",
+      "case_passed": true,
+      "checks": {
+        "behavior_matches": true,
+        "decision_authority_none": true,
+        "declared_global_authority_matches": true,
+        "global_downstream_authority_none": true,
+        "model_output_not_mutated": true,
+        "model_qualification_unchanged": true,
+        "no_auto_assignment": true,
+        "stop_code_matches": true
+      },
+      "expected_behavior": "NO_COMPLETENESS_ASSESSMENT",
+      "expected_code": null,
+      "system_case_id": "V02-INACTIVE-TRIGGER-NO-GLOBAL-RELEASE"
+    }
+  ],
+  "suite_version": "ZS-KI-B-SEM-SYSTEMQUALIFIKATION-SUITE-2026-002_v0.2"
+}
