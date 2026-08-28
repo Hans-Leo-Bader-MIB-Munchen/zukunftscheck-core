@@ -14,9 +14,9 @@ def load(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def git_blob_sha(path: str) -> str:
+def git_blob_sha(path: str, ref: str = "HEAD") -> str:
     completed = subprocess.run(
-        ["git", "rev-parse", f"HEAD:{path}"],
+        ["git", "rev-parse", f"{ref}:{path}"],
         cwd=ROOT,
         check=True,
         capture_output=True,
@@ -57,17 +57,26 @@ class TestSemV13ModelRunPrerunPackageV01(unittest.TestCase):
         self.assertFalse(p["remote_cloud"])
         self.assertFalse(p["real_data"])
 
-    def test_p03_all_frozen_artifact_blob_bindings_match_head(self) -> None:
+    def test_p03_frozen_artifact_blob_bindings_match_head_except_separate_authorization(self) -> None:
         for name, artifact in self.package["artifacts"].items():
+            if name == "authorization_placeholder":
+                continue
             with self.subTest(artifact=name):
                 self.assertEqual(git_blob_sha(artifact["path"]), artifact["git_blob_sha"])
 
-    def test_p04_authorization_placeholder_remains_not_approved(self) -> None:
-        auth = load(AUTH_PATH)
-        self.assertEqual(auth["status"], "NOT_APPROVED")
-        self.assertEqual(auth["runner_version"], "v1.3")
-        self.assertEqual(auth["model"], "qwen3-14b")
-        self.assertEqual(auth["prompt_version"], "zs_ki_b_sem_qualifikation_system_v0_6")
+    def test_p04_authorization_placeholder_is_historically_bound_and_may_change_separately(self) -> None:
+        meta = self.package["artifacts"]["authorization_placeholder"]
+        base = self.package["base_main_commit"]
+        self.assertEqual(git_blob_sha(meta["path"], base), meta["git_blob_sha"])
+        historical = json.loads(
+            subprocess.check_output(
+                ["git", "show", f"{base}:{meta['path']}"],
+                cwd=ROOT,
+                text=True,
+            )
+        )
+        self.assertEqual(historical["status"], meta["required_status"])
+        self.assertTrue(self.package["authorization_gate"]["authorization_artifact_must_be_changed_separately"])
 
     def test_p05_historical_system_qualification_evidence_is_bound(self) -> None:
         first_meta = self.package["artifacts"]["system_qualification_first_fail"]
