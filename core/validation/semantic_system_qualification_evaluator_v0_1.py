@@ -5,6 +5,7 @@ from typing import Any
 EVALUATOR_VERSION = "semantic-system-qualification-evaluator-v0.1"
 UNKNOWN_SYSTEM_STATE_STOP_CODE = "UNKNOWN_SYSTEM_STATE_REVIEW_REQUIRED"
 SEMANTIC_COMPLETENESS_STOP_CODE = "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED"
+TARGET_SOURCE_LOCATION_MISMATCH_CODE = "TARGET_SOURCE_LOCATION_MISMATCH"
 
 
 def _first_issue_code(rows: list[dict[str, Any]] | None) -> str | None:
@@ -13,6 +14,24 @@ def _first_issue_code(rows: list[dict[str, Any]] | None) -> str | None:
         if isinstance(code, str) and code:
             return code
     return None
+
+
+def _boundary_stop_code(guard_result: dict[str, Any]) -> str:
+    """Choose a stable, semantically specific formal-boundary stop code.
+
+    Boundary validation may emit several issues for one malformed response. For a
+    top-level target mismatch, the compatibility validator can additionally emit
+    UNKNOWN_SOURCE_LOCATION_REF before the v0.2 target-specific issue. The frozen
+    system suite expects the specific v0.2 target mismatch code, so it has explicit
+    precedence over generic companion issues. Otherwise the first boundary issue is
+    preserved.
+    """
+    rows = guard_result.get("boundary_issues")
+    if isinstance(rows, list):
+        codes = [row.get("code") for row in rows if isinstance(row, dict)]
+        if TARGET_SOURCE_LOCATION_MISMATCH_CODE in codes:
+            return TARGET_SOURCE_LOCATION_MISMATCH_CODE
+    return _first_issue_code(rows) or UNKNOWN_SYSTEM_STATE_STOP_CODE
 
 
 def _guard_stop_code(guard_result: dict[str, Any]) -> str:
@@ -50,7 +69,7 @@ def classify_system_outcome(
         return {
             "evaluator_version": EVALUATOR_VERSION,
             "actual_behavior": "FAIL_CLOSED_STOP",
-            "stop_code": _first_issue_code(guard_result.get("boundary_issues")) or UNKNOWN_SYSTEM_STATE_STOP_CODE,
+            "stop_code": _boundary_stop_code(guard_result),
             "human_review_required": True,
             "automatic_downstream_use_allowed": False,
             "model_output_mutated": bool(guard_result.get("model_output_mutated")),
