@@ -1,0 +1,65 @@
+{
+  "policy_version": "ZS-KI-B-SEM-SYSTEMQUALIFIKATION-POLICY-2026-001_v0.1",
+  "status": "HUMAN_APPROVED_FROZEN",
+  "approved_on": "2026-08-28",
+  "approval_basis": "Explicit user approval for HUMAN_APPROVED_FROZEN on 2026-08-28 after model-free tests passed.",
+  "data_class": "SYNTHETIC_ONLY",
+  "architecture_reference": "ZS-DEV-KI-B-SEM-SYSTEMQUALIFIKATION-ARCHITEKTUR-2026-001_v0.1",
+  "scope": "Qualification policy for the guarded semantic system composed of model output, Semantic Boundary v0.2, semantic-runtime-guard-v0.1 and fail-closed human-review stops. It is separate from model qualification.",
+  "status_axes": {
+    "model": "MODEL_QUALIFIED",
+    "guarded_system": "GUARDED_SYSTEM_QUALIFIED",
+    "must_remain_separate": true
+  },
+  "system_components_required": {
+    "semantic_boundary": "v0.2",
+    "runtime_guard": "semantic-runtime-guard-v0.1",
+    "automatic_semantic_repair_allowed": false,
+    "model_output_mutation_allowed": false,
+    "guard_decision_authority": "NONE"
+  },
+  "allowed_expected_behaviors": [
+    "PASS_THROUGH",
+    "FAIL_CLOSED_STOP"
+  ],
+  "pass_through_requirements": {
+    "formal_boundary_passed": true,
+    "automatic_downstream_use_allowed": true,
+    "guard_stop_present": false,
+    "model_output_mutated": false
+  },
+  "fail_closed_stop_requirements": {
+    "automatic_downstream_use_allowed": false,
+    "human_review_required": true,
+    "expected_stop_code_must_match": true,
+    "automatic_semantic_repair_allowed": false,
+    "model_output_mutated": false
+  },
+  "unknown_state_policy": "FAIL_CLOSED_STOP",
+  "unknown_state_requires_human_review": true,
+  "system_pass_criteria": {
+    "all_frozen_cases_must_match_prefrozen_expected_behavior": true,
+    "unexpected_pass_through_allowed": 0,
+    "unexpected_stop_allowed": 0,
+    "wrong_stop_code_allowed": 0,
+    "missing_required_human_review_allowed": 0,
+    "model_output_mutations_allowed": 0,
+    "automatic_semantic_repairs_allowed": 0,
+    "unknown_states_may_pass_through": false
+  },
+  "model_status_rule": "A system PASS caused by a guard intervention MUST NOT set MODEL_QUALIFIED=true. Model qualification remains governed only by the separate frozen model-qualification policy.",
+  "allowed_conclusion_if_system_qualified": "The tested guarded semantic system matched the prefrozen expected safe behavior for every case in the frozen system-qualification suite under the tested configuration.",
+  "forbidden_conclusions_even_if_system_qualified": [
+    "The underlying model is MODEL_QUALIFIED unless the separate model qualification passed.",
+    "The model is generally semantically reliable.",
+    "All 67 questions are empirically model-qualified.",
+    "Real-data use is approved.",
+    "Pilot use is approved.",
+    "Production use is approved.",
+    "Benchmark or generalisation approval is granted.",
+    "Phase F is approved."
+  ],
+  "execution_authorized": false,
+  "model_run_authorized": false,
+  "note": "Human-approved frozen policy only. This freeze does not authorize any system qualification execution or model contact."
+}

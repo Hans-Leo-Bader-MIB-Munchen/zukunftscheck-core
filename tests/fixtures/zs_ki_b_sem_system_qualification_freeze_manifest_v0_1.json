@@ -1,0 +1,33 @@
+{
+  "freeze_version": "ZS-KI-B-SEM-SYSTEMQUALIFIKATION-FREEZE-2026-001_v0.1",
+  "status": "HUMAN_APPROVED_FROZEN",
+  "approved_on": "2026-08-28",
+  "approval_scope": "Explicit human freeze of the guarded-system qualification policy v0.1, 19-case synthetic system suite v0.1 and this manifest after model-free tests passed.",
+  "data_class": "SYNTHETIC_ONLY",
+  "architecture_reference": "ZS-DEV-KI-B-SEM-SYSTEMQUALIFIKATION-ARCHITEKTUR-2026-001_v0.1",
+  "artifacts": {
+    "policy": "tests/fixtures/zs_ki_b_sem_system_qualification_policy_v0_1.json",
+    "suite": "tests/fixtures/zs_ki_b_sem_system_qualification_suite_v0_1.json",
+    "runtime_guard": "core/validation/semantic_runtime_guard_v0_1.py",
+    "semantic_boundary": "core/validation/semantic_boundary_v0_2.py",
+    "source_model_suite": "tests/fixtures/zs_ki_b_sem_v07_qualification_suite_frozen_v0_1.json",
+    "source_human_gold": "tests/fixtures/zs_ki_b_sem_v07_human_gold_frozen_v0_1.json"
+  },
+  "system_case_count": 19,
+  "pass_through_case_count": 16,
+  "fail_closed_stop_case_count": 3,
+  "model_qualification_status_preserved": "NOT_QUALIFIED",
+  "guarded_system_qualification_status": "NOT_YET_EXECUTED",
+  "execution_authorized": false,
+  "model_run_authorized": false,
+  "real_data_authorized": false,
+  "pilot_authorized": false,
+  "production_authorized": false,
+  "phase_f_authorized": false,
+  "future_execution_requires": [
+    "separately versioned guarded-system qualification runner/evaluator",
+    "model-free proof that the evaluator classifies all frozen deterministic variants correctly",
+    "separate explicit user approval before any model contact"
+  ],
+  "note": "Human-approved frozen system-qualification basis only. No guarded-system qualification execution and no model contact are authorized by this freeze."
+}
