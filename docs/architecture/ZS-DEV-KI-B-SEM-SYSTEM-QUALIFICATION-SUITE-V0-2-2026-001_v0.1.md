@@ -26,7 +26,7 @@ Für PF2, PF9 und PF12 werden vollständige Required-Sets und gezielte Unterbele
 - Mehrfachauslassungen für PF9/PF12;
 - PF2-Fall mit optionalem `2.4/PF2`, während ein Required Assignment fehlt;
 - Aggregation mehrerer Proposals innerhalb derselben Source Location;
-- Multi-Source-Gegenfälle, in denen Assignments einer anderen Quelle die Target-Quelle nicht künstlich vervollständigen dürfen;
+- symmetrische Multi-Source-Gegenfälle für PF2, PF9 und PF12, in denen Assignments einer anderen Quelle die Target-Quelle nicht künstlich vervollständigen dürfen;
 - mehrere malformed nested-type Fälle;
 - technischen Target-Mismatch;
 - Unknown-State-Stop;
