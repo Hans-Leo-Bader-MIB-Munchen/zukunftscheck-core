@@ -1,0 +1,41 @@
+{
+  "freeze_version": "ZS-KI-B-SEM-SYSTEMQUALIFIKATION-FREEZE-2026-002_v0.2",
+  "status": "HUMAN_APPROVED_FROZEN",
+  "approved_on": "2026-08-28",
+  "approval_basis": "Explicit user approval: \"Ich genehmige den v0.2-Freeze als HUMAN_APPROVED_FROZEN.\"",
+  "approved_main_commit": "2e9cb193c1a48e18e08d060c1f11a95505934a8a",
+  "source_candidate_declared_base_main_commit": "0af9cc656a48eb79dc5186964a38c86f7f69ae48",
+  "hash_algorithm": "SHA-256",
+  "hashes_materialized": true,
+  "hash_materialization_basis": "User-provided stdout from scripts/zs_ki_b_sem_system_qualification_freeze_v0_2.py after updating local main following merge of PR #58.",
+  "data_class": "SYNTHETIC_ONLY",
+  "artifacts": [
+    {"role":"policy","path":"tests/fixtures/zs_ki_b_sem_system_qualification_policy_candidate_v0_2.json","sha256":"ff93d76aebf6e0c2179d7214e8c7cf73bfe92e40661f61b948ba39a5edd5b8fe"},
+    {"role":"suite","path":"tests/fixtures/zs_ki_b_sem_system_qualification_suite_candidate_v0_2.json","sha256":"bc1085a79e75426f496eeeb51ff7a1659a18488670f1480dc85875fb459d7d7d"},
+    {"role":"generic_completeness_engine","path":"core/validation/semantic_completeness_profile_engine_v0_1.py","sha256":"038a0dec03b07d2cad145b7d3f523a554157c13f9f8c31fea3caa8266cb682ca"},
+    {"role":"qualification_oracle_harness","path":"core/validation/semantic_qualification_oracle_harness_v0_1.py","sha256":"8e827056ff55041f26b33e56538699e06390662a99cc6af4d6275feea134110a"},
+    {"role":"semantic_boundary","path":"core/validation/semantic_boundary_v0_2.py","sha256":"e1d70250ec9a35f9b7b907d89a1228c414c734e37280e91a5493f46f561c60a5"},
+    {"role":"semantic_runtime_guard","path":"core/validation/semantic_runtime_guard_v0_2.py","sha256":"999f96720f5263616f9dd873516d08dc105c33495a9a8d675b09980e5651f7fd"},
+    {"role":"semantic_completeness_audit_pf2","path":"core/validation/semantic_completeness_audit_v0_2.py","sha256":"e9d176eaf52c940df7175412acb462a19df6d814cf6c650b04cd04131da9c4cc"},
+    {"role":"source_human_gold","path":"tests/fixtures/zs_ki_b_sem_v07_human_gold_frozen_v0_1.json","sha256":"2fa288783fbef20e5da24b3045b531dd738946f786519bfdb3034a3df89f02d6"},
+    {"role":"suite_contract_tests","path":"tests/synthetic/test_sem_system_qualification_suite_v0_2.py","sha256":"af978412f6fcb37a34caa8a43c9b7baf6113ae92248c61e426fafbc1565a4771"}
+  ],
+  "approval_records": {
+    "policy_frozen": "tests/fixtures/zs_ki_b_sem_system_qualification_policy_frozen_v0_2.json",
+    "suite_frozen": "tests/fixtures/zs_ki_b_sem_system_qualification_suite_frozen_v0_2.json"
+  },
+  "system_case_count": 29,
+  "model_qualification_status_preserved": "NOT_QUALIFIED",
+  "guarded_system_qualification_status": "NOT_YET_EXECUTED",
+  "generic_v0_2_system_composition_status": "NOT_YET_IMPLEMENTED",
+  "decision_authority": "NONE",
+  "execution_authorized": false,
+  "model_contact_authorized": false,
+  "real_data_authorized": false,
+  "pilot_authorized": false,
+  "production_authorized": false,
+  "benchmark_generalization_authorized": false,
+  "phase_f_authorized": false,
+  "next_gate": "Implement a separately versioned deterministic generic PF2/PF9/PF12 system-composition layer, validate it model-free against the frozen basis, and require a separate explicit approval before any execution or model contact.",
+  "note": "This is the human-approved frozen v0.2 basis. The bound policy and suite paths are the exact hash-materialized candidate artifacts approved by the user; separate frozen approval records preserve the human decision without changing those bound bytes. No system-qualification execution or model contact is authorized. Runtime guard v0.2 remains PF2-specific and is not the generic PF2/PF9/PF12 composition layer."
+}
