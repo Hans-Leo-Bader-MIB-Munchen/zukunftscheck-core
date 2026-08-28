@@ -2,7 +2,7 @@
   "authorization_version": "ZS-KI-B-SEM-V1-3-MODEL-RUN-AUTHORIZATION-2026-002_v0.2",
   "status": "AWAITING_EXPLICIT_USER_APPROVAL",
   "prepared_on": "2026-08-28",
-  "bound_main_commit": "dde5dada8081ad5019cdf2d1b8572f12295d582f",
+  "bound_main_commit": "dde750434a4f861914708aa315e1aaccc2bb5e19",
   "prerun_package": {
     "path": "tests/fixtures/zs_ki_b_sem_v13_model_run_prerun_package_v0_1.json",
     "git_blob_sha": "be29fb0186b0f51eeb2e2df1fb00a1977597ab85",
@@ -24,6 +24,7 @@
   "remote_cloud": false,
   "real_data": false,
   "semantic_boundary_version": "semantic-boundary-v0.2",
+  "generic_system_composition_required": true,
   "generic_system_composition_version": "semantic-system-composition-v0.1",
   "qualified_completeness_pfs": ["PF2", "PF9", "PF12"],
   "non_profile_cases_boundary_only": true,
