@@ -3,11 +3,13 @@ from __future__ import annotations
 import json
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import scripts.zs_ki_b_sem_qualifikation_runner_v1_4 as runner
 
 ROOT = Path(__file__).resolve().parents[2]
 AUTH_PATH = ROOT / "tests/fixtures/zs_ki_b_sem_v14_ministral_model_run_authorization_v0_1.json"
+AUDIT_TEST_COMMIT = "0" * 40
 
 
 class TestSemQualificationRunnerV14MinistralBinding(unittest.TestCase):
@@ -43,7 +45,11 @@ class TestSemQualificationRunnerV14MinistralBinding(unittest.TestCase):
         self.assertFalse(runner._authorization_matches(auth, "qwen3-14b"))
 
     def test_r05_dry_run_manifest_preserves_semantic_architecture(self) -> None:
-        payload = runner.build_dry_run_manifest(model=runner.MODEL)
+        with patch(
+            "scripts.zs_ki_b_sem_qualifikation_runner_v0_8.current_git_commit",
+            return_value=AUDIT_TEST_COMMIT,
+        ):
+            payload = runner.build_dry_run_manifest(model=runner.MODEL)
         manifest = payload["manifest"]
         self.assertEqual(payload["mode"], "DRY_RUN_SEM_QUALIFICATION_V1_4")
         self.assertEqual(manifest["prompt_version"], "zs_ki_b_sem_qualifikation_system_v0_6")
@@ -56,7 +62,11 @@ class TestSemQualificationRunnerV14MinistralBinding(unittest.TestCase):
         self.assertTrue(manifest["non_profile_cases_boundary_only"])
 
     def test_r06_dry_run_never_authorizes_execution(self) -> None:
-        payload = runner.build_dry_run_manifest(model=runner.MODEL)
+        with patch(
+            "scripts.zs_ki_b_sem_qualifikation_runner_v0_8.current_git_commit",
+            return_value=AUDIT_TEST_COMMIT,
+        ):
+            payload = runner.build_dry_run_manifest(model=runner.MODEL)
         manifest = payload["manifest"]
         self.assertFalse(manifest["execution_authorized"])
         self.assertFalse(manifest["model_run_authorized"])
