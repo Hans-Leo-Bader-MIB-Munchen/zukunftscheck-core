@@ -12,7 +12,7 @@ Dieser Block implementiert die in `ZS-DEV-KI-B-SEM-GENERIC-COMPLETENESS-ARCHITEK
 
 - `semantic-completeness-profile-loader-v0.1`: validiert deklarative Runtime-Profile und verbietet Human-Gold-Abhängigkeiten im Runtime-Pfad.
 - `semantic-completeness-profile-engine-v0.1`: vergleicht nach einem extern deterministisch ausgewerteten Trigger beobachtete Assignments mit vorab deklarierten `required_assignments`.
-- strukturierte Review-Metadaten mit `missing_required_assignments`, `stop_class`, `stop_code`, `profile_id`, `pf_id` und Trigger-Policy-Typ.
+- strukturierte Review-Metadaten mit `missing_required_assignments`, `stop_class`, `stop_code`, `profile_id`, `pf_id`, `target_source_location_id` und Trigger-Policy-Typ.
 
 ## Sicherheitsgrenzen
 
@@ -20,6 +20,11 @@ Dieser Block implementiert die in `ZS-DEV-KI-B-SEM-GENERIC-COMPLETENESS-ARCHITEK
 - Human Gold wird nicht geladen und ist keine Runtime-Entscheidungsquelle;
 - kein Auto-Assignment, keine semantische Reparatur, keine Modelloutput-Mutation;
 - `decision_authority = NONE`;
+- `global_downstream_authority = NONE`;
+- die Engine darf nur einen eigenen Completeness-Stop melden, aber niemals globale Downstream-Nutzung freigeben;
+- wenn `trigger_active=false`, wird ausdrücklich keine Completeness-Aussage getroffen (`completeness_evaluated=false`);
+- Assignments werden nur innerhalb der explizit übergebenen `target_source_location_id` aggregiert; Multi-Source-Proposals dürfen sich nicht gegenseitig zu einer scheinbar vollständigen Target-Quelle ergänzen;
+- `trigger_active` muss ein echtes Boolean sein;
 - `model_qualification_changed = false`;
 - PF9/PF12 bleiben `QUALIFICATION_TARGET_ONLY` und `runtime_enabled=false`;
 - der bestehende PF2-v0.2-Pfad wird in diesem Block nicht automatisch auf die neue Engine umgebunden;
@@ -37,4 +42,4 @@ Completeness-Stops erhalten die Klasse `SEMANTIC_COMPLETENESS_STOP`. Das ist Rou
 
 ## Zulässiger Claim
 
-Die generische, modellfreie Required-Assignment-Engine und der Runtime-Profile-Loader sind implementiert und können synthetisch getestet werden. Daraus folgt keine Aussage, dass PF9/PF12 bereits runtime-semantisch erkannt werden oder dass irgendein Modell qualifiziert ist.
+Die generische, modellfreie Required-Assignment-Engine und der Runtime-Profile-Loader sind implementiert und können synthetisch getestet werden. Die Engine ist target-source-spezifisch und erteilt keine globale Downstream-Freigabe. Daraus folgt keine Aussage, dass PF9/PF12 bereits runtime-semantisch erkannt werden oder dass irgendein Modell qualifiziert ist.
