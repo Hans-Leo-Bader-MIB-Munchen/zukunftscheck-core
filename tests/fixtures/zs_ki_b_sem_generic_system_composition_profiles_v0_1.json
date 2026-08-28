@@ -1,0 +1,78 @@
+{
+  "profile_set_version": "ZS-KI-B-SEM-GENERIC-SYSTEM-COMPOSITION-PROFILES-2026-001_v0.1",
+  "status": "IMPLEMENTED_MODEL_FREE",
+  "data_class": "SYNTHETIC_ONLY",
+  "derivation_basis": {
+    "human_gold": "tests/fixtures/zs_ki_b_sem_v07_human_gold_frozen_v0_1.json",
+    "qualification_oracle_harness": "semantic-qualification-oracle-harness-v0.1",
+    "runtime_dependency_on_human_gold": false,
+    "runtime_dependency_on_oracle_harness": false
+  },
+  "human_gold_runtime_dependency": false,
+  "model_visible": false,
+  "decision_authority": "NONE",
+  "automatic_semantic_repair": false,
+  "auto_assignment_performed": false,
+  "profiles": [
+    {
+      "profile_id": "PF2_GENERIC_COMPOSITION_V0_1",
+      "pf_id": "PF2",
+      "status": "IMPLEMENTED_MODEL_FREE",
+      "required_assignments": [
+        {"question_id": "2.1", "pf_id": "PF2"},
+        {"question_id": "2.2", "pf_id": "PF2"}
+      ],
+      "trigger_policy": {
+        "type": "EXTERNAL_DETERMINISTIC_TRIGGER_STATE",
+        "allowed_states": ["ACTIVE", "INACTIVE", "UNKNOWN"],
+        "semantic_inference_performed": false
+      },
+      "stop_code": "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED",
+      "runtime_enabled": true,
+      "decision_authority": "NONE"
+    },
+    {
+      "profile_id": "PF9_GENERIC_COMPOSITION_V0_1",
+      "pf_id": "PF9",
+      "status": "IMPLEMENTED_MODEL_FREE",
+      "required_assignments": [
+        {"question_id": "9.1", "pf_id": "PF9"},
+        {"question_id": "9.2", "pf_id": "PF9"},
+        {"question_id": "9.3", "pf_id": "PF9"}
+      ],
+      "trigger_policy": {
+        "type": "EXTERNAL_DETERMINISTIC_TRIGGER_STATE",
+        "allowed_states": ["ACTIVE", "INACTIVE", "UNKNOWN"],
+        "semantic_inference_performed": false
+      },
+      "stop_code": "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED",
+      "runtime_enabled": true,
+      "decision_authority": "NONE"
+    },
+    {
+      "profile_id": "PF12_GENERIC_COMPOSITION_V0_1",
+      "pf_id": "PF12",
+      "status": "IMPLEMENTED_MODEL_FREE",
+      "required_assignments": [
+        {"question_id": "12.1", "pf_id": "PF12"},
+        {"question_id": "12.2", "pf_id": "PF12"},
+        {"question_id": "12.3", "pf_id": "PF12"}
+      ],
+      "trigger_policy": {
+        "type": "EXTERNAL_DETERMINISTIC_TRIGGER_STATE",
+        "allowed_states": ["ACTIVE", "INACTIVE", "UNKNOWN"],
+        "semantic_inference_performed": false
+      },
+      "stop_code": "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED",
+      "runtime_enabled": true,
+      "decision_authority": "NONE"
+    }
+  ],
+  "model_contact_authorized": false,
+  "system_qualification_execution_authorized": false,
+  "real_data_authorized": false,
+  "pilot_authorized": false,
+  "production_authorized": false,
+  "benchmark_generalisation_authorized": false,
+  "phase_f_authorized": false
+}
