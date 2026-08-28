@@ -1,0 +1,73 @@
+{
+  "profile_set_version": "ZS-KI-B-SEM-RUNTIME-COMPLETENESS-PROFILES-2026-001_v0.1",
+  "status": "ARCHITECTURE_CANDIDATE",
+  "data_class": "SYNTHETIC_ONLY",
+  "human_gold_runtime_dependency": false,
+  "model_visible": false,
+  "decision_authority": "NONE",
+  "automatic_semantic_repair": false,
+  "auto_assignment_performed": false,
+  "profiles": [
+    {
+      "profile_id": "PF2_SCOPE_COMPLETENESS_V0_2",
+      "pf_id": "PF2",
+      "status": "IMPLEMENTED_NOT_REQUALIFIED",
+      "required_assignments": [
+        {"question_id": "2.1", "pf_id": "PF2"},
+        {"question_id": "2.2", "pf_id": "PF2"}
+      ],
+      "trigger_policy": {
+        "type": "DETERMINISTIC_SCOPE_MARKER_WITH_CONTEXT",
+        "implementation": "semantic-completeness-audit-v0.2",
+        "natural_language_precision": "KNOWN_LIMITATION"
+      },
+      "stop_code": "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED",
+      "human_review_required_on_stop": true,
+      "automatic_downstream_use_allowed_on_stop": false,
+      "runtime_enabled": false,
+      "requalification_required": true
+    },
+    {
+      "profile_id": "PF9_DEPENDENCY_COMPLETENESS_CANDIDATE",
+      "pf_id": "PF9",
+      "status": "QUALIFICATION_TARGET_ONLY",
+      "required_assignments": [
+        {"question_id": "9.1", "pf_id": "PF9"},
+        {"question_id": "9.2", "pf_id": "PF9"},
+        {"question_id": "9.3", "pf_id": "PF9"}
+      ],
+      "trigger_policy": null,
+      "stop_code": "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED",
+      "runtime_enabled": false,
+      "requalification_required": true
+    },
+    {
+      "profile_id": "PF12_NEXT_STEP_COMPLETENESS_CANDIDATE",
+      "pf_id": "PF12",
+      "status": "QUALIFICATION_TARGET_ONLY",
+      "required_assignments": [
+        {"question_id": "12.1", "pf_id": "PF12"},
+        {"question_id": "12.2", "pf_id": "PF12"},
+        {"question_id": "12.3", "pf_id": "PF12"}
+      ],
+      "trigger_policy": null,
+      "stop_code": "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED",
+      "runtime_enabled": false,
+      "requalification_required": true
+    }
+  ],
+  "open_risks": [
+    {
+      "risk_id": "OPEN_RISK_NATURAL_LANGUAGE_TRIGGER_PRECISION",
+      "severity": "KNOWN_LIMITATION",
+      "description": "Deterministic marker/context rules cannot exhaustively capture natural-language paraphrases. The token 'nur' is especially context-dependent and must not be treated as a sufficient generic PF2 trigger by itself."
+    }
+  ],
+  "execution_authorized": false,
+  "model_run_authorized": false,
+  "real_data_authorized": false,
+  "pilot_authorized": false,
+  "production_authorized": false,
+  "benchmark_generalisation_authorized": false,
+  "phase_f_authorized": false
+}
