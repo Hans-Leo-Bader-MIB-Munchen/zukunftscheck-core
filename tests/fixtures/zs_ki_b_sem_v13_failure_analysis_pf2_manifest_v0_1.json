@@ -1,0 +1,63 @@
+{
+  "analysis_version": "ZS-KI-B-SEM-V1-3-FAILURE-ANALYSIS-2026-001_v0.1",
+  "status": "MODEL_FREE_ANALYSIS_RECORDED",
+  "analyzed_on": "2026-08-28",
+  "source_result_path": "tests/fixtures/zs_ki_b_sem_v13_execution_result_2026_013_v0_1.json",
+  "source_result_sha256": "8717ff6583d2ab38da23f002047f3c6477015c703d1d97e061889c863d45a8c3",
+  "run_type": "ZS-KI-B-SEM-QUALIFIKATION-SYNTHETIC-V1-3-GENERIC-COMPOSITION-2026-013",
+  "runner_version": "v1.3",
+  "model": "qwen3-14b",
+  "observed_run_count": 1,
+  "observed_model_request_count": 2,
+  "one_shot_authorization_consumed": true,
+  "model_qualified": false,
+  "primary_finding": {
+    "classification": "MODEL_SEMANTIC_UNDERCOVERAGE_CORRECTLY_CAUGHT_BY_COMPLETENESS_GUARD",
+    "case_id": "ZS-KI-B-SEM-V07-Q-PF2-SYN-001",
+    "frozen_source_statement": "Betrachtet wird ausschließlich das bestehende Rathaus einschließlich des unmittelbar zugehörigen Vorplatzes.",
+    "human_gold_required_assignments": [["2.1", "PF2"], ["2.2", "PF2"]],
+    "model_observed_assignments": [["2.1", "PF2"]],
+    "missing_required_assignments": [["2.2", "PF2"]],
+    "formal_boundary_passed": true,
+    "composition_behavior": "SEMANTIC_COMPLETENESS_STOP",
+    "stop_code": "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED",
+    "human_review_required": true,
+    "automatic_downstream_use_allowed": false,
+    "auto_assignment_performed": false,
+    "semantic_repair_performed": false,
+    "model_output_mutated": false,
+    "decision_authority": "NONE",
+    "conclusion": "PF2 is a genuine model-side semantic undercoverage against the frozen Human-Gold. Generic System Composition v0.1 correctly detected the missing required assignment and stopped fail-closed before Human-Gold evaluation."
+  },
+  "preceding_case": {
+    "case_id": "ZS-KI-B-SEM-V07-Q-PF1-SYN-001",
+    "boundary_passed": true,
+    "human_gold_passed": true,
+    "observed_assignments": [["1.1", "PF1"]]
+  },
+  "manifest_provenance_findings": [
+    {
+      "classification": "INHERITED_MODE_LABEL_MISMATCH",
+      "observed": "EXECUTED_ONCE_FAILED_SEM_QUALIFICATION_V0_9",
+      "expected_family": "v1.3",
+      "impact": "Provenance/status-label defect only; run manifest itself identifies runner_version v1.3 and correct run_type."
+    },
+    {
+      "classification": "MODEL_CONTACT_FLAG_FALSE_NEGATIVE",
+      "observed_model_contact_performed": false,
+      "observed_model_request_count": 2,
+      "provider_envelopes_present": 2,
+      "impact": "Manifest provenance defect. Two generation requests demonstrably occurred, so model_contact_performed=false is incorrect."
+    }
+  ],
+  "not_concluded": [
+    "MODEL_QUALIFIED",
+    "benchmark approval",
+    "generalisation approval",
+    "pilot approval",
+    "production approval",
+    "Phase F approval",
+    "permission for a second model run"
+  ],
+  "next_gate": "Preserve this run unchanged, keep the authorization CONSUMED, and repair the two runner manifest-provenance defects model-free before considering any separately authorized future model run."
+}

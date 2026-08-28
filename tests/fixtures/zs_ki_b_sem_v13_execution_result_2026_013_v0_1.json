@@ -1,0 +1,251 @@
+{
+  "mode": "EXECUTED_ONCE_FAILED_SEM_QUALIFICATION_V0_9",
+  "manifest": {
+    "run_type": "ZS-KI-B-SEM-QUALIFIKATION-SYNTHETIC-V1-3-GENERIC-COMPOSITION-2026-013",
+    "runner_version": "v1.3",
+    "expected_run_count": 1,
+    "observed_run_count": 1,
+    "expected_model_request_count": 16,
+    "observed_model_request_count": 2,
+    "git_commit": "4ea03125335ac9230d67774998e93d0dd04242cc",
+    "prompt_version": "zs_ki_b_sem_qualifikation_system_v0_6",
+    "prompt_sha256": "3b0df4373ae21b8527f4055f1a002a0b936dbafdf5bc82f7cd58cd4eb3c5ac43",
+    "contract_version": "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.2",
+    "meaning_layer": "reference_question_meanings_v0_7.json/67-of-67",
+    "meaning_layer_sha256": "093d10a676325b2860c51d8093ad8b1ebfa8ef3553e0950e7e48b18e63786123",
+    "suite_version": "ZS-KI-B-SEM-V0-7-QUALIFIKATION-SUITE-FROZEN-v0.1",
+    "gold_version": "ZS-KI-B-SEM-V0-7-HUMAN-GOLD-FROZEN-v0.1",
+    "policy_version": "ZS-KI-B-SEM-V0-7-QUALIFIKATION-POLICY-FROZEN-v0.1",
+    "freeze_version": "ZS-KI-B-SEM-V0-7-QUALIFIKATION-FREEZE-2026-001_v0.1",
+    "response_format_sha256": "368e4a94630edfb5d46e050d0baa011ac47ba50136d0eef7724799c7ecd6f0cc",
+    "data_class": "SYNTHETIC_ONLY",
+    "retry_count": 0,
+    "output_repair": false,
+    "remote_cloud": false,
+    "real_data": false,
+    "base_url": "http://127.0.0.1:1234/v1",
+    "model": "qwen3-14b",
+    "execution_attempted": true,
+    "execution_authorized": true,
+    "model_qualified": false,
+    "benchmark_approved": false,
+    "generalisation_approved": false,
+    "pilot_approved": false,
+    "production_approved": false,
+    "phase_f_approved": false,
+    "timestamp_utc": "2026-08-28T12:10:26.365156+00:00",
+    "required_loaded_context_length": 32768,
+    "previous_failed_run_recorded": true,
+    "request_timeout_seconds": 1800,
+    "prompt_change_only": false,
+    "previous_semantic_failure_recorded": true,
+    "model_run_authorized": true,
+    "semantic_boundary_version": "semantic-boundary-v0.2",
+    "generic_system_composition_version": "semantic-system-composition-v0.1",
+    "qualified_completeness_pfs": [
+      "PF2",
+      "PF9",
+      "PF12"
+    ],
+    "non_profile_cases_boundary_only": true,
+    "model_contact_performed": false
+  },
+  "preflight": {
+    "endpoint": "http://127.0.0.1:1234/api/v1/models",
+    "model_key": "qwen3-14b",
+    "loaded_instance_id": "qwen3-14b",
+    "loaded_context_length": 32768,
+    "required_loaded_context_length": 32768,
+    "max_context_length": 40960,
+    "quantization": "Q6_K",
+    "format": "gguf",
+    "generation_request_count": 0
+  },
+  "cases": [
+    {
+      "case_id": "ZS-KI-B-SEM-V07-Q-PF1-SYN-001",
+      "model_response_raw": "{\n  \"contract_version\": \"ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.2\",\n  \"source_location_id\": \"SL-PF1-001\",\n  \"proposals\": [\n    {\n      \"proposal_id\": \"P-SL-PF1-001-1\",\n      \"source_location_id\": \"SL-PF1-001\",\n      \"normalized_statement\": \"Den Auftrag für die Orientierungsprüfung erteilt die Gemeinde Beispielstadt.\",\n      \"finding_type_candidate\": \"AA\",\n      \"evidence_relation_type_candidate\": \"DIRECT\",\n      \"assignment_candidates\": [\n        {\n          \"question_id\": \"1.1\",\n          \"pf_id\": \"PF1\",\n          \"assignment_confidence\": \"UNCERTAIN\",\n          \"human_review_required\": true\n        }\n      ],\n      \"conflict_candidate_refs\": [],\n      \"gap_notes\": [],\n      \"uncertainty_notes\": [\n        \"Die Aussage 'Gemeinde Beispielstadt' ist eine fiktive Bezeichnung ohne konkrete Zuordnung zu einer realen Organisation. Dies erfordert eine Prüfung, ob die Formulierung im Sinne der Referenzfrage 1.1 als 'dokumentierte auftraggebende Organisation' zulässig ist.\"\n      ],\n      \"human_review_required\": true\n    }\n  ]\n}",
+      "model_response": {
+        "contract_version": "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.2",
+        "source_location_id": "SL-PF1-001",
+        "proposals": [
+          {
+            "proposal_id": "P-SL-PF1-001-1",
+            "source_location_id": "SL-PF1-001",
+            "normalized_statement": "Den Auftrag für die Orientierungsprüfung erteilt die Gemeinde Beispielstadt.",
+            "finding_type_candidate": "AA",
+            "evidence_relation_type_candidate": "DIRECT",
+            "assignment_candidates": [
+              {
+                "question_id": "1.1",
+                "pf_id": "PF1",
+                "assignment_confidence": "UNCERTAIN",
+                "human_review_required": true
+              }
+            ],
+            "conflict_candidate_refs": [],
+            "gap_notes": [],
+            "uncertainty_notes": [
+              "Die Aussage 'Gemeinde Beispielstadt' ist eine fiktive Bezeichnung ohne konkrete Zuordnung zu einer realen Organisation. Dies erfordert eine Prüfung, ob die Formulierung im Sinne der Referenzfrage 1.1 als 'dokumentierte auftraggebende Organisation' zulässig ist."
+            ],
+            "human_review_required": true
+          }
+        ]
+      },
+      "provider_envelope_metadata": {
+        "id": "chatcmpl-o65uvgguaskhr7ipp2d7tw",
+        "model": "qwen3-14b",
+        "created": 1787919026,
+        "usage": {
+          "prompt_tokens": 16705,
+          "completion_tokens": 691,
+          "total_tokens": 17396,
+          "completion_tokens_details": {
+            "reasoning_tokens": 374
+          }
+        }
+      },
+      "boundary_evaluation": {
+        "passed": true,
+        "formal_boundary_passed": true,
+        "runtime_guard_version": "semantic-boundary-v0.2",
+        "composition_version": null,
+        "completeness_profile_applied": false,
+        "issues": [],
+        "automatic_downstream_use_allowed": false,
+        "human_review_required": false,
+        "model_output_mutated": false,
+        "decision_authority": "NONE",
+        "global_downstream_authority": "NONE"
+      },
+      "gold_evaluation": {
+        "passed": true,
+        "actual_assignments": [
+          [
+            "1.1",
+            "PF1"
+          ]
+        ],
+        "missing_required": [],
+        "forbidden_present": [],
+        "spurious_assignments": [],
+        "expected_conflict_candidate": null,
+        "actual_conflict_candidate": false,
+        "conflict_candidate_match": true
+      }
+    },
+    {
+      "case_id": "ZS-KI-B-SEM-V07-Q-PF2-SYN-001",
+      "model_response_raw": "{\n  \"contract_version\": \"ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.2\",\n  \"source_location_id\": \"SL-PF2-001\",\n  \"proposals\": [\n    {\n      \"proposal_id\": \"P-SL-PF2-001-001\",\n      \"source_location_id\": \"SL-PF2-001\",\n      \"normalized_statement\": \"Betrachtet wird ausschließlich das bestehende Rathaus einschließlich des unmittelbar zugehörigen Vorplatzes.\",\n      \"finding_type_candidate\": \"DT\",\n      \"evidence_relation_type_candidate\": \"DIRECT\",\n      \"assignment_candidates\": [\n        {\n          \"question_id\": \"2.1\",\n          \"pf_id\": \"PF2\",\n          \"assignment_confidence\": \"CLEAR\",\n          \"human_review_required\": false\n        }\n      ],\n      \"conflict_candidate_refs\": [],\n      \"gap_notes\": [],\n      \"uncertainty_notes\": [],\n      \"human_review_required\": false\n    }\n  ]\n}",
+      "model_response": {
+        "contract_version": "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.2",
+        "source_location_id": "SL-PF2-001",
+        "proposals": [
+          {
+            "proposal_id": "P-SL-PF2-001-001",
+            "source_location_id": "SL-PF2-001",
+            "normalized_statement": "Betrachtet wird ausschließlich das bestehende Rathaus einschließlich des unmittelbar zugehörigen Vorplatzes.",
+            "finding_type_candidate": "DT",
+            "evidence_relation_type_candidate": "DIRECT",
+            "assignment_candidates": [
+              {
+                "question_id": "2.1",
+                "pf_id": "PF2",
+                "assignment_confidence": "CLEAR",
+                "human_review_required": false
+              }
+            ],
+            "conflict_candidate_refs": [],
+            "gap_notes": [],
+            "uncertainty_notes": [],
+            "human_review_required": false
+          }
+        ]
+      },
+      "provider_envelope_metadata": {
+        "id": "chatcmpl-v90vot9ucfk3wle0oqhug",
+        "model": "qwen3-14b",
+        "created": 1787920493,
+        "usage": {
+          "prompt_tokens": 16715,
+          "completion_tokens": 816,
+          "total_tokens": 17531,
+          "completion_tokens_details": {
+            "reasoning_tokens": 566
+          }
+        }
+      },
+      "boundary_evaluation": {
+        "passed": false,
+        "formal_boundary_passed": true,
+        "runtime_guard_version": "semantic-system-composition-v0.1",
+        "composition_version": "semantic-system-composition-v0.1",
+        "completeness_profile_applied": true,
+        "pf_id": "PF2",
+        "behavior": "SEMANTIC_COMPLETENESS_STOP",
+        "stop_class": "SEMANTIC_COMPLETENESS_STOP",
+        "stop_code": "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED",
+        "issues": [],
+        "completeness_result": {
+          "engine_version": "semantic-completeness-profile-engine-v0.1",
+          "profile_id": "PF2_GENERIC_COMPOSITION_V0_1",
+          "pf_id": "PF2",
+          "target_source_location_id": "SL-PF2-001",
+          "trigger_active": true,
+          "completeness_evaluated": true,
+          "required_assignments": [
+            [
+              "2.1",
+              "PF2"
+            ],
+            [
+              "2.2",
+              "PF2"
+            ]
+          ],
+          "observed_assignments": [
+            [
+              "2.1",
+              "PF2"
+            ]
+          ],
+          "missing_required_assignments": [
+            [
+              "2.2",
+              "PF2"
+            ]
+          ],
+          "completeness_stop_required": true,
+          "completeness_downstream_blocked": true,
+          "stop_class": "SEMANTIC_COMPLETENESS_STOP",
+          "stop_code": "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED",
+          "human_review_required": true,
+          "review_metadata": {
+            "profile_id": "PF2_GENERIC_COMPOSITION_V0_1",
+            "pf_id": "PF2",
+            "target_source_location_id": "SL-PF2-001",
+            "missing_required_assignments": [
+              [
+                "2.2",
+                "PF2"
+              ]
+            ],
+            "trigger_policy_type": "EXTERNAL_DETERMINISTIC_TRIGGER_STATE",
+            "review_class": "SEMANTIC_COMPLETENESS_STOP"
+          },
+          "auto_assignment_performed": false,
+          "semantic_repair_performed": false,
+          "model_output_mutated": false,
+          "decision_authority": "NONE",
+          "global_downstream_authority": "NONE",
+          "model_qualification_changed": false
+        },
+        "automatic_downstream_use_allowed": false,
+        "human_review_required": true,
+        "model_output_mutated": false,
+        "decision_authority": "NONE",
+        "global_downstream_authority": "NONE"
+      }
+    }
+  ]
+}
