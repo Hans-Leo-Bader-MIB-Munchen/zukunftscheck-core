@@ -21,6 +21,7 @@
     {"system_case_id":"V02-PF2-OMIT-2-2","pf_id":"PF2","case_family":"OMIT_ONE_REQUIRED","omitted_assignment":["2.2","PF2"],"expected_behavior":"SEMANTIC_COMPLETENESS_STOP"},
     {"system_case_id":"V02-PF2-OPTIONAL-WITHOUT-REQUIRED","pf_id":"PF2","case_family":"OPTIONAL_PRESENT_REQUIRED_MISSING","preserved_optional_assignment":["2.4","PF2"],"expected_behavior":"SEMANTIC_COMPLETENESS_STOP"},
     {"system_case_id":"V02-PF2-SAME-SOURCE-MULTI-PROPOSAL","pf_id":"PF2","case_family":"MULTI_PROPOSAL_SAME_SOURCE","expected_behavior":"NO_COMPLETENESS_STOP"},
+    {"system_case_id":"V02-PF2-CROSS-SOURCE-FALSE-COMPLETION","pf_id":"PF2","case_family":"MULTI_SOURCE_PROVENANCE","target_source_location_id":"SL-A","other_source_location_id":"SL-B","expected_behavior":"SEMANTIC_COMPLETENESS_STOP"},
 
     {"system_case_id":"V02-PF9-COMPLETE","pf_id":"PF9","case_family":"COMPLETE_REQUIRED_SET","response_variant":"GOLD_COMPLETE_REQUIRED_ONLY","expected_behavior":"NO_COMPLETENESS_STOP"},
     {"system_case_id":"V02-PF9-OMIT-ALL","pf_id":"PF9","case_family":"OMIT_ALL_REQUIRED","response_variant":"ORACLE_OMIT_ALL_REQUIRED","expected_behavior":"SEMANTIC_COMPLETENESS_STOP"},
@@ -47,7 +48,7 @@
     {"system_case_id":"V02-UNKNOWN-SYSTEM-STATE","case_family":"UNKNOWN_STATE_STOP","expected_behavior":"UNKNOWN_STATE_STOP","expected_code":"UNKNOWN_SYSTEM_STATE_REVIEW_REQUIRED"},
     {"system_case_id":"V02-INACTIVE-TRIGGER-NO-GLOBAL-RELEASE","pf_id":"PF9","case_family":"INACTIVE_TRIGGER_AUTHORITY","expected_behavior":"NO_COMPLETENESS_ASSESSMENT","global_downstream_authority":"NONE"}
   ],
-  "case_count": 28,
+  "case_count": 29,
   "required_stop_classes": ["TECHNICAL_BOUNDARY_STOP","SEMANTIC_COMPLETENESS_STOP","UNKNOWN_STATE_STOP"],
   "freeze_hash_binding_required_before_execution": true,
   "human_approval_required_before_freeze": true,
