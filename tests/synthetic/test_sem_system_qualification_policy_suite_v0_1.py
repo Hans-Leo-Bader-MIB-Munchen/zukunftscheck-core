@@ -77,13 +77,17 @@ class SemSystemQualificationPolicySuiteV01Tests(unittest.TestCase):
         self.assertTrue(axes["must_remain_separate"])
         self.assertIn("MUST NOT set MODEL_QUALIFIED=true", self.policy["model_status_rule"])
 
-    def test_q02_candidate_authorizes_no_execution(self) -> None:
-        self.assertEqual(self.policy["status"], "FREEZE_CANDIDATE")
-        self.assertEqual(self.system_suite["status"], "FREEZE_CANDIDATE")
-        self.assertEqual(self.freeze["status"], "FREEZE_CANDIDATE")
+    def test_q02_human_approved_freeze_authorizes_no_execution(self) -> None:
+        self.assertEqual(self.policy["status"], "HUMAN_APPROVED_FROZEN")
+        self.assertEqual(self.system_suite["status"], "HUMAN_APPROVED_FROZEN")
+        self.assertEqual(self.freeze["status"], "HUMAN_APPROVED_FROZEN")
+        self.assertEqual(self.policy["approved_on"], "2026-08-28")
+        self.assertEqual(self.system_suite["approved_on"], "2026-08-28")
+        self.assertEqual(self.freeze["approved_on"], "2026-08-28")
         self.assertFalse(self.policy["execution_authorized"])
         self.assertFalse(self.policy["model_run_authorized"])
         self.assertFalse(self.system_suite["execution_authorized"])
+        self.assertFalse(self.freeze["execution_authorized"])
         self.assertFalse(self.freeze["model_run_authorized"])
 
     def test_q03_suite_has_prefrozen_behavior_for_every_case(self) -> None:
