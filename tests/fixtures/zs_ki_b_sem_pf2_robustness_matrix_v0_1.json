@@ -1,0 +1,58 @@
+{
+  "matrix_version": "ZS-KI-B-SEM-PF2-ROBUSTNESS-MATRIX-2026-001_v0.1",
+  "status": "MODEL_FREE_TESTDESIGN",
+  "data_class": "SYNTHETIC_ONLY",
+  "purpose": "Discriminate PF2 object identity (2.1), explicit scope inclusion/exclusion (2.2), and optional spatial-boundary reading (2.4) without model execution or changing frozen qualification assets.",
+  "frozen_assets_changed": false,
+  "model_execution_authorized": false,
+  "cases": [
+    {
+      "case_id": "PF2-RM-01-OBJECT-ONLY",
+      "text": "Betrachtet wird das bestehende Rathaus.",
+      "required_assignments": [["2.1", "PF2"]],
+      "forbidden_assignments": [["2.2", "PF2"]],
+      "optional_assignments": [],
+      "rationale": "Nur der Gegenstand wird benannt; keine eigenständige Ein-/Ausschluss- oder Begrenzungsinformation."
+    },
+    {
+      "case_id": "PF2-RM-02-EXPLICIT-INCLUSION",
+      "text": "Betrachtet wird das bestehende Rathaus einschließlich des unmittelbar zugehörigen Vorplatzes.",
+      "required_assignments": [["2.1", "PF2"], ["2.2", "PF2"]],
+      "forbidden_assignments": [],
+      "optional_assignments": [["2.4", "PF2"]],
+      "rationale": "‚einschließlich‘ dokumentiert neben dem Gegenstand eine eigenständige Zugehörigkeitsinformation; Raumbezug kann zusätzlich 2.4 tragen."
+    },
+    {
+      "case_id": "PF2-RM-03-EXPLICIT-EXCLUSION",
+      "text": "Betrachtet wird das bestehende Rathaus; der rückwärtige Parkplatz ist ausdrücklich ausgenommen.",
+      "required_assignments": [["2.1", "PF2"], ["2.2", "PF2"]],
+      "forbidden_assignments": [],
+      "optional_assignments": [["2.4", "PF2"]],
+      "rationale": "Expliziter Ausschluss ist der Kernfall von 2.2; räumliche Eindeutigkeit kann zusätzlich berührt sein."
+    },
+    {
+      "case_id": "PF2-RM-04-EXCLUSIVE-PLUS-INCLUSION",
+      "text": "Betrachtet wird ausschließlich das bestehende Rathaus einschließlich des unmittelbar zugehörigen Vorplatzes.",
+      "required_assignments": [["2.1", "PF2"], ["2.2", "PF2"]],
+      "forbidden_assignments": [],
+      "optional_assignments": [["2.4", "PF2"]],
+      "rationale": "Der eingefrorene Qualifikationsfall: ‚ausschließlich‘ plus ‚einschließlich‘ trägt zwingend die explizite Umfangsdimension 2.2."
+    },
+    {
+      "case_id": "PF2-RM-05-SPATIAL-BOUNDARY-WITHOUT-INCLUSION",
+      "text": "Die räumliche Grenze des betrachteten Rathausgrundstücks verläuft entlang der im Lageplan markierten Grundstücksgrenze.",
+      "required_assignments": [["2.4", "PF2"]],
+      "forbidden_assignments": [["2.2", "PF2"]],
+      "optional_assignments": [["2.1", "PF2"]],
+      "rationale": "Primär räumliche Grenzbestimmung; keine eigenständige Ein-/Ausschlussinformation im Sinne von 2.2."
+    },
+    {
+      "case_id": "PF2-RM-06-INCLUSION-NONSPATIAL",
+      "text": "Zum Bearbeitungsgegenstand gehört ausdrücklich auch die Prüfung der bestehenden Heizungsanlage.",
+      "required_assignments": [["2.2", "PF2"]],
+      "forbidden_assignments": [["2.4", "PF2"]],
+      "optional_assignments": [["2.1", "PF2"]],
+      "rationale": "Explizite inhaltliche Zugehörigkeit ohne räumliche Grenzfrage trennt 2.2 von 2.4."
+    }
+  ]
+}
