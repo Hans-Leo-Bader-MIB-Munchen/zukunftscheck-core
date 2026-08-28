@@ -14,7 +14,7 @@ class TestSemMinistralReadinessPreflightV01(unittest.TestCase):
         cls.plan = json.loads(PLAN_PATH.read_text(encoding="utf-8"))
 
     def test_p01_plan_is_model_free_and_not_authorized(self) -> None:
-        self.assertEqual(cls := self.plan["status"], "MODEL_FREE_READINESS_PLAN_NOT_AUTHORIZED")
+        self.assertEqual(self.plan["status"], "MODEL_FREE_READINESS_PLAN_NOT_AUTHORIZED")
         self.assertFalse(self.plan["download_authorized"])
         self.assertFalse(self.plan["model_load_authorized"])
         self.assertFalse(self.plan["localhost_preflight_authorized"])
