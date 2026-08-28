@@ -12,7 +12,8 @@
     {"role":"generic_completeness_engine","path":"core/validation/semantic_completeness_profile_engine_v0_1.py","sha256":null},
     {"role":"qualification_oracle_harness","path":"core/validation/semantic_qualification_oracle_harness_v0_1.py","sha256":null},
     {"role":"semantic_boundary","path":"core/validation/semantic_boundary_v0_2.py","sha256":null},
-    {"role":"semantic_runtime_guard","path":"core/validation/semantic_runtime_guard_v0_1.py","sha256":null},
+    {"role":"semantic_runtime_guard","path":"core/validation/semantic_runtime_guard_v0_2.py","sha256":null},
+    {"role":"semantic_completeness_audit_pf2","path":"core/validation/semantic_completeness_audit_v0_2.py","sha256":null},
     {"role":"source_human_gold","path":"tests/fixtures/zs_ki_b_sem_v07_human_gold_frozen_v0_1.json","sha256":null},
     {"role":"suite_contract_tests","path":"tests/synthetic/test_sem_system_qualification_suite_v0_2.py","sha256":null}
   ],
@@ -28,5 +29,5 @@
   "benchmark_generalization_authorized": false,
   "phase_f_authorized": false,
   "next_gate": "Materialize SHA-256 hashes, run model-free freeze tests, then obtain explicit human approval before creating HUMAN_APPROVED_FROZEN copies.",
-  "note": "This manifest is deliberately not frozen. Null hashes are placeholders to be deterministically materialized by the freeze preparation script; no model contact occurs."
+  "note": "This manifest is deliberately not frozen. The PF2 legacy runtime guard v0.2 and PF2 completeness audit v0.2 are bound separately from the generic completeness engine v0.1. The later v0.2 system-composition layer must deterministically combine the generic engine with profile-specific trigger policy for PF2/PF9/PF12; this manifest does not claim that semantic_runtime_guard_v0_2 already provides that generic composition. Null hashes are placeholders to be deterministically materialized by the freeze preparation script; no model contact occurs."
 }
