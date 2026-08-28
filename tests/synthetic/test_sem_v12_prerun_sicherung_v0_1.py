@@ -8,26 +8,26 @@ import scripts.zs_ki_b_sem_qualifikation_runner_v1_2 as runner
 
 
 class SemV12PreRunSicherungTests(unittest.TestCase):
-    def test_p01_dry_run_manifest_proves_guard_bound_and_exact_run_authorized_but_not_attempted(self) -> None:
+    def test_p01_dry_run_manifest_proves_guard_bound_and_consumed_run_blocked(self) -> None:
         payload = runner.build_dry_run_manifest(model="qwen3-14b")
         manifest = payload["manifest"]
         self.assertEqual(payload["mode"], "DRY_RUN_SEM_QUALIFICATION_V1_2")
         self.assertEqual(manifest["runner_version"], "v1.2")
         self.assertEqual(manifest["runtime_guard_version"], "semantic-runtime-guard-v0.1")
         self.assertTrue(manifest["runtime_guard_bound"])
-        self.assertTrue(manifest["execution_authorized"])
-        self.assertTrue(manifest["model_run_authorized"])
+        self.assertFalse(manifest["execution_authorized"])
+        self.assertFalse(manifest["model_run_authorized"])
         self.assertFalse(manifest["execution_attempted"])
         self.assertEqual(manifest["observed_run_count"], 0)
         self.assertEqual(manifest["observed_model_request_count"], 0)
 
-    def test_p02_wrong_model_stops_before_any_model_contact(self) -> None:
+    def test_p02_consumed_authorization_stops_before_any_model_contact(self) -> None:
         runner._install_bindings()
         preflight = runner.v11.v10.v09.preflight_loaded_model
         chat = runner.v11.v10.v09.chat_completion_structured
         with patch.object(runner.v11.v10.v09, "preflight_loaded_model", wraps=preflight) as preflight_mock, \
              patch.object(runner.v11.v10.v09, "chat_completion_structured", wraps=chat) as chat_mock, \
-             patch.object(sys, "argv", ["runner", "--execute", "--model", "gemma-3-12b-it-qat"]):
+             patch.object(sys, "argv", ["runner", "--execute", "--model", "qwen3-14b"]):
             with self.assertRaises(SystemExit) as exc:
                 runner.main()
         self.assertEqual(exc.exception.code, 2)
@@ -74,12 +74,11 @@ class SemV12PreRunSicherungTests(unittest.TestCase):
         self.assertIn("SEMANTIC_COMPLETENESS_REVIEW_REQUIRED", [row["code"] for row in result["issues"]])
         self.assertEqual(result["decision_authority"], "NONE")
 
-    def test_p04_authorization_is_exactly_one_local_synthetic_run(self) -> None:
-        auth = runner.validate_execution_authorization("qwen3-14b")
-        self.assertEqual(auth["status"], "EXPLICIT_USER_APPROVED")
-        self.assertEqual(auth["expected_model_request_count"], 16)
-        self.assertEqual(auth["required_loaded_context_length"], 32768)
-        self.assertEqual(auth["required_request_timeout_seconds"], 1800)
+    def test_p04_authorization_receipt_is_consumed_and_one_shot_remains_enforced(self) -> None:
+        auth = runner.v11.v10.v09.base.load(runner.AUTH_PATH)
+        self.assertEqual(auth["status"], "CONSUMED")
+        self.assertEqual(auth["consumed_observed_run_count"], 1)
+        self.assertEqual(auth["consumed_observed_model_request_count"], 2)
         self.assertTrue(auth["single_run_only"])
         self.assertEqual(auth["retry_count"], 0)
         self.assertFalse(auth["output_repair"])
