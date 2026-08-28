@@ -2,6 +2,7 @@
   "authorization_version": "ZS-KI-B-SEM-V1-4-MINISTRAL-PREFLIGHT-ONLY-AUTHORIZATION-2026-001_v0.1",
   "status": "EXPLICIT_USER_APPROVED_PREFLIGHT_ONLY",
   "approved_on": "2026-08-28",
+  "authorized_base_main_commit": "6b9628156effb24ac0b5cca180262426c05307de",
   "approval_scope": "EXACTLY_ONE_LOCAL_DOWNLOAD_LOAD_AND_PREFLIGHT_ONLY_SEQUENCE_WITH_ZERO_GENERATION_REQUESTS",
   "preflight_version": "v1.0",
   "preflight_type": "ZS-KI-B-SEM-MINISTRAL-PREFLIGHT-ONLY-2026-001",
