@@ -9,12 +9,24 @@ from core.validation.semantic_completeness_profile_loader_v0_1 import validate_p
 
 COMPOSITION_VERSION = "semantic-system-composition-v0.1"
 TECHNICAL_BOUNDARY_STOP = "TECHNICAL_BOUNDARY_STOP"
+FAIL_CLOSED_STOP = "FAIL_CLOSED_STOP"
 UNKNOWN_STATE_STOP = "UNKNOWN_STATE_STOP"
 SEMANTIC_COMPLETENESS_STOP = "SEMANTIC_COMPLETENESS_STOP"
 NO_COMPLETENESS_ASSESSMENT = "NO_COMPLETENESS_ASSESSMENT"
 NO_COMPLETENESS_STOP = "NO_COMPLETENESS_STOP"
 UNKNOWN_SYSTEM_STATE_REVIEW_REQUIRED = "UNKNOWN_SYSTEM_STATE_REVIEW_REQUIRED"
 ALLOWED_TRIGGER_STATES = {"ACTIVE", "INACTIVE", "UNKNOWN"}
+
+# Structural shape/type failures are system-state failures, not semantic/provenance
+# boundary violations. The frozen v0.2 qualification policy distinguishes these
+# explicitly from TECHNICAL_BOUNDARY_STOP.
+MALFORMED_BOUNDARY_CODES = {
+    "INVALID_SEMANTIC_RESPONSE",
+    "MISSING_SEMANTIC_PROPOSALS",
+    "INVALID_PROPOSAL",
+    "INVALID_ASSIGNMENT_CANDIDATES",
+    "INVALID_ASSIGNMENT_CANDIDATE",
+}
 
 
 def _base_result(*, target_source_location_id: Any, pf_id: Any) -> dict[str, Any]:
@@ -53,6 +65,15 @@ def _profile_for_pf(profile_set: dict[str, Any], pf_id: str) -> dict[str, Any] |
     return matches[0]
 
 
+def _issue_row(issue: Any) -> dict[str, Any]:
+    if hasattr(issue, "to_dict"):
+        row = issue.to_dict()
+        if isinstance(row, dict):
+            return row
+    values = getattr(issue, "__dict__", None)
+    return dict(values) if isinstance(values, dict) else {"code": None, "message": str(issue)}
+
+
 def evaluate_semantic_system_composition(
     *,
     model_response: Any,
@@ -71,8 +92,8 @@ def evaluate_semantic_system_composition(
     """
     original = deepcopy(model_response)
 
-    # Boundary v0.2 is the first substantive gate. Any inability to execute the
-    # formal boundary itself is fail-closed as a technical boundary stop.
+    # Boundary v0.2 is the first substantive gate. An inability to execute the
+    # boundary itself remains a technical boundary stop.
     try:
         boundary_issues = validate_semantic_response_v0_2(
             model_response,
@@ -97,8 +118,10 @@ def evaluate_semantic_system_composition(
         raise RuntimeError("generic system composition must not mutate model output")
 
     if boundary_issues:
-        rows = [issue.__dict__ for issue in boundary_issues]
+        rows = [_issue_row(issue) for issue in boundary_issues]
         codes = [row.get("code") for row in rows if isinstance(row, dict)]
+        malformed = any(code in MALFORMED_BOUNDARY_CODES for code in codes)
+        behavior = FAIL_CLOSED_STOP if malformed else TECHNICAL_BOUNDARY_STOP
         stop_code = (
             "TARGET_SOURCE_LOCATION_MISMATCH"
             if "TARGET_SOURCE_LOCATION_MISMATCH" in codes
@@ -106,12 +129,12 @@ def evaluate_semantic_system_composition(
         )
         return {
             **_base_result(target_source_location_id=target_source_location_id, pf_id=pf_id),
-            "behavior": TECHNICAL_BOUNDARY_STOP,
-            "stop_class": TECHNICAL_BOUNDARY_STOP,
+            "behavior": behavior,
+            "stop_class": behavior,
             "stop_code": stop_code,
             "human_review_required": True,
             "completeness_assessed": False,
-            "reason": "BOUNDARY_VALIDATION_FAILED",
+            "reason": "MALFORMED_SYSTEM_STATE" if malformed else "BOUNDARY_VALIDATION_FAILED",
             "boundary_passed": False,
             "boundary_issues": rows,
             "completeness_result": None,
