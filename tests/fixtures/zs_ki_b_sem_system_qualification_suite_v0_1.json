@@ -1,6 +1,8 @@
 {
   "suite_version": "ZS-KI-B-SEM-SYSTEMQUALIFIKATION-SUITE-2026-001_v0.1",
-  "status": "FREEZE_CANDIDATE",
+  "status": "HUMAN_APPROVED_FROZEN",
+  "approved_on": "2026-08-28",
+  "approval_basis": "Explicit user approval for HUMAN_APPROVED_FROZEN on 2026-08-28 after model-free tests passed.",
   "data_class": "SYNTHETIC_ONLY",
   "architecture_reference": "ZS-DEV-KI-B-SEM-SYSTEMQUALIFIKATION-ARCHITEKTUR-2026-001_v0.1",
   "source_model_qualification_suite": "ZS-KI-B-SEM-V0-7-QUALIFIKATION-SUITE-FROZEN-v0.1",
@@ -33,5 +35,5 @@
   "fail_closed_stop_case_count": 3,
   "execution_authorized": false,
   "model_run_authorized": false,
-  "note": "Model-free freeze candidate only. The system runner/evaluator required to execute this suite does not yet exist. Explicit human freeze approval is still required."
+  "note": "Human-approved frozen system suite. The system runner/evaluator required to execute this suite does not yet exist; this freeze does not authorize execution."
 }
