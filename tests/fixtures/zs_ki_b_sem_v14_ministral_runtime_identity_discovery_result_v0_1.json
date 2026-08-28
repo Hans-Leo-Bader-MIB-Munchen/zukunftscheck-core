@@ -1,0 +1,55 @@
+{
+  "result_version": "ZS-KI-B-SEM-V1-4-MINISTRAL-RUNTIME-IDENTITY-DISCOVERY-RESULT-2026-001_v0.1",
+  "status": "PRESERVED_OBSERVED_NOT_BOUND",
+  "observed_on": "2026-08-28",
+  "discovery_version": "v1.0",
+  "discovery_type": "ZS-KI-B-SEM-MINISTRAL-RUNTIME-IDENTITY-DISCOVERY-2026-001",
+  "model_repository": "mistralai/Ministral-3-14B-Instruct-2512-GGUF",
+  "required_quantization": "Q4_K_M",
+  "required_base_url": "http://127.0.0.1:1234/v1",
+  "required_loaded_context_length": 32768,
+  "endpoint": "http://127.0.0.1:1234/api/v1/models",
+  "loaded_instances": [
+    {
+      "model_key": "ministral-3-14b-instruct-2512",
+      "runtime_instance_id": "ministral-3-14b-instruct-2512",
+      "loaded_context_length": 32768,
+      "max_context_length": 262144,
+      "quantization": "Q4_K_M",
+      "format": "gguf"
+    }
+  ],
+  "compatible_loaded_instances": [
+    {
+      "model_key": "ministral-3-14b-instruct-2512",
+      "runtime_instance_id": "ministral-3-14b-instruct-2512",
+      "loaded_context_length": 32768,
+      "max_context_length": 262144,
+      "quantization": "Q4_K_M",
+      "format": "gguf"
+    }
+  ],
+  "runtime_identity_bound": false,
+  "binding_requires_separate_model_free_review": true,
+  "inventory_request_count": 1,
+  "generation_request_count": 0,
+  "generation_authorized": false,
+  "qualification_execution_authorized": false,
+  "model_qualified": false,
+  "authorization_consumed": true,
+  "execution_main_commit": null,
+  "execution_main_commit_note": "The user-provided console excerpt did not include the separate git rev-parse output, so the execution commit is intentionally not inferred.",
+  "source": "User-provided console output from the single authorized local discovery execution.",
+  "allowed_conclusion": "The loaded LM Studio runtime instance was observed as ministral-3-14b-instruct-2512 with Q4_K_M quantization and 32768 loaded context. This observation does not itself bind the runtime identity or qualify the model.",
+  "not_concluded": [
+    "runtime identity binding",
+    "model semantic quality",
+    "model qualification",
+    "permission for another inventory request",
+    "permission for generation",
+    "permission for qualification execution",
+    "benchmark or generalisation approval",
+    "pilot or production approval"
+  ],
+  "next_gate": "MODEL_FREE_RUNTIME_IDENTITY_BINDING_REVIEW"
+}

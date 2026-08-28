@@ -25,17 +25,17 @@ class _FakeResponse:
 
 
 class MinistralRuntimeIdentityDiscoveryTests(unittest.TestCase):
-    def test_d01_live_gate_matches_exact_discovery_only_approval(self) -> None:
+    def test_d01_consumed_gate_is_closed_after_single_discovery(self) -> None:
         auth = json.loads(discovery.AUTH_PATH.read_text(encoding="utf-8"))
-        self.assertEqual(auth["status"], "EXPLICIT_USER_APPROVED_DISCOVERY_ONLY")
-        self.assertTrue(auth["localhost_inventory_contact_authorized"])
-        self.assertTrue(auth["model_contact_authorized"])
+        self.assertEqual(auth["status"], "CONSUMED")
+        self.assertFalse(auth["localhost_inventory_contact_authorized"])
+        self.assertFalse(auth["model_contact_authorized"])
         self.assertFalse(auth["generation_authorized"])
         self.assertFalse(auth["qualification_execution_authorized"])
         self.assertEqual(auth["generation_request_count_max"], 0)
         self.assertEqual(auth["inventory_request_count_max"], 1)
         self.assertTrue(auth["single_use_discovery_only"])
-        self.assertFalse(auth["authorization_consumed"])
+        self.assertTrue(auth["authorization_consumed"])
         self.assertFalse(auth["runtime_identity_bound"])
         self.assertFalse(auth["model_qualified"])
         self.assertTrue(auth["explicit_user_approval_received"])
