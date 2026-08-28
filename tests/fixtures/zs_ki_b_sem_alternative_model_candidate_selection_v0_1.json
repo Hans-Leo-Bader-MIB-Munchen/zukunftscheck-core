@@ -1,0 +1,50 @@
+{
+  "selection_version": "ZS-KI-B-SEM-ALTERNATIVE-MODEL-CANDIDATE-SELECTION-2026-001_v0.1",
+  "status": "MODEL_FREE_CANDIDATE_SELECTED_NOT_AUTHORIZED",
+  "selected_candidate": "mistralai/Ministral-3-14B-Instruct-2512-GGUF",
+  "preferred_quantization": "Q4_K_M",
+  "model_family": "Mistral/Ministral-3",
+  "parameter_class": "14B",
+  "documented_context_length": 262144,
+  "required_project_context_length": 32768,
+  "multilingual_german_documented": true,
+  "structured_json_output_documented": true,
+  "gguf_available": true,
+  "lm_studio_compatible_distribution_available": true,
+  "approx_q4_k_m_size_gb": 8.24,
+  "license": "Apache-2.0",
+  "selection_model_free": true,
+  "download_authorized": false,
+  "model_load_authorized": false,
+  "model_contact_authorized": false,
+  "execution_authorized": false,
+  "qualification_run_authorized": false,
+  "model_qualified": false,
+  "frozen_assets_changed": false,
+  "excluded_candidates": [
+    {
+      "model": "gemma-3-12b-it-qat",
+      "reason": "PF2 missing required 2.2/PF2 already reproduced; no new family-independent evidence"
+    },
+    {
+      "model": "qwen/qwen3-8b",
+      "reason": "same Qwen family as qwen3-14b and smaller; weaker independent-family comparison"
+    },
+    {
+      "model": "microsoft/phi-4",
+      "reason": "documented context length 16k below project minimum 32768"
+    }
+  ],
+  "next_gate": "MODEL_FREE_CANDIDATE_READINESS_PREFLIGHT_PLAN",
+  "explicitly_not_authorized": [
+    "download",
+    "model_load",
+    "model_contact",
+    "qualification_execution",
+    "real_data",
+    "benchmark_or_generalisation",
+    "pilot",
+    "production",
+    "phase_f"
+  ]
+}
