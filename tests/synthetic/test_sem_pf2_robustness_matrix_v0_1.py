@@ -58,7 +58,7 @@ class TestSemPF2RobustnessMatrixV01(unittest.TestCase):
         self.assertIn("ausschließlich", self.prompt)
         self.assertIn("einschließlich", self.prompt)
         self.assertIn("GOLD_CONFIRMED", self.review)
-        self.assertIn("kein konkreter Beleg dafür, dass ein weiterer Prompt-Hinweis erforderlich wäre", self.review)
+        self.assertIn("keinen konkreten Beleg dafür, dass ein weiterer Prompt-Hinweis erforderlich wäre", self.review)
 
 
 if __name__ == "__main__":
