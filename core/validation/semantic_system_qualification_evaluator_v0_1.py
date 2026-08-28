@@ -4,6 +4,7 @@ from typing import Any
 
 EVALUATOR_VERSION = "semantic-system-qualification-evaluator-v0.1"
 UNKNOWN_SYSTEM_STATE_STOP_CODE = "UNKNOWN_SYSTEM_STATE_REVIEW_REQUIRED"
+SEMANTIC_COMPLETENESS_STOP_CODE = "SEMANTIC_COMPLETENESS_REVIEW_REQUIRED"
 
 
 def _first_issue_code(rows: list[dict[str, Any]] | None) -> str | None:
@@ -12,6 +13,16 @@ def _first_issue_code(rows: list[dict[str, Any]] | None) -> str | None:
         if isinstance(code, str) and code:
             return code
     return None
+
+
+def _guard_stop_code(guard_result: dict[str, Any]) -> str:
+    direct = _first_issue_code(guard_result.get("issues"))
+    if direct:
+        return direct
+    completeness = guard_result.get("completeness_audit")
+    if isinstance(completeness, dict) and completeness.get("stop_automatic_downstream_use") is True:
+        return SEMANTIC_COMPLETENESS_STOP_CODE
+    return UNKNOWN_SYSTEM_STATE_STOP_CODE
 
 
 def classify_system_outcome(
@@ -50,7 +61,7 @@ def classify_system_outcome(
         return {
             "evaluator_version": EVALUATOR_VERSION,
             "actual_behavior": "FAIL_CLOSED_STOP",
-            "stop_code": _first_issue_code(guard_result.get("issues")) or UNKNOWN_SYSTEM_STATE_STOP_CODE,
+            "stop_code": _guard_stop_code(guard_result),
             "human_review_required": True,
             "automatic_downstream_use_allowed": False,
             "model_output_mutated": bool(guard_result.get("model_output_mutated")),
