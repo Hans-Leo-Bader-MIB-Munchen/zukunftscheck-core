@@ -2,12 +2,6 @@
   "profile_set_version": "ZS-KI-B-SEM-GENERIC-SYSTEM-COMPOSITION-PROFILES-2026-001_v0.1",
   "status": "IMPLEMENTED_MODEL_FREE",
   "data_class": "SYNTHETIC_ONLY",
-  "derivation_basis": {
-    "human_gold": "tests/fixtures/zs_ki_b_sem_v07_human_gold_frozen_v0_1.json",
-    "qualification_oracle_harness": "semantic-qualification-oracle-harness-v0.1",
-    "runtime_dependency_on_human_gold": false,
-    "runtime_dependency_on_oracle_harness": false
-  },
   "human_gold_runtime_dependency": false,
   "model_visible": false,
   "decision_authority": "NONE",
