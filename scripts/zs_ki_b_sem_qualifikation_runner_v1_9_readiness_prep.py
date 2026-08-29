@@ -20,6 +20,8 @@ EXPECTED_MODEL_REPOSITORY = "mistralai/Ministral-3-14B-Instruct-2512-GGUF"
 EXPECTED_CONTRACT = "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.3-candidate"
 EXPECTED_PROMPT = "zs_ki_b_sem_qualifikation_system_v0_7_candidate"
 EXPECTED_OUTPUT_MODE = "ZS-KI-B-STRUCTURED-OUTPUT-2026-001_v0.7-candidate"
+EXPECTED_PROMPT_SHA256 = "a8e51fecbadbd674a8c36f762b234c2e6d157e84d53e0666204d0a998291eecc"
+EXPECTED_RESPONSE_FORMAT_SHA256 = "4bf81e884cdd478f22083c61db404aeb84ca3c4fe3cf64ab9621ada400367e43"
 EXPECTED_BASE_URL = "http://127.0.0.1:1234/v1"
 EXPECTED_MAX_TOKENS = 1024
 EXPECTED_TIMEOUT_SECONDS = 1800.0
@@ -38,8 +40,10 @@ def build_readiness_report() -> dict[str, Any]:
         "runtime_model_id_exact": manifest.get("runtime_model_id") == EXPECTED_MODEL_ID,
         "model_repository_exact": manifest.get("model_repository") == EXPECTED_MODEL_REPOSITORY,
         "prompt_exact": manifest.get("prompt_version") == EXPECTED_PROMPT,
+        "prompt_sha256_exact": manifest.get("prompt_sha256") == EXPECTED_PROMPT_SHA256,
         "contract_exact": manifest.get("contract_version") == EXPECTED_CONTRACT,
         "output_mode_exact": manifest.get("candidate_output_mode_version") == EXPECTED_OUTPUT_MODE,
+        "response_format_sha256_exact": manifest.get("candidate_response_format_sha256") == EXPECTED_RESPONSE_FORMAT_SHA256,
         "full_reference_questions": manifest.get("full_reference_question_count") == EXPECTED_REFERENCE_QUESTION_COUNT,
         "full_meaning_layer": manifest.get("full_meaning_count") == EXPECTED_MEANING_COUNT,
         "no_context_reduction": manifest.get("context_reduction_performed") is False,
