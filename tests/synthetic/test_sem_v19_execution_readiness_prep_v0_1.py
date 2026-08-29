@@ -31,8 +31,10 @@ class V19ExecutionReadinessPrepTests(unittest.TestCase):
         self.assertTrue(checks["runtime_model_id_exact"])
         self.assertTrue(checks["model_repository_exact"])
         self.assertTrue(checks["prompt_exact"])
+        self.assertTrue(checks["prompt_sha256_exact"])
         self.assertTrue(checks["contract_exact"])
         self.assertTrue(checks["output_mode_exact"])
+        self.assertTrue(checks["response_format_sha256_exact"])
 
     def test_e04_full_context_is_preserved(self) -> None:
         checks = prep.build_readiness_report()["checks"]
