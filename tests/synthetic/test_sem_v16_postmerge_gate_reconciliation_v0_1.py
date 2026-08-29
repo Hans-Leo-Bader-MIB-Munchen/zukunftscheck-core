@@ -3,7 +3,9 @@ from __future__ import annotations
 import json
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
+import scripts.zs_ki_b_sem_qualifikation_runner_v0_8 as v08
 import scripts.zs_ki_b_sem_qualifikation_runner_v1_6 as v16
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -22,7 +24,8 @@ class V16PostMergeGateReconciliationTests(unittest.TestCase):
         self.assertFalse(auth["model_contact_authorized"])
 
     def test_g02_v16_dry_run_reports_preserved_preflight_pass(self) -> None:
-        dry = v16.build_dry_run_manifest()
+        with patch.object(v08, "current_git_commit", return_value="MODEL_FREE_TEST_COMMIT"):
+            dry = v16.build_dry_run_manifest()
         self.assertEqual(dry["mode"], "DRY_RUN_SEM_QUALIFICATION_V1_6")
         self.assertEqual(dry["manifest"]["runner_version"], "v1.6")
         self.assertTrue(dry["manifest"]["preflight_pass_observed"])
