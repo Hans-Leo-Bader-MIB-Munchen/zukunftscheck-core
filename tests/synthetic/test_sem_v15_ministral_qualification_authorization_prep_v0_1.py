@@ -10,16 +10,17 @@ class MinistralV15QualificationAuthorizationPrepTests(unittest.TestCase):
     def setUp(self) -> None:
         self.auth = v15.load(v15.AUTH_PATH)
 
-    def test_q01_candidate_is_prepared_but_closed(self) -> None:
-        self.assertEqual(self.auth["status"], "PREPARED_NOT_APPROVED")
+    def test_q01_authorization_is_live_single_use(self) -> None:
+        self.assertEqual(self.auth["status"], "EXPLICIT_USER_APPROVED")
         self.assertTrue(self.auth["qualification_authorization_candidate_prepared"])
         self.assertTrue(self.auth["explicit_user_approval_required"])
-        self.assertFalse(self.auth["explicit_user_approval_received"])
-        self.assertFalse(self.auth["execution_authorized"])
-        self.assertFalse(self.auth["model_run_authorized"])
-        self.assertFalse(self.auth["model_contact_authorized"])
+        self.assertTrue(self.auth["explicit_user_approval_received"])
+        self.assertTrue(self.auth["execution_authorized"])
+        self.assertTrue(self.auth["model_run_authorized"])
+        self.assertTrue(self.auth["model_contact_authorized"])
         self.assertFalse(self.auth["authorization_consumed"])
-        self.assertFalse(v15._authorization_matches(self.auth, v15.RUNTIME_MODEL_ID))
+        self.assertTrue(self.auth["single_run_only"])
+        self.assertTrue(v15._authorization_matches(self.auth, v15.RUNTIME_MODEL_ID))
 
     def test_q02_exact_runner_model_and_timeout_scope(self) -> None:
         self.assertEqual(self.auth["runner_version"], v15.RUNNER_VERSION)
@@ -37,34 +38,20 @@ class MinistralV15QualificationAuthorizationPrepTests(unittest.TestCase):
         self.assertTrue(self.auth["qualification_authorization_must_follow_preflight_pass"])
         self.assertTrue(self.auth["v14_timeout_failure_preserved"])
         self.assertTrue(self.auth["timeout_binding_fix_verified_model_free"])
-        self.assertTrue(self.auth["qualification_authorization_ready_for_separate_user_decision"])
+        self.assertFalse(self.auth["qualification_authorization_ready_for_separate_user_decision"])
 
-    def test_q04_exact_hypothetical_live_state_would_match(self) -> None:
+    def test_q04_consumed_state_fails_closed(self) -> None:
         auth = copy.deepcopy(self.auth)
-        auth["status"] = "EXPLICIT_USER_APPROVED"
-        auth["explicit_user_approval_received"] = True
-        auth["execution_authorized"] = True
-        auth["model_run_authorized"] = True
-        auth["model_contact_authorized"] = True
-        auth["qualification_authorization_ready_for_separate_user_decision"] = False
-        self.assertTrue(v15._authorization_matches(auth, v15.RUNTIME_MODEL_ID))
-
-    def test_q05_consumed_or_wrong_timeout_fails_closed(self) -> None:
-        auth = copy.deepcopy(self.auth)
-        auth["status"] = "EXPLICIT_USER_APPROVED"
-        auth["explicit_user_approval_received"] = True
-        auth["execution_authorized"] = True
-        auth["model_run_authorized"] = True
-        auth["model_contact_authorized"] = True
         auth["authorization_consumed"] = True
         self.assertFalse(v15._authorization_matches(auth, v15.RUNTIME_MODEL_ID))
 
+    def test_q05_wrong_timeout_or_request_count_fails_closed(self) -> None:
         auth = copy.deepcopy(self.auth)
-        auth["status"] = "EXPLICIT_USER_APPROVED"
-        auth["execution_authorized"] = True
-        auth["model_run_authorized"] = True
-        auth["model_contact_authorized"] = True
         auth["required_request_timeout_seconds"] = 600
+        self.assertFalse(v15._authorization_matches(auth, v15.RUNTIME_MODEL_ID))
+
+        auth = copy.deepcopy(self.auth)
+        auth["expected_model_request_count"] = 15
         self.assertFalse(v15._authorization_matches(auth, v15.RUNTIME_MODEL_ID))
 
     def test_q06_scope_remains_synthetic_local_and_not_qualified(self) -> None:
