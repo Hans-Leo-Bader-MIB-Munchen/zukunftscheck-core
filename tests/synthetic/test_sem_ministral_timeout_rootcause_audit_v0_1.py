@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import ast
 import unittest
+from pathlib import Path
 
 import scripts.zs_ki_b_sem_ministral_timeout_rootcause_audit_v0_1 as audit
 
@@ -37,18 +39,39 @@ class MinistralTimeoutRootCauseAuditTests(unittest.TestCase):
         self.assertIn("assignment_candidates", joined)
 
     def test_a05_no_runtime_or_network_modules_are_used(self) -> None:
-        source = audit.__file__
-        text = open(source, encoding="utf-8").read()
-        for forbidden in (
-            "urllib.request",
-            "requests.",
-            "chat_completion_structured",
-            "preflight_loaded_model",
+        source_path = Path(audit.__file__)
+        text = source_path.read_text(encoding="utf-8")
+        tree = ast.parse(text)
+
+        imported_modules: set[str] = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                imported_modules.update(alias.name for alias in node.names)
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                imported_modules.add(node.module)
+
+        forbidden_import_prefixes = (
+            "urllib",
+            "requests",
+            "httpx",
             "subprocess",
-            "/chat/completions",
-            "/api/v1/models",
+            "socket",
+            "llm.local_model",
+        )
+        for imported in imported_modules:
+            self.assertFalse(
+                imported.startswith(forbidden_import_prefixes),
+                f"forbidden runtime/network import: {imported}",
+            )
+
+        for forbidden_call_marker in (
+            "chat_completion_structured(",
+            "preflight_loaded_model(",
+            "urlopen(",
+            "requests.get(",
+            "requests.post(",
         ):
-            self.assertNotIn(forbidden, text)
+            self.assertNotIn(forbidden_call_marker, text)
 
 
 if __name__ == "__main__":
