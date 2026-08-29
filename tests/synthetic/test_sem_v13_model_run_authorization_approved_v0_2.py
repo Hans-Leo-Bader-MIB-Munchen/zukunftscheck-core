@@ -1,6 +1,7 @@
 import json
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import scripts.zs_ki_b_sem_qualifikation_runner_v1_3 as runner
 
@@ -16,9 +17,9 @@ class V13ModelRunAuthorizationApprovedV02Tests(unittest.TestCase):
     def setUp(self):
         self.auth = load(AUTH)
 
-    def test_exact_authorization_identity_and_scope(self):
+    def test_exact_authorization_identity_scope_and_consumed_state(self):
         a = self.auth
-        self.assertEqual(a["status"], "EXPLICIT_USER_APPROVED")
+        self.assertEqual(a["status"], "CONSUMED")
         self.assertEqual(a["run_type"], runner.RUN_TYPE)
         self.assertEqual(a["runner_version"], "v1.3")
         self.assertEqual(a["model"], "qwen3-14b")
@@ -27,7 +28,11 @@ class V13ModelRunAuthorizationApprovedV02Tests(unittest.TestCase):
         self.assertEqual(a["expected_model_request_count"], 16)
         self.assertTrue(a["single_run_only"])
         self.assertTrue(a["approval_is_single_use"])
-        self.assertFalse(a["authorization_consumed"])
+        self.assertTrue(a["authorization_consumed"])
+        self.assertEqual(a["consumed_observed_model_request_count"], 2)
+        self.assertFalse(a["execution_authorized"])
+        self.assertFalse(a["model_run_authorized"])
+        self.assertFalse(a["model_contact_authorized"])
 
     def test_runtime_constraints_are_exact(self):
         a = self.auth
@@ -48,15 +53,19 @@ class V13ModelRunAuthorizationApprovedV02Tests(unittest.TestCase):
         self.assertEqual(a["qualified_completeness_pfs"], ["PF2", "PF9", "PF12"])
         self.assertTrue(a["non_profile_cases_boundary_only"])
 
-    def test_runner_accepts_authorization_model_free(self):
-        validated = runner.validate_execution_authorization("qwen3-14b")
-        self.assertEqual(validated["status"], "EXPLICIT_USER_APPROVED")
+    def test_runner_rejects_consumed_authorization_model_free(self):
+        with self.assertRaises(PermissionError):
+            runner.validate_execution_authorization("qwen3-14b")
 
-    def test_dry_run_reports_authorized_without_model_contact(self):
-        payload = runner.build_dry_run_manifest(model="qwen3-14b")
+    def test_dry_run_reports_closed_consumed_state_without_model_contact(self):
+        with patch(
+            "scripts.zs_ki_b_sem_qualifikation_runner_v0_8.current_git_commit",
+            return_value="MODEL_FREE_TEST_COMMIT",
+        ):
+            payload = runner.build_dry_run_manifest(model="qwen3-14b")
         manifest = payload["manifest"]
-        self.assertTrue(manifest["execution_authorized"])
-        self.assertTrue(manifest["model_run_authorized"])
+        self.assertFalse(manifest["execution_authorized"])
+        self.assertFalse(manifest["model_run_authorized"])
         self.assertFalse(manifest["model_contact_performed"])
         self.assertEqual(manifest["expected_model_request_count"], 16)
 
