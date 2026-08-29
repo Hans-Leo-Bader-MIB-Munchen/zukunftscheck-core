@@ -8,7 +8,13 @@ callable can be reached. No localhost/model contact is performed by this module.
 from __future__ import annotations
 
 import json
+import sys
+from pathlib import Path
 from typing import Any, Callable
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 import scripts.zs_ki_b_sem_qualifikation_runner_v1_9_readiness_prep as v19
 import scripts.zs_ki_b_sem_qualifikation_runner_v1_8_prep as v18
