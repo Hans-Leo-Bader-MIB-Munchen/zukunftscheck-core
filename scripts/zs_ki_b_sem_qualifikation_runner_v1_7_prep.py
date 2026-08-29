@@ -86,6 +86,7 @@ def build_dry_run_manifest() -> dict[str, Any]:
     candidate_schema = load(CANDIDATE_SCHEMA_PATH)
     active_schema = load(ACTIVE_SCHEMA_PATH)
     messages = build_candidate_messages()
+    prompt_sha256 = _sha256_text(messages[0]["content"])
     user_payload = json.loads(messages[1]["content"])
     response_format = bounded.build_response_format()
     response_format_sha256 = _sha256_text(canonical_json(response_format))
@@ -95,6 +96,7 @@ def build_dry_run_manifest() -> dict[str, Any]:
             "run_type": RUN_TYPE,
             "runner_version": RUNNER_VERSION,
             "prompt_version": PROMPT_VERSION,
+            "prompt_sha256": prompt_sha256,
             "contract_version": candidate_schema["$id"],
             "response_format_sha256": response_format_sha256,
             "candidate_contract_version": candidate_schema["$id"],
