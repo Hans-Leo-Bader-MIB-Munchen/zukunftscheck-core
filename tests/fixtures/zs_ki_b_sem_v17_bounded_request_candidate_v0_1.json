@@ -1,12 +1,13 @@
 {
-  "candidate_version": "ZS-KI-B-SEM-V1-7-BOUNDED-REQUEST-CANDIDATE-2026-001_v0.1",
+  "candidate_version": "ZS-KI-B-SEM-V1-7-BOUNDED-REQUEST-CANDIDATE-2026-001_v0.2",
   "status": "MODEL_FREE_DESIGN_CANDIDATE_NOT_AUTHORIZED",
   "basis": {
     "rootcause_audit": "ZS-KI-B-SEM-MINISTRAL-TIMEOUT-ROOTCAUSE-AUDIT-2026-001_v0.1",
     "preserved_v15_failure": "tests/fixtures/zs_ki_b_sem_v15_ministral_qualification_timeout_failure_preserved_v0_1.json",
     "frozen_suite": "tests/fixtures/zs_ki_b_sem_v07_qualification_suite_frozen_v0_1.json",
     "human_gold": "tests/fixtures/zs_ki_b_sem_v07_human_gold_frozen_v0_1.json",
-    "semantic_contract": "domains/zukunftscheck/schema/b_semantic_contract_v0_2.schema.json"
+    "semantic_contract": "domains/zukunftscheck/schema/b_semantic_contract_v0_2.schema.json",
+    "independent_countercheck": "Claude: TRAGFÄHIG MIT KORREKTUREN; no blocker before implementation"
   },
   "design_goal": "Bound response generation before any new model contact while preserving the frozen 67-question semantic qualification scope.",
   "candidate_transport": {
@@ -15,6 +16,7 @@
     "retry_count": 0,
     "output_repair": false,
     "stream": false,
+    "evidence_class": "ENGINEERING_BOUND_NOT_QUALITY_QUALIFIED",
     "rationale": "At the observed v1.5 decode range of roughly 1.5-1.76 tokens/s, a 1024-token generation ceiling bounds pure decoding to roughly 9.7-11.4 minutes instead of allowing generation to run until the 1800s transport timeout. This is a design bound only and has not been quality-qualified."
   },
   "candidate_schema_cardinalities": {
@@ -23,7 +25,22 @@
     "conflict_candidate_refs_max_items_per_proposal": 8,
     "gap_notes_max_items_per_proposal": 8,
     "uncertainty_notes_max_items_per_proposal": 8,
+    "assignment_cap_evidence": "Frozen Human Gold has at most 3 expected-plus-optional assignments per case; comparison to the per-proposal cap is deliberately conservative and does not assert one proposal per SourceLocation.",
+    "non_assignment_caps_evidence": "Engineering safety bounds only. Frozen Human Gold does not positively establish required maxima for conflict refs, gap notes or uncertainty notes.",
     "rationale": "Finite safety bounds are intentionally above the observed frozen-suite structural needs. They are candidate limits, not a semantic-contract release."
+  },
+  "candidate_text_lengths": {
+    "normalized_statement_max_length": 512,
+    "derivation_note_max_length": 384,
+    "gap_note_max_length": 256,
+    "uncertainty_note_max_length": 256,
+    "evidence_class": "ENGINEERING_BOUNDS_NOT_GOLD_DERIVED",
+    "rationale": "The independent countercheck identified unbounded free-text fields as a remaining route to excessively long structured output. These finite character limits are deliberately generous for the short frozen synthetic cases but are not claimed to be empirically quality-qualified."
+  },
+  "candidate_prompt": {
+    "path": "llm/prompts/zs_ki_b_sem_qualifikation_system_v0_7_candidate.txt",
+    "status": "MODEL_FREE_PROMPT_CANDIDATE_NOT_EXECUTION_BOUND",
+    "required_concision_instruction": true
   },
   "context_strategy": {
     "first_candidate_preserves_all_67_reference_questions": true,
@@ -52,5 +69,5 @@
     "model_qualified": false,
     "new_explicit_model_contact_authorization_required_before_any_execution": true
   },
-  "next_gate": "MODEL_FREE_REVIEW_OF_BOUNDED_REQUEST_DESIGN"
+  "next_gate": "MODEL_FREE_IMPLEMENTATION_REVIEW_OF_BOUNDED_TRANSPORT_SCHEMA_AND_PROMPT"
 }
