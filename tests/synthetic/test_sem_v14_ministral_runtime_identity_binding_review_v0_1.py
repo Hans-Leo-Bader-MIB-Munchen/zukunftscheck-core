@@ -40,12 +40,13 @@ class MinistralRuntimeIdentityBindingReviewTests(unittest.TestCase):
         self.assertFalse(review["model_contact_authorized"])
         self.assertFalse(review["model_qualified"])
 
-    def test_b04_model_run_authorization_remains_closed(self) -> None:
+    def test_b04_model_run_authorization_is_consumed_and_closed(self) -> None:
         auth = v14.load(v14.AUTH_PATH)
-        self.assertEqual(auth["status"], "NOT_APPROVED")
+        self.assertEqual(auth["status"], "CONSUMED_EXECUTED_ONCE_FAILED_TIMEOUT")
         self.assertEqual(auth["model_repository"], v14.MODEL_REPOSITORY)
         self.assertEqual(auth["runtime_model_id"], v14.RUNTIME_MODEL_ID)
         self.assertEqual(auth["model"], v14.RUNTIME_MODEL_ID)
+        self.assertTrue(auth["authorization_consumed"])
         self.assertFalse(auth["execution_authorized"])
         self.assertFalse(auth["model_run_authorized"])
         self.assertFalse(auth["model_contact_authorized"])

@@ -50,14 +50,15 @@ class TestSemV14MinistralPrerunPackageV01(unittest.TestCase):
         self.assertEqual(self.package["authorization_gate"]["current_state"], "CLOSED")
         self.assertTrue(self.package["authorization_gate"]["no_execution_from_this_prerun_package"])
 
-    def test_f04_authorization_placeholder_is_bound_and_closed(self) -> None:
+    def test_f04_historical_placeholder_remains_bound_current_auth_is_consumed(self) -> None:
         artifact = self.package["artifacts"]["authorization_placeholder"]
         self.assertEqual(
             artifact["path"],
             "tests/fixtures/zs_ki_b_sem_v14_ministral_model_run_authorization_v0_1.json",
         )
         self.assertEqual(artifact["required_status"], "NOT_APPROVED")
-        self.assertEqual(self.auth["status"], "NOT_APPROVED")
+        self.assertEqual(self.auth["status"], "CONSUMED_EXECUTED_ONCE_FAILED_TIMEOUT")
+        self.assertTrue(self.auth["authorization_consumed"])
         self.assertFalse(self.auth["execution_authorized"])
         self.assertFalse(self.auth["model_contact_authorized"])
 

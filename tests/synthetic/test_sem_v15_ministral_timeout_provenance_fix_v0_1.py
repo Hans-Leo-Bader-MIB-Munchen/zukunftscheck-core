@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import unittest
 
 import scripts.zs_ki_b_sem_qualifikation_runner_v1_5 as v15
@@ -73,8 +74,16 @@ class MinistralV15TimeoutProvenanceFixTests(unittest.TestCase):
         self.assertFalse(manifest["model_contact_performed"])
         self.assertFalse(manifest["preflight_pass_observed"])
 
-    def test_t05_execution_is_fail_closed_without_new_authorization_artifact(self) -> None:
-        self.assertFalse(v15.AUTH_PATH.exists())
+    def test_t05_execution_is_fail_closed_with_consumed_authorization_artifact(self) -> None:
+        self.assertTrue(v15.AUTH_PATH.exists())
+        auth = json.loads(v15.AUTH_PATH.read_text(encoding="utf-8"))
+        self.assertEqual(auth["status"], "CONSUMED")
+        self.assertTrue(auth["authorization_consumed"])
+        self.assertTrue(auth["model_contact_performed"])
+        self.assertEqual(auth["observed_model_request_count"], 1)
+        self.assertFalse(auth["execution_authorized"])
+        self.assertFalse(auth["model_run_authorized"])
+        self.assertFalse(auth["model_contact_authorized"])
         with self.assertRaises(PermissionError):
             v15.validate_execution_authorization(v15.RUNTIME_MODEL_ID)
 

@@ -20,19 +20,23 @@ class TestSemQualificationRunnerV14MinistralBinding(unittest.TestCase):
             "ZS-KI-B-SEM-QUALIFIKATION-SYNTHETIC-V1-4-MINISTRAL-2026-015",
         )
         self.assertEqual(
-            runner.MODEL,
+            runner.MODEL_REPOSITORY,
             "mistralai/Ministral-3-14B-Instruct-2512-GGUF",
         )
+        self.assertEqual(runner.RUNTIME_MODEL_ID, "ministral-3-14b-instruct-2512")
+        self.assertEqual(runner.MODEL, runner.RUNTIME_MODEL_ID)
 
-    def test_r02_authorization_placeholder_is_closed(self) -> None:
+    def test_r02_authorization_is_consumed_and_closed_after_timeout(self) -> None:
         auth = json.loads(AUTH_PATH.read_text(encoding="utf-8"))
-        self.assertEqual(auth["status"], "NOT_APPROVED")
+        self.assertEqual(auth["status"], "CONSUMED_EXECUTED_ONCE_FAILED_TIMEOUT")
         self.assertFalse(auth["execution_authorized"])
         self.assertFalse(auth["model_run_authorized"])
         self.assertFalse(auth["model_contact_authorized"])
-        self.assertFalse(auth["authorization_consumed"])
+        self.assertTrue(auth["authorization_consumed"])
+        self.assertTrue(auth["model_contact_performed"])
+        self.assertEqual(auth["observed_model_request_count"], 1)
 
-    def test_r03_execution_validation_fails_closed_without_approval(self) -> None:
+    def test_r03_execution_validation_fails_closed_after_consumption(self) -> None:
         with self.assertRaises(PermissionError):
             runner.validate_execution_authorization(runner.MODEL)
 
@@ -42,6 +46,7 @@ class TestSemQualificationRunnerV14MinistralBinding(unittest.TestCase):
         auth["execution_authorized"] = True
         auth["model_run_authorized"] = True
         auth["model_contact_authorized"] = True
+        auth["authorization_consumed"] = False
         self.assertFalse(runner._authorization_matches(auth, "qwen3-14b"))
 
     def test_r05_dry_run_manifest_preserves_semantic_architecture(self) -> None:

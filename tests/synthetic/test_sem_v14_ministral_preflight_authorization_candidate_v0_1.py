@@ -28,8 +28,11 @@ class MinistralPreflightAuthorizationCandidateTests(unittest.TestCase):
         ):
             self.assertIs(self.candidate[key], False)
 
-    def test_r02_live_gate_remains_closed(self) -> None:
-        self.assertEqual(self.live["status"], "NOT_APPROVED")
+    def test_r02_live_gate_is_consumed_and_closed(self) -> None:
+        self.assertEqual(self.live["status"], "CONSUMED")
+        self.assertTrue(self.live["authorization_consumed"])
+        self.assertTrue(self.live["preflight_contact_performed"])
+        self.assertEqual(self.live["preflight_outcome"], "EXECUTED_ONCE_FAILED_IDENTITY_BINDING")
         self.assertIs(self.live["download_authorized"], False)
         self.assertIs(self.live["model_load_authorized"], False)
         self.assertIs(self.live["localhost_preflight_authorized"], False)
@@ -79,7 +82,7 @@ class MinistralPreflightAuthorizationCandidateTests(unittest.TestCase):
         ):
             self.assertIs(self.candidate[key], False)
 
-    def test_r08_candidate_does_not_mutate_live_gate(self) -> None:
+    def test_r08_candidate_does_not_reopen_consumed_live_gate(self) -> None:
         self.assertEqual(
             self.candidate["live_authorization_artifact"],
             "tests/fixtures/zs_ki_b_sem_v14_ministral_preflight_only_authorization_v0_1.json",
@@ -87,6 +90,7 @@ class MinistralPreflightAuthorizationCandidateTests(unittest.TestCase):
         self.assertEqual(self.live["generation_request_count_max"], 0)
         self.assertIs(self.live["generation_authorized"], False)
         self.assertIs(self.live["qualification_execution_authorized"], False)
+        self.assertTrue(self.live["authorization_consumed"])
 
 
 if __name__ == "__main__":
