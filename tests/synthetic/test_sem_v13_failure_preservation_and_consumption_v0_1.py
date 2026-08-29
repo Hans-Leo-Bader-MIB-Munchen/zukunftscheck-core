@@ -1,15 +1,21 @@
 from __future__ import annotations
 
-import hashlib
 import json
 import unittest
 from pathlib import Path
+
+from scripts.zs_ki_b_sem_canonical_binding_integrity_v0_1 import (
+    SOURCE_BASE_COMMIT,
+    canonical_git_blob_sha256,
+    canonical_worktree_sha256,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 RESULT_PATH = ROOT / "tests/fixtures/zs_ki_b_sem_v13_execution_result_2026_013_v0_1.json"
 AUTH_PATH = ROOT / "tests/fixtures/zs_ki_b_sem_v13_model_run_authorization_v0_1.json"
 ANALYSIS_PATH = ROOT / "tests/fixtures/zs_ki_b_sem_v13_failure_analysis_pf2_manifest_v0_1.json"
-EXPECTED_RESULT_SHA256 = "8717ff6583d2ab38da23f002047f3c6477015c703d1d97e061889c863d45a8c3"
+RESULT_REPO_PATH = "tests/fixtures/zs_ki_b_sem_v13_execution_result_2026_013_v0_1.json"
+LEGACY_WORKTREE_SHA256 = "8717ff6583d2ab38da23f002047f3c6477015c703d1d97e061889c863d45a8c3"
 
 
 def load(path: Path) -> dict:
@@ -23,11 +29,15 @@ class TestSemV13FailurePreservationAndConsumptionV01(unittest.TestCase):
         cls.auth = load(AUTH_PATH)
         cls.analysis = load(ANALYSIS_PATH)
 
-    def test_p01_preserved_result_sha256_is_exact(self) -> None:
-        actual = hashlib.sha256(RESULT_PATH.read_bytes()).hexdigest()
-        self.assertEqual(actual, EXPECTED_RESULT_SHA256)
-        self.assertEqual(self.auth["preserved_result_sha256"], EXPECTED_RESULT_SHA256)
-        self.assertEqual(self.analysis["source_result_sha256"], EXPECTED_RESULT_SHA256)
+    def test_p01_preserved_result_identity_is_platform_independent(self) -> None:
+        # The historical SHA-256 fields are retained as evidence of the original
+        # Windows worktree-byte materialization. They are no longer used as the
+        # cross-platform content identity because CRLF checkout conversion changes
+        # raw Path.read_bytes(). The immutable source-commit Git blob is canonical.
+        self.assertEqual(self.auth["preserved_result_sha256"], LEGACY_WORKTREE_SHA256)
+        self.assertEqual(self.analysis["source_result_sha256"], LEGACY_WORKTREE_SHA256)
+        canonical_repository_hash = canonical_git_blob_sha256(SOURCE_BASE_COMMIT, RESULT_REPO_PATH)
+        self.assertEqual(canonical_worktree_sha256(RESULT_PATH), canonical_repository_hash)
 
     def test_p02_one_shot_authorization_is_consumed_and_closed(self) -> None:
         a = self.auth
