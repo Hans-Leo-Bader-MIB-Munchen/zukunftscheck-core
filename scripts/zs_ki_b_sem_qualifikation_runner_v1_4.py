@@ -8,7 +8,8 @@ LM Studio runtime/API model id observed by the authorized discovery step.
 
 No model execution is authorized by this module. Execution must fail closed unless a
 separately versioned v1.4 authorization artifact exactly matches the runner, runtime
-model id, repository provenance, prompt and one-shot constraints.
+model id, repository provenance, required preflight evidence, prompt and one-shot
+constraints.
 """
 from __future__ import annotations
 
@@ -30,6 +31,9 @@ MODEL = RUNTIME_MODEL_ID
 PROMPT_VERSION = v13.PROMPT_VERSION
 AUTH_PATH = ROOT / "tests/fixtures/zs_ki_b_sem_v14_ministral_model_run_authorization_v0_1.json"
 BINDING_REVIEW_PATH = ROOT / "tests/fixtures/zs_ki_b_sem_v14_ministral_runtime_identity_binding_review_v0_1.json"
+REQUIRED_PREFLIGHT_VERSION = "v1.1"
+REQUIRED_PREFLIGHT_TYPE = "ZS-KI-B-SEM-MINISTRAL-PREFLIGHT-ONLY-2026-002"
+REQUIRED_PREFLIGHT_AUTH_PATH = "tests/fixtures/zs_ki_b_sem_v14_ministral_preflight_only_authorization_v0_2.json"
 DEFAULT_OUTPUT = "zs_ki_b_sem_qualifikation_result_v1_4.json"
 REQUIRED_CONTEXT = 32768
 REQUIRED_TIMEOUT = 1800
@@ -110,6 +114,13 @@ def _authorization_matches(auth: dict[str, Any], model: str) -> bool:
         and auth.get("output_repair") is False
         and auth.get("remote_cloud") is False
         and auth.get("real_data") is False
+        and auth.get("runtime_identity_binding_review_passed") is True
+        and auth.get("required_preflight_version") == REQUIRED_PREFLIGHT_VERSION
+        and auth.get("required_preflight_type") == REQUIRED_PREFLIGHT_TYPE
+        and auth.get("required_preflight_authorization_path") == REQUIRED_PREFLIGHT_AUTH_PATH
+        and auth.get("preflight_pass_required") is True
+        and auth.get("preflight_pass_observed") is True
+        and auth.get("qualification_authorization_must_follow_preflight_pass") is True
         and auth.get("authorization_consumed") is False
         and auth.get("execution_authorized") is True
         and auth.get("model_run_authorized") is True
@@ -143,6 +154,11 @@ def build_dry_run_manifest(*, model: str = "", base_url: str = "http://127.0.0.1
     manifest["selected_candidate"] = MODEL_REPOSITORY
     manifest["selected_runtime_model_id"] = RUNTIME_MODEL_ID
     manifest["runtime_identity_binding_review_path"] = str(BINDING_REVIEW_PATH.relative_to(ROOT))
+    manifest["required_preflight_version"] = REQUIRED_PREFLIGHT_VERSION
+    manifest["required_preflight_type"] = REQUIRED_PREFLIGHT_TYPE
+    manifest["required_preflight_authorization_path"] = REQUIRED_PREFLIGHT_AUTH_PATH
+    manifest["preflight_pass_required"] = True
+    manifest["preflight_pass_observed"] = False
     manifest["semantic_boundary_version"] = "semantic-boundary-v0.2"
     manifest["generic_system_composition_version"] = "semantic-system-composition-v0.1"
     manifest["qualified_completeness_pfs"] = ["PF2", "PF9", "PF12"]
