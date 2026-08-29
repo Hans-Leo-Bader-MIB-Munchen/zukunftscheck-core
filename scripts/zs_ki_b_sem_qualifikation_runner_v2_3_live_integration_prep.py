@@ -202,7 +202,7 @@ def _persist_result_once(path: Path, payload: dict[str, Any]) -> None:
         v22._claim_posix(target, data)
 
 
-def _failure_result(*, stage: str, auth: dict[str, Any], case_ids: list[str], completed: list[dict[str, Any]], exc: BaseException) -> dict[str, Any]:
+def _failure_result(*, stage: str, auth: dict[str, Any], case_ids: list[str], completed: list[dict[str, Any]], observed_model_request_count: int, exc: BaseException) -> dict[str, Any]:
     return {
         "mode": "EXECUTED_ONCE_FAILED_SEM_QUALIFICATION_V2_3",
         "status": "FAILED_PRESERVED_NO_RETRY",
@@ -214,7 +214,7 @@ def _failure_result(*, stage: str, auth: dict[str, Any], case_ids: list[str], co
         "qualification_snapshot_sha256": auth.get("qualification_snapshot_sha256"),
         "ordered_case_ids": case_ids,
         "expected_model_request_count": EXPECTED_MODEL_REQUEST_COUNT,
-        "observed_model_request_count": len(completed),
+        "observed_model_request_count": observed_model_request_count,
         "completed_cases": completed,
         "error_type": type(exc).__name__,
         "error": str(exc),
@@ -256,13 +256,14 @@ def execute_once(
 
     v22.claim_authorization_once(Path(consumption_path), auth)
     completed: list[dict[str, Any]] = []
+    attempted_count = 0
     preflight_fn = preflight or _default_preflight
     transport_fn = transport or _default_transport
 
     try:
         preflight_metadata = preflight_fn(base_url=BASE_URL, timeout_seconds=TIMEOUT_SECONDS)
     except BaseException as exc:
-        failure = _failure_result(stage="PREFLIGHT_AFTER_CONSUMPTION", auth=auth, case_ids=case_ids, completed=completed, exc=exc)
+        failure = _failure_result(stage="PREFLIGHT_AFTER_CONSUMPTION", auth=auth, case_ids=case_ids, completed=completed, observed_model_request_count=attempted_count, exc=exc)
         _persist_result_once(result_target, failure)
         return failure
 
@@ -270,6 +271,7 @@ def execute_once(
         for case_id in case_ids:
             request = v18.build_candidate_request_preview(case_id=case_id)
             _assert_request_bounds(request)
+            attempted_count += 1
             raw, provider_metadata = transport_fn(
                 base_url=BASE_URL,
                 payload=request,
@@ -284,7 +286,7 @@ def execute_once(
                 }
             )
     except BaseException as exc:
-        failure = _failure_result(stage="MODEL_REQUEST_AFTER_CONSUMPTION", auth=auth, case_ids=case_ids, completed=completed, exc=exc)
+        failure = _failure_result(stage="MODEL_REQUEST_AFTER_CONSUMPTION", auth=auth, case_ids=case_ids, completed=completed, observed_model_request_count=attempted_count, exc=exc)
         _persist_result_once(result_target, failure)
         return failure
 
@@ -298,7 +300,7 @@ def execute_once(
         "qualification_snapshot_sha256": auth.get("qualification_snapshot_sha256"),
         "ordered_case_ids": case_ids,
         "expected_model_request_count": EXPECTED_MODEL_REQUEST_COUNT,
-        "observed_model_request_count": len(completed),
+        "observed_model_request_count": attempted_count,
         "preflight_metadata": preflight_metadata,
         "cases": completed,
         "retry_count": RETRY_COUNT,
