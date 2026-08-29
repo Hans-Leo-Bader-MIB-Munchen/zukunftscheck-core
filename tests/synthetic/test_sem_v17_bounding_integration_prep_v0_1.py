@@ -24,10 +24,9 @@ class V17BoundingIntegrationPrepTests(unittest.TestCase):
 
     def test_c02_candidate_binding_is_exact(self) -> None:
         manifest = prep.build_dry_run_manifest()["manifest"]
-        self.assertEqual(
-            manifest["candidate_contract_version"],
-            "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.3-candidate",
-        )
+        expected_contract = "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.3-candidate"
+        self.assertEqual(manifest["contract_version"], expected_contract)
+        self.assertEqual(manifest["candidate_contract_version"], expected_contract)
         self.assertEqual(
             manifest["candidate_output_mode_version"],
             "ZS-KI-B-STRUCTURED-OUTPUT-2026-001_v0.6-candidate",
@@ -35,6 +34,8 @@ class V17BoundingIntegrationPrepTests(unittest.TestCase):
         self.assertEqual(manifest["prompt_version"], "zs_ki_b_sem_qualifikation_system_v0_7_candidate")
         self.assertEqual(manifest["max_completion_tokens"], 1024)
         self.assertEqual(manifest["request_timeout_seconds"], 1800.0)
+        self.assertEqual(manifest["response_format_sha256"], manifest["candidate_response_format_sha256"])
+        self.assertEqual(len(manifest["candidate_response_format_sha256"]), 64)
 
     def test_c03_preview_is_bounded_but_not_transmitted(self) -> None:
         request = prep.build_candidate_request_preview()
@@ -60,6 +61,7 @@ class V17BoundingIntegrationPrepTests(unittest.TestCase):
             manifest["active_contract_version_unchanged"],
             "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.2",
         )
+        self.assertNotEqual(manifest["active_contract_version_unchanged"], manifest["contract_version"])
         self.assertNotEqual(manifest["active_contract_version_unchanged"], manifest["candidate_contract_version"])
 
     def test_c06_candidate_prompt_binds_candidate_contract(self) -> None:
