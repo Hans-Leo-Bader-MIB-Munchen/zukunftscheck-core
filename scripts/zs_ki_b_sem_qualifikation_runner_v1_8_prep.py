@@ -52,6 +52,7 @@ def build_dry_run_manifest() -> dict[str, Any]:
     manifest = payload["manifest"]
     messages = build_candidate_messages()
     response_format = bounded.build_response_format()
+    manifest.pop("max_completion_tokens", None)
     manifest.update(
         {
             "run_type": RUN_TYPE,
@@ -63,7 +64,6 @@ def build_dry_run_manifest() -> dict[str, Any]:
             "candidate_response_format_sha256": _sha256_text(canonical_json(response_format)),
             "output_token_parameter": "max_tokens",
             "max_tokens": bounded.MAX_TOKENS,
-            "max_completion_tokens": None,
             "request_timeout_seconds": bounded.REQUEST_TIMEOUT_SECONDS,
             "lmstudio_documented_chat_completion_parameter_binding_prepared": True,
             "execution_authorized": False,
