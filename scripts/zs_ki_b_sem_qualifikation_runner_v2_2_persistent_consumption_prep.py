@@ -7,9 +7,11 @@ No valid authorization artifact is created by default.
 """
 from __future__ import annotations
 
+import ctypes
 import json
 import os
 import sys
+import tempfile
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
@@ -23,6 +25,9 @@ import scripts.zs_ki_b_sem_qualifikation_runner_v2_1_authorization_prep as v21
 RUNNER_VERSION = "v2.2-persistent-consumption-prep"
 RUN_TYPE = "ZS-KI-B-SEM-QUALIFIKATION-SYNTHETIC-V2-2-PERSISTENT-CONSUMPTION-PREP-2026-023"
 PERSISTENCE_VERSION = "ZS-KI-B-AUTH-CONSUMPTION-PERSISTENCE-2026-001_v0.1"
+MOVEFILE_WRITE_THROUGH = 0x00000008
+ERROR_FILE_EXISTS = 80
+ERROR_ALREADY_EXISTS = 183
 
 
 def build_consumed_state(auth: dict[str, Any]) -> dict[str, Any]:
@@ -53,20 +58,17 @@ def _write_all(fd: int, data: bytes) -> None:
         offset += written
 
 
-def claim_authorization_once(path: Path, auth: dict[str, Any]) -> dict[str, Any]:
-    """Persist a one-time claim with exclusive creation before future model contact.
+def _fsync_parent_directory(parent: Path) -> None:
+    """Durably commit a newly created directory entry on POSIX."""
+    flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+    dir_fd = os.open(parent, flags)
+    try:
+        os.fsync(dir_fd)
+    finally:
+        os.close(dir_fd)
 
-    O_EXCL is the cross-process single-winner gate. If the target already exists,
-    the claim fails closed. The file is fsync'd before the in-memory authorization
-    is marked consumed. A future live runner must call this before any preflight or
-    generation request that constitutes model contact.
-    """
-    consumed = build_consumed_state(auth)
-    target = Path(path)
-    if not target.parent.exists():
-        raise FileNotFoundError(f"authorization state directory does not exist: {target.parent}")
 
-    payload = (json.dumps(consumed, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+def _claim_posix(target: Path, payload: bytes) -> None:
     flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
     fd = os.open(target, flags, 0o600)
     try:
@@ -74,8 +76,62 @@ def claim_authorization_once(path: Path, auth: dict[str, Any]) -> dict[str, Any]
         os.fsync(fd)
     finally:
         os.close(fd)
+    _fsync_parent_directory(target.parent)
 
-    # Only after durable file fsync: close the caller's in-memory grant as well.
+
+def _claim_windows(target: Path, payload: bytes) -> None:
+    """Single-winner Windows claim using a write-through same-directory move.
+
+    A temporary file is fully written and fsync'd first. MoveFileExW is then used
+    without MOVEFILE_REPLACE_EXISTING, so an existing target wins fail-closed.
+    MOVEFILE_WRITE_THROUGH makes the move complete synchronously before return.
+    """
+    fd, tmp_name = tempfile.mkstemp(prefix=f".{target.name}.", suffix=".claimtmp", dir=target.parent)
+    tmp = Path(tmp_name)
+    try:
+        try:
+            _write_all(fd, payload)
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        move_file_ex = kernel32.MoveFileExW
+        move_file_ex.argtypes = [ctypes.c_wchar_p, ctypes.c_wchar_p, ctypes.c_uint32]
+        move_file_ex.restype = ctypes.c_int
+        if not move_file_ex(str(tmp), str(target), MOVEFILE_WRITE_THROUGH):
+            error = ctypes.get_last_error()
+            if error in {ERROR_FILE_EXISTS, ERROR_ALREADY_EXISTS}:
+                raise FileExistsError(f"authorization consumption state already exists: {target}")
+            raise ctypes.WinError(error)
+    finally:
+        if tmp.exists():
+            try:
+                tmp.unlink()
+            except OSError:
+                pass
+
+
+def claim_authorization_once(path: Path, auth: dict[str, Any]) -> dict[str, Any]:
+    """Persist a one-time claim before any future model contact.
+
+    POSIX uses exclusive target creation, file fsync and parent-directory fsync.
+    Windows uses an fsync'd same-directory temporary file followed by a
+    write-through MoveFileExW without replacement. In both cases only one target
+    claim can win and persistence completes before the in-memory authorization is
+    marked consumed.
+    """
+    consumed = build_consumed_state(auth)
+    target = Path(path)
+    if not target.parent.exists():
+        raise FileNotFoundError(f"authorization state directory does not exist: {target.parent}")
+
+    payload = (json.dumps(consumed, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+    if os.name == "nt":
+        _claim_windows(target, payload)
+    else:
+        _claim_posix(target, payload)
+
     auth["authorization_consumed"] = True
     auth["execution_authorized"] = False
     auth["model_run_authorized"] = False
@@ -114,8 +170,10 @@ def build_persistence_report() -> dict[str, Any]:
         "v21_not_ready_to_execute": v21_report.get("ready_to_execute") is False,
         "v21_model_contact_not_authorized": v21_report.get("model_contact_authorized") is False,
         "v21_no_authorization_artifact_created": v21_report.get("authorization_artifact_created") is False,
-        "exclusive_create_gate_defined": True,
+        "exclusive_single_winner_gate_defined": True,
         "durable_file_fsync_defined": True,
+        "durable_directory_entry_commit_defined": True,
+        "windows_write_through_move_defined": True,
         "consume_before_future_model_contact": True,
         "no_default_state_path": True,
         "no_model_contact_path": True,
