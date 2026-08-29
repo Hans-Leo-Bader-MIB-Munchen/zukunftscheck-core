@@ -42,14 +42,18 @@ class V17BoundedRequestCandidateTests(unittest.TestCase):
             if key.endswith("_max_items") or "max_items_per_proposal" in key:
                 self.assertIsInstance(value, int)
                 self.assertGreater(value, 0)
+        self.assertIn("Engineering safety bounds", caps["non_assignment_caps_evidence"])
 
-    def test_b04_candidate_caps_cover_frozen_gold_assignment_counts(self) -> None:
+    def test_b04_candidate_caps_cover_frozen_gold_assignment_counts_conservatively(self) -> None:
         max_required_plus_optional = 0
         for case in self.gold["cases"]:
             required = len(case.get("expected_assignments", []))
             optional = len(case.get("optional_assignments", []))
             max_required_plus_optional = max(max_required_plus_optional, required + optional)
         cap = self.candidate["candidate_schema_cardinalities"]["assignment_candidates_max_items_per_proposal"]
+        # Deliberately conservative: compares a per-case Gold maximum to the
+        # tighter per-proposal candidate cap; it does not assert one proposal
+        # per SourceLocation or collapse semantically distinct statements.
         self.assertLessEqual(max_required_plus_optional, cap)
         self.assertEqual(max_required_plus_optional, 3)
 
@@ -64,6 +68,27 @@ class V17BoundedRequestCandidateTests(unittest.TestCase):
         proposal_cap = self.candidate["candidate_schema_cardinalities"]["proposals_max_items"]
         self.assertEqual(max_locations, 2)
         self.assertGreaterEqual(proposal_cap, max_locations)
+
+    def test_b07_free_text_fields_have_finite_candidate_bounds(self) -> None:
+        bounds = self.candidate["candidate_text_lengths"]
+        for key in (
+            "normalized_statement_max_length",
+            "derivation_note_max_length",
+            "gap_note_max_length",
+            "uncertainty_note_max_length",
+        ):
+            self.assertIsInstance(bounds[key], int)
+            self.assertGreater(bounds[key], 0)
+        self.assertEqual(bounds["evidence_class"], "ENGINEERING_BOUNDS_NOT_GOLD_DERIVED")
+
+    def test_b08_prompt_candidate_requires_concise_non_redundant_free_text(self) -> None:
+        prompt_meta = self.candidate["candidate_prompt"]
+        self.assertEqual(prompt_meta["status"], "MODEL_FREE_PROMPT_CANDIDATE_NOT_EXECUTION_BOUND")
+        self.assertTrue(prompt_meta["required_concision_instruction"])
+        prompt_path = ROOT / prompt_meta["path"]
+        text = prompt_path.read_text(encoding="utf-8")
+        self.assertIn("so knapp wie möglich", text)
+        self.assertIn("ohne Wiederholungen", text)
 
 
 if __name__ == "__main__":
