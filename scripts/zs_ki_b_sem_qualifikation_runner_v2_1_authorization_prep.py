@@ -13,6 +13,7 @@ if str(ROOT) not in sys.path:
 
 import scripts.zs_ki_b_sem_qualifikation_runner_v2_0_assembly_prep as v20
 import scripts.zs_ki_b_sem_qualifikation_runner_v1_9_readiness_prep as v19
+import scripts.zs_ki_b_sem_qualifikation_runner_v1_8_prep as v18
 
 RUNNER_VERSION = "v2.1-authorization-prep"
 RUN_TYPE = "ZS-KI-B-SEM-QUALIFIKATION-SYNTHETIC-V2-1-AUTHORIZATION-INTEGRATION-PREP-2026-022"
@@ -92,18 +93,58 @@ def validate_execution_authorization(auth: dict[str, Any] | None = None) -> dict
     return auth
 
 
+def _current_binding_is_exact() -> bool:
+    assembly = v20.build_assembly_report()
+    return (
+        assembly.get("status") == "PASS"
+        and assembly.get("assembly_ready") is True
+        and assembly.get("ready_to_execute") is False
+        and all(assembly.get("checks", {}).values())
+    )
+
+
+def _frozen_case_ids() -> list[str]:
+    suite = v18.v17.load(v18.v17.SUITE_PATH)
+    case_ids = [case.get("case_id") for case in suite.get("cases", [])]
+    if len(case_ids) != EXPECTED_MODEL_REQUEST_COUNT or any(not isinstance(case_id, str) for case_id in case_ids):
+        raise PermissionError("frozen qualification suite is not exactly the authorized 16-case suite")
+    return case_ids
+
+
 def execute_once(*, transport, authorization: dict[str, Any] | None = None):
-    validate_execution_authorization(authorization)
-    request = __import__(
-        "scripts.zs_ki_b_sem_qualifikation_runner_v1_8_prep",
-        fromlist=["build_candidate_request_preview"],
-    ).build_candidate_request_preview()
-    return transport(base_url=v20.BASE_URL, payload=request, timeout_seconds=v20.TIMEOUT_SECONDS)
+    """Model-free integration boundary using only an explicitly injected transport.
+
+    The authorization is consumed in-memory before the first transport call. A future
+    live executable runner must additionally persist that consumed state atomically
+    before model contact; V21 creates no authorization artifact and performs no I/O.
+    """
+    auth = validate_execution_authorization(authorization)
+    if not _current_binding_is_exact():
+        raise PermissionError("current prompt/schema/context binding no longer matches the authorized V21 design")
+    case_ids = _frozen_case_ids()
+
+    # Consume before transport so the same in-memory single-use artifact cannot be
+    # reused even if the first transport call fails.
+    auth["authorization_consumed"] = True
+
+    results = []
+    for case_id in case_ids:
+        request = v18.build_candidate_request_preview(case_id=case_id)
+        results.append(
+            transport(
+                base_url=v20.BASE_URL,
+                payload=request,
+                timeout_seconds=v20.TIMEOUT_SECONDS,
+                case_id=case_id,
+            )
+        )
+    return results
 
 
 def build_authorization_report() -> dict[str, Any]:
     assembly = v20.build_assembly_report()
     template = build_authorization_template()
+    case_ids = _frozen_case_ids()
     checks = {
         "v20_assembly_pass": assembly.get("status") == "PASS",
         "v20_not_ready_to_execute": assembly.get("ready_to_execute") is False,
@@ -111,6 +152,7 @@ def build_authorization_report() -> dict[str, Any]:
         "prompt_hash_exact": template["prompt_sha256"] == v19.EXPECTED_PROMPT_SHA256,
         "response_format_hash_exact": template["response_format_sha256"] == v19.EXPECTED_RESPONSE_FORMAT_SHA256,
         "expected_request_count_16": template["expected_model_request_count"] == 16,
+        "frozen_suite_count_16": len(case_ids) == 16,
         "loopback_only": template["local_loopback_only"] is True,
         "synthetic_only": template["synthetic_only"] is True,
         "single_run_only": template["single_run_only"] is True,
@@ -123,6 +165,7 @@ def build_authorization_report() -> dict[str, Any]:
         "execution_not_authorized": template["execution_authorized"] is False,
         "model_contact_not_authorized": template["model_contact_authorized"] is False,
         "authorization_not_consumed": template["authorization_consumed"] is False,
+        "execution_path_revalidates_current_binding": _current_binding_is_exact(),
     }
     passed = all(checks.values())
     return {
@@ -137,6 +180,7 @@ def build_authorization_report() -> dict[str, Any]:
         "model_contact_authorized": False,
         "model_contact_performed": False,
         "authorization_artifact_created": False,
+        "future_live_runner_must_persist_consumption_before_model_contact": True,
         "new_explicit_single_use_model_contact_authorization_required": True,
         "model_qualified": False,
     }
