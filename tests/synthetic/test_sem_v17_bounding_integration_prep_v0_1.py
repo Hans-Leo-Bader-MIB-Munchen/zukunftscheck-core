@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import hashlib
 import json
 import unittest
 from pathlib import Path
@@ -32,6 +33,10 @@ class V17BoundingIntegrationPrepTests(unittest.TestCase):
             "ZS-KI-B-STRUCTURED-OUTPUT-2026-001_v0.6-candidate",
         )
         self.assertEqual(manifest["prompt_version"], "zs_ki_b_sem_qualifikation_system_v0_7_candidate")
+        prompt_text = prep.PROMPT_PATH.read_text(encoding="utf-8")
+        expected_prompt_sha = hashlib.sha256(prompt_text.encode("utf-8")).hexdigest()
+        self.assertEqual(manifest["prompt_sha256"], expected_prompt_sha)
+        self.assertEqual(len(manifest["prompt_sha256"]), 64)
         self.assertEqual(manifest["max_completion_tokens"], 1024)
         self.assertEqual(manifest["request_timeout_seconds"], 1800.0)
         self.assertEqual(manifest["response_format_sha256"], manifest["candidate_response_format_sha256"])
