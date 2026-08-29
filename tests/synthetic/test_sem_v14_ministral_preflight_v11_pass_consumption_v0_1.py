@@ -47,15 +47,17 @@ class MinistralPreflightV11PassConsumptionTests(unittest.TestCase):
         self.assertFalse(result["qualification_execution_authorized"])
         self.assertFalse(result["model_qualified"])
 
-    def test_c05_qualification_gate_records_pass_but_remains_not_approved(self) -> None:
+    def test_c05_qualification_gate_records_preflight_pass_and_current_consumed_v14_state(self) -> None:
         auth = v14.load(v14.AUTH_PATH)
-        self.assertEqual(auth["status"], "NOT_APPROVED")
+        self.assertEqual(auth["status"], "CONSUMED_EXECUTED_ONCE_FAILED_TIMEOUT")
+        self.assertTrue(auth["authorization_consumed"])
         self.assertTrue(auth["preflight_pass_required"])
         self.assertTrue(auth["preflight_pass_observed"])
-        self.assertTrue(auth["qualification_authorization_ready_for_separate_user_decision"])
+        self.assertFalse(auth["qualification_authorization_ready_for_separate_user_decision"])
         self.assertFalse(auth["execution_authorized"])
         self.assertFalse(auth["model_run_authorized"])
         self.assertFalse(auth["model_contact_authorized"])
+        self.assertTrue(auth["model_contact_performed"])
         self.assertFalse(auth["model_qualified"])
 
     def test_c06_current_qualification_authorization_still_fails_closed(self) -> None:
