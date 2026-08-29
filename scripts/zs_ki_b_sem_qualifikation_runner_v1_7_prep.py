@@ -9,6 +9,7 @@ single-use authorization.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 from typing import Any
@@ -35,6 +36,10 @@ TARGET_CASE_ID = "ZS-KI-B-SEM-V07-Q-PF1-SYN-001"
 
 def load(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _sha256_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
 def _candidate_case(case_id: str = TARGET_CASE_ID) -> dict[str, Any]:
@@ -82,15 +87,20 @@ def build_dry_run_manifest() -> dict[str, Any]:
     active_schema = load(ACTIVE_SCHEMA_PATH)
     messages = build_candidate_messages()
     user_payload = json.loads(messages[1]["content"])
+    response_format = bounded.build_response_format()
+    response_format_sha256 = _sha256_text(canonical_json(response_format))
 
     manifest.update(
         {
             "run_type": RUN_TYPE,
             "runner_version": RUNNER_VERSION,
             "prompt_version": PROMPT_VERSION,
+            "contract_version": candidate_schema["$id"],
+            "response_format_sha256": response_format_sha256,
             "candidate_contract_version": candidate_schema["$id"],
             "active_contract_version_unchanged": active_schema["$id"],
             "candidate_output_mode_version": bounded.OUTPUT_MODE_VERSION,
+            "candidate_response_format_sha256": response_format_sha256,
             "max_completion_tokens": bounded.MAX_COMPLETION_TOKENS,
             "request_timeout_seconds": bounded.REQUEST_TIMEOUT_SECONDS,
             "candidate_prompt_path": str(PROMPT_PATH.relative_to(ROOT)),
