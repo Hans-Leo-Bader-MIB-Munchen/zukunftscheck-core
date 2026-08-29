@@ -31,7 +31,7 @@ class V18LmStudioTokenCapCompatPrepTests(unittest.TestCase):
         manifest = prep.build_dry_run_manifest()["manifest"]
         self.assertEqual(manifest["output_token_parameter"], "max_tokens")
         self.assertEqual(manifest["max_tokens"], 1024)
-        self.assertIsNone(manifest["max_completion_tokens"])
+        self.assertNotIn("max_completion_tokens", manifest)
         self.assertTrue(manifest["lmstudio_documented_chat_completion_parameter_binding_prepared"])
 
     def test_d04_candidate_schema_and_prompt_are_preserved(self) -> None:
