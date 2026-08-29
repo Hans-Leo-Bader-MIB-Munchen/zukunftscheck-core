@@ -14,28 +14,36 @@ ROOT = Path(__file__).resolve().parents[2]
 
 class MinistralPreflightV11QualificationGatePrepTests(unittest.TestCase):
     def _approved_preflight_auth(self) -> dict:
-        auth = json.loads(preflight.AUTH_PATH.read_text(encoding="utf-8"))
-        auth["status"] = "EXPLICIT_USER_APPROVED_PREFLIGHT_ONLY"
-        auth["localhost_preflight_authorized"] = True
-        auth["model_contact_authorized"] = True
-        auth["explicit_user_approval_received"] = True
-        return auth
+        return json.loads(preflight.AUTH_PATH.read_text(encoding="utf-8"))
 
-    def test_p01_candidate_is_closed_and_uses_bound_runtime_id(self) -> None:
+    def test_p01_live_authorization_is_exact_and_narrow(self) -> None:
         auth = json.loads(preflight.AUTH_PATH.read_text(encoding="utf-8"))
-        self.assertEqual(auth["status"], "PREPARED_NOT_APPROVED")
+        self.assertEqual(auth["status"], "EXPLICIT_USER_APPROVED_PREFLIGHT_ONLY")
         self.assertEqual(auth["model_repository"], v14.MODEL_REPOSITORY)
         self.assertEqual(auth["runtime_model_id"], v14.RUNTIME_MODEL_ID)
         self.assertEqual(auth["model"], v14.RUNTIME_MODEL_ID)
         self.assertFalse(auth["download_authorized"])
         self.assertFalse(auth["model_load_authorized"])
-        self.assertFalse(auth["localhost_preflight_authorized"])
-        self.assertFalse(auth["model_contact_authorized"])
+        self.assertTrue(auth["localhost_preflight_authorized"])
+        self.assertTrue(auth["model_contact_authorized"])
         self.assertEqual(auth["inventory_request_count_max"], 1)
         self.assertEqual(auth["generation_request_count_max"], 0)
+        self.assertTrue(auth["single_use_preflight_only"])
+        self.assertFalse(auth["authorization_consumed"])
+        self.assertTrue(auth["explicit_user_approval_received"])
+        self.assertFalse(auth["generation_authorized"])
+        self.assertFalse(auth["qualification_execution_authorized"])
+        self.assertFalse(auth["model_qualified"])
 
-    def test_p02_closed_gate_stops_before_preflight_contact(self) -> None:
-        with patch.object(preflight.v09, "preflight_loaded_model") as contact:
+    def test_p02_consumed_gate_stops_before_preflight_contact(self) -> None:
+        denied = self._approved_preflight_auth()
+        denied["status"] = "CONSUMED"
+        denied["localhost_preflight_authorized"] = False
+        denied["model_contact_authorized"] = False
+        denied["authorization_consumed"] = True
+        with patch.object(preflight, "load", return_value=denied), patch.object(
+            preflight.v09, "preflight_loaded_model"
+        ) as contact:
             with self.assertRaises(PermissionError):
                 preflight.perform_preflight_only()
             contact.assert_not_called()
