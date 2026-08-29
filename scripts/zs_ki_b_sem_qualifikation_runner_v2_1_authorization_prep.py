@@ -14,13 +14,28 @@ if str(ROOT) not in sys.path:
 import scripts.zs_ki_b_sem_qualifikation_runner_v2_0_assembly_prep as v20
 import scripts.zs_ki_b_sem_qualifikation_runner_v1_9_readiness_prep as v19
 import scripts.zs_ki_b_sem_qualifikation_runner_v1_8_prep as v18
+import scripts.zs_ki_b_sem_canonical_binding_integrity_v0_1 as integrity
 
 RUNNER_VERSION = "v2.1-authorization-prep"
 RUN_TYPE = "ZS-KI-B-SEM-QUALIFIKATION-SYNTHETIC-V2-1-AUTHORIZATION-INTEGRATION-PREP-2026-022"
 EXPECTED_MODEL_REQUEST_COUNT = 16
 
 
+def _canonical_binding_payload() -> dict[str, Any]:
+    snapshot = integrity.build_binding_snapshot()
+    return {
+        "source_base_commit": snapshot["source_base_commit"],
+        "hash_semantics": snapshot["hash_semantics"],
+        "bound_artifacts": snapshot["artifacts"],
+        "bound_runner_preparations": snapshot["runner_bindings"],
+        "ordered_case_ids": snapshot["ordered_case_ids"],
+        "ordered_case_ids_sha256": snapshot["ordered_case_ids_sha256"],
+        "qualification_snapshot_sha256": snapshot["qualification_snapshot_sha256"],
+    }
+
+
 def build_authorization_template() -> dict[str, Any]:
+    binding = _canonical_binding_payload()
     return {
         "status": "NOT_AUTHORIZED_TEMPLATE",
         "runner_version": RUNNER_VERSION,
@@ -34,6 +49,7 @@ def build_authorization_template() -> dict[str, Any]:
         "output_mode_version": v19.EXPECTED_OUTPUT_MODE,
         "response_format_sha256": v19.EXPECTED_RESPONSE_FORMAT_SHA256,
         "expected_model_request_count": EXPECTED_MODEL_REQUEST_COUNT,
+        **binding,
         "required_base_url": v19.EXPECTED_BASE_URL,
         "required_request_timeout_seconds": v19.EXPECTED_TIMEOUT_SECONDS,
         "max_tokens": v19.EXPECTED_MAX_TOKENS,
@@ -67,6 +83,13 @@ def _authorization_matches(auth: dict[str, Any]) -> bool:
         and auth.get("output_mode_version") == expected["output_mode_version"]
         and auth.get("response_format_sha256") == expected["response_format_sha256"]
         and auth.get("expected_model_request_count") == EXPECTED_MODEL_REQUEST_COUNT
+        and auth.get("source_base_commit") == expected["source_base_commit"]
+        and auth.get("hash_semantics") == expected["hash_semantics"]
+        and auth.get("bound_artifacts") == expected["bound_artifacts"]
+        and auth.get("bound_runner_preparations") == expected["bound_runner_preparations"]
+        and auth.get("ordered_case_ids") == expected["ordered_case_ids"]
+        and auth.get("ordered_case_ids_sha256") == expected["ordered_case_ids_sha256"]
+        and auth.get("qualification_snapshot_sha256") == expected["qualification_snapshot_sha256"]
         and auth.get("required_base_url") == expected["required_base_url"]
         and auth.get("required_request_timeout_seconds") == expected["required_request_timeout_seconds"]
         and auth.get("max_tokens") == expected["max_tokens"]
@@ -95,19 +118,22 @@ def validate_execution_authorization(auth: dict[str, Any] | None = None) -> dict
 
 def _current_binding_is_exact() -> bool:
     assembly = v20.build_assembly_report()
+    integrity_checks = integrity.validate_current_worktree_binding()
     return (
         assembly.get("status") == "PASS"
         and assembly.get("assembly_ready") is True
         and assembly.get("ready_to_execute") is False
         and all(assembly.get("checks", {}).values())
+        and bool(integrity_checks)
+        and all(integrity_checks.values())
     )
 
 
 def _frozen_case_ids() -> list[str]:
     suite = v18.v17.load(v18.v17.SUITE_PATH)
     case_ids = [case.get("case_id") for case in suite.get("cases", [])]
-    if len(case_ids) != EXPECTED_MODEL_REQUEST_COUNT or any(not isinstance(case_id, str) for case_id in case_ids):
-        raise PermissionError("frozen qualification suite is not exactly the authorized 16-case suite")
+    if tuple(case_ids) != integrity.EXPECTED_ORDERED_CASE_IDS:
+        raise PermissionError("frozen qualification suite is not the exact ordered authorized 16-case suite")
     return case_ids
 
 
@@ -120,11 +146,9 @@ def execute_once(*, transport, authorization: dict[str, Any] | None = None):
     """
     auth = validate_execution_authorization(authorization)
     if not _current_binding_is_exact():
-        raise PermissionError("current prompt/schema/context binding no longer matches the authorized V21 design")
+        raise PermissionError("current prompt/schema/content binding no longer matches the authorized V21 design")
     case_ids = _frozen_case_ids()
 
-    # Consume before transport so the same in-memory single-use artifact cannot be
-    # reused even if the first transport call fails.
     auth["authorization_consumed"] = True
 
     results = []
@@ -145,6 +169,8 @@ def build_authorization_report() -> dict[str, Any]:
     assembly = v20.build_assembly_report()
     template = build_authorization_template()
     case_ids = _frozen_case_ids()
+    integrity_checks = integrity.validate_current_worktree_binding()
+    bound_roles = {row["role"] for row in template["bound_artifacts"]}
     checks = {
         "v20_assembly_pass": assembly.get("status") == "PASS",
         "v20_not_ready_to_execute": assembly.get("ready_to_execute") is False,
@@ -153,6 +179,17 @@ def build_authorization_report() -> dict[str, Any]:
         "response_format_hash_exact": template["response_format_sha256"] == v19.EXPECTED_RESPONSE_FORMAT_SHA256,
         "expected_request_count_16": template["expected_model_request_count"] == 16,
         "frozen_suite_count_16": len(case_ids) == 16,
+        "frozen_suite_order_exact": tuple(case_ids) == integrity.EXPECTED_ORDERED_CASE_IDS,
+        "canonical_content_binding_exact": bool(integrity_checks) and all(integrity_checks.values()),
+        "suite_content_hash_bound": "qualification_suite" in bound_roles,
+        "reference_questions_content_hash_bound": "reference_questions" in bound_roles,
+        "meaning_layer_content_hash_bound": "reference_question_meanings" in bound_roles,
+        "finding_type_meanings_content_hash_bound": "finding_type_meanings" in bound_roles,
+        "system_prompt_content_hash_bound": "system_prompt" in bound_roles,
+        "response_schema_content_hash_bound": "response_schema" in bound_roles,
+        "source_commit_bound": template["source_base_commit"] == integrity.SOURCE_BASE_COMMIT,
+        "ordered_case_ids_hash_bound": len(template["ordered_case_ids_sha256"]) == 64,
+        "qualification_snapshot_hash_bound": len(template["qualification_snapshot_sha256"]) == 64,
         "loopback_only": template["local_loopback_only"] is True,
         "synthetic_only": template["synthetic_only"] is True,
         "single_run_only": template["single_run_only"] is True,
