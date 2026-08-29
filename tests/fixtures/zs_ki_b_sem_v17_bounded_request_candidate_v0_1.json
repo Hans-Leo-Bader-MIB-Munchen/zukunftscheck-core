@@ -1,0 +1,56 @@
+{
+  "candidate_version": "ZS-KI-B-SEM-V1-7-BOUNDED-REQUEST-CANDIDATE-2026-001_v0.1",
+  "status": "MODEL_FREE_DESIGN_CANDIDATE_NOT_AUTHORIZED",
+  "basis": {
+    "rootcause_audit": "ZS-KI-B-SEM-MINISTRAL-TIMEOUT-ROOTCAUSE-AUDIT-2026-001_v0.1",
+    "preserved_v15_failure": "tests/fixtures/zs_ki_b_sem_v15_ministral_qualification_timeout_failure_preserved_v0_1.json",
+    "frozen_suite": "tests/fixtures/zs_ki_b_sem_v07_qualification_suite_frozen_v0_1.json",
+    "human_gold": "tests/fixtures/zs_ki_b_sem_v07_human_gold_frozen_v0_1.json",
+    "semantic_contract": "domains/zukunftscheck/schema/b_semantic_contract_v0_2.schema.json"
+  },
+  "design_goal": "Bound response generation before any new model contact while preserving the frozen 67-question semantic qualification scope.",
+  "candidate_transport": {
+    "max_completion_tokens": 1024,
+    "timeout_seconds": 1800,
+    "retry_count": 0,
+    "output_repair": false,
+    "stream": false,
+    "rationale": "At the observed v1.5 decode range of roughly 1.5-1.76 tokens/s, a 1024-token generation ceiling bounds pure decoding to roughly 9.7-11.4 minutes instead of allowing generation to run until the 1800s transport timeout. This is a design bound only and has not been quality-qualified."
+  },
+  "candidate_schema_cardinalities": {
+    "proposals_max_items": 8,
+    "assignment_candidates_max_items_per_proposal": 8,
+    "conflict_candidate_refs_max_items_per_proposal": 8,
+    "gap_notes_max_items_per_proposal": 8,
+    "uncertainty_notes_max_items_per_proposal": 8,
+    "rationale": "Finite safety bounds are intentionally above the observed frozen-suite structural needs. They are candidate limits, not a semantic-contract release."
+  },
+  "context_strategy": {
+    "first_candidate_preserves_all_67_reference_questions": true,
+    "first_candidate_preserves_all_67_meaning_entries": true,
+    "pf_prefiltering_allowed": false,
+    "reason": "A PF/question prefilter could bias or narrow the qualification task and is therefore not introduced before separate model-free semantic equivalence work. The first candidate isolates output bounding from context reduction."
+  },
+  "frozen_gold_static_observations": {
+    "max_expected_assignments_in_one_case": 3,
+    "max_optional_assignments_in_one_case": 1,
+    "max_expected_plus_optional_assignments_in_one_case": 3,
+    "max_source_locations_in_one_case": 2
+  },
+  "governance": {
+    "model_contact_authorized": false,
+    "preflight_authorized": false,
+    "qualification_execution_authorized": false,
+    "download_authorized": false,
+    "model_load_authorized": false,
+    "real_data": false,
+    "benchmark_approved": false,
+    "generalisation_approved": false,
+    "pilot_approved": false,
+    "production_approved": false,
+    "phase_f_approved": false,
+    "model_qualified": false,
+    "new_explicit_model_contact_authorization_required_before_any_execution": true
+  },
+  "next_gate": "MODEL_FREE_REVIEW_OF_BOUNDED_REQUEST_DESIGN"
+}
