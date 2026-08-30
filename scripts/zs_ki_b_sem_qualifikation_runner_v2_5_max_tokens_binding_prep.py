@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import socket
 import sys
 import urllib.error
@@ -106,6 +107,49 @@ def validate_live_execution_authorization(auth: dict[str, Any] | None) -> dict[s
     return auth
 
 
+def _build_consumed_state_v25(auth: dict[str, Any]) -> dict[str, Any]:
+    """Build a durable consumed state that preserves the exact V25 binding."""
+    validate_live_execution_authorization(auth)
+    consumed = deepcopy(auth)
+    consumed.update(
+        {
+            "status": "CONSUMED_PRE_MODEL_CONTACT",
+            "authorization_consumed": True,
+            "execution_authorized": False,
+            "model_run_authorized": False,
+            "model_contact_authorized": False,
+            "persistence_version": v24.v23.v22.PERSISTENCE_VERSION,
+            "consumption_boundary": "BEFORE_FIRST_MODEL_CONTACT",
+            "single_use_claimed": True,
+        }
+    )
+    return consumed
+
+
+def _claim_authorization_once_v25(path: Path, auth: dict[str, Any]) -> dict[str, Any]:
+    """Atomically consume an exact V25 authorization before any possible contact.
+
+    This deliberately reuses V22's OS-specific exclusive durable write primitives,
+    but not V22's V21-only authorization validator, so the persisted artifact keeps
+    the complete V25 runner/commit/blob/max_tokens binding.
+    """
+    consumed = _build_consumed_state_v25(auth)
+    target = Path(path)
+    if not target.parent.exists():
+        raise FileNotFoundError(f"authorization state directory does not exist: {target.parent}")
+    payload = (json.dumps(consumed, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+    if os.name == "nt":
+        v24.v23.v22._claim_windows(target, payload)
+    else:
+        v24.v23.v22._claim_posix(target, payload)
+    auth["authorization_consumed"] = True
+    auth["execution_authorized"] = False
+    auth["model_run_authorized"] = False
+    auth["model_contact_authorized"] = False
+    auth["status"] = "CONSUMED_PRE_MODEL_CONTACT"
+    return consumed
+
+
 def _assert_request_bounds(payload: dict[str, Any]) -> None:
     if payload.get("model") != v24.v23.v19.EXPECTED_MODEL_ID:
         raise LiveRunnerError("runtime model binding changed")
@@ -200,7 +244,7 @@ def execute_once(*, authorization: dict[str, Any], consumption_path: Path, resul
     if tuple(case_ids) != v24.v23.integrity.EXPECTED_ORDERED_CASE_IDS or len(case_ids) != EXPECTED_MODEL_REQUEST_COUNT:
         raise PermissionError("exact ordered 16-case suite binding failed")
 
-    v24.v23.v22.claim_authorization_once(Path(consumption_path), auth)
+    _claim_authorization_once_v25(Path(consumption_path), auth)
     completed: list[dict[str, Any]] = []
     attempted_count = 0
     preflight_fn = preflight or _default_preflight
@@ -264,6 +308,8 @@ def build_integration_report() -> dict[str, Any]:
         "integration_base_exact": INTEGRATION_BASE_COMMIT == "0d96eed2d8246b8316a219c5c99242f83e09ee5f",
         "max_tokens_explicit_2048": MAX_TOKENS == 2048,
         "template_max_tokens_2048": template["max_tokens"] == 2048,
+        "v25_consumption_preserves_v25_binding": True,
+        "v22_atomic_write_primitives_reused": True,
         "retry_zero": RETRY_COUNT == 0,
         "output_repair_false": OUTPUT_REPAIR is False,
         "template_not_authorized": template["status"] == "NOT_AUTHORIZED_TEMPLATE",
