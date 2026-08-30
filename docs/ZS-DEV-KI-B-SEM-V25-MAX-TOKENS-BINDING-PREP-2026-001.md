@@ -43,7 +43,7 @@ Nicht belegt ist, wie viele Completion Tokens PF12 fuer eine vollstaendige Antwo
 | Kandidat | Headroom ggü. 1024 | Technische Einordnung |
 |---|---:|---|
 | 1536 | +50 % | Endlich und bindbar, nach einem harten Treffer am bisherigen Ceiling aber relativ knapper Sicherheitsabstand. |
-| 2048 | +100 % | Verdoppelt den belegtermaßen zu kleinen Bound; moderater, endlicher und leicht reproduzierbarer Kandidat. |
+| 2048 | +100 % | Verdoppelt den belegtermassen zu kleinen Bound; moderater, endlicher und leicht reproduzierbarer Kandidat. |
 | 3072 | +200 % | Mehr Reserve, aber ohne vorhandene Evidenz fuer diesen zusaetzlichen Ausgaberaum; hoeheres Laufzeit-/Ressourcenbudget. |
 | 4096 | +300 % | Groesster betrachteter Ausgaberaum; derzeit am wenigsten evidenzbasiert und mit entsprechend groesserem Ressourcen-/Laufzeitkorridor. |
 
@@ -97,6 +97,33 @@ Eine alte V24-, Run-003- oder sonstige fruehere Autorisierung kann den V25-Valid
 
 Keine alte Consumption wird zurueckgesetzt oder reaktiviert. V25 erzeugt keine neue Autorisierung.
 
+## Persistente Consumption
+
+V25 validiert eine spaetere Autorisierung gegen das vollstaendige V25-Template und erzeugt daraus einen V25-eigenen consumed state. Fuer die atomare und dauerhafte Dateierzeugung werden unveraendert die V22-OS-Primitiven wiederverwendet. Dadurch bleibt die consume-before-contact-Grenze erhalten, ohne die V25-Bindung auf eine alte V21-/1024-Bindung zurueckzustufen.
+
+Der persistierte Zustand erhaelt insbesondere Runner-Version, Run-Type, Git-Commit, Runner-Blob, Runner-Pfad, Integrationsbase, Modell-/Prompt-/Schema-/Suite-Bindungen und `max_tokens = 2048` und setzt anschliessend fail-closed:
+
+- `status = CONSUMED_PRE_MODEL_CONTACT`
+- `authorization_consumed = true`
+- `execution_authorized = false`
+- `model_run_authorized = false`
+- `model_contact_authorized = false`
+
+Ein zweiter Claim auf denselben Consumption-Pfad muss fail-closed mit `FileExistsError` scheitern.
+
+## Gegencheck-Nachbesserungen vor Merge
+
+Der unabhaengige Gegencheck zu PR #111 identifizierte keine harten Blocker, aber zwei hartkodierte `True`-Checks im modellfreien Integration-Report und zwei sinnvolle lokale Falsifikationstests als Verbesserungsbedarf.
+
+Vor Merge wurden daher umgesetzt:
+
+- `v25_consumption_preserves_v25_binding` wird nun aus einem echten V25-consumed-state-Probe berechnet.
+- `v22_atomic_write_primitives_reused` wird nun ueber die tatsaechlich gebundenen V22-Primitiven und deren Verwendung im Claim-Pfad geprueft.
+- isolierter Test: ansonsten exakt gueltige V25-Autorisierung mit einzigem Rueckfall `max_tokens = 1024` muss abgelehnt werden.
+- V25-lokaler Double-Claim-Test: zweiter Claim auf identischen Consumption-Pfad muss `FileExistsError` ausloesen.
+
+Damit kann der Report diese beiden Eigenschaften nicht mehr allein durch hartkodierte Wahrheitswerte als PASS ausgeben.
+
 ## Governance-Status
 
 Am Ende dieses Blocks gilt:
@@ -132,9 +159,12 @@ Der V25-Testblock prueft modellfrei mindestens:
 9. Alte V24-Autorisierung wird abgelehnt.
 10. Persistente Consumption geschieht vor Preflight.
 11. Length-Failure stoppt nach einem attempted Request ohne Retry/Rerun.
-12. Report ist modellfrei und weist 2048 sowie Run-003-Evidenz aus.
+12. Report ist modellfrei, weist 2048 sowie Run-003-Evidenz aus und prueft Consumption-/V22-Primitiven nicht nur per Literal.
 13. V24-Runner-Blob bleibt unveraendert (`af810ec05015ed4d39d4854dcfb350f653b3a7d0`).
 14. Kandidaten 1536/2048/3072/4096 sind explizit dokumentiert.
+15. Persistierter Consumption-State erhaelt die exakte V25-Bindung.
+16. Eine ansonsten exakt gueltige V25-Autorisierung mit einzigem Rueckfall auf `max_tokens = 1024` wird abgelehnt.
+17. Ein zweiter V25-Consumption-Claim auf denselben Pfad scheitert fail-closed mit `FileExistsError`.
 
 ## Abschluss-Gate
 
