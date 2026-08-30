@@ -98,12 +98,21 @@ class SemV25MaxTokensBindingPrepTests(unittest.TestCase):
             def claim(path, supplied_auth):
                 order.append("consume")
                 path.write_text("claimed", encoding="utf-8")
+                supplied_auth.update(
+                    {
+                        "status": "CONSUMED_PRE_MODEL_CONTACT",
+                        "authorization_consumed": True,
+                        "execution_authorized": False,
+                        "model_run_authorized": False,
+                        "model_contact_authorized": False,
+                    }
+                )
 
             def preflight(**kwargs):
                 order.append("preflight")
                 raise RuntimeError("synthetic preflight stop")
 
-            with mock.patch.object(v25.v24.v23.v22, "claim_authorization_once", side_effect=claim):
+            with mock.patch.object(v25, "_claim_authorization_once_v25", side_effect=claim):
                 output = v25.execute_once(
                     authorization=auth,
                     consumption_path=consumption,
@@ -161,6 +170,29 @@ class SemV25MaxTokensBindingPrepTests(unittest.TestCase):
         report = v25.build_integration_report()
         self.assertEqual(set(report["candidate_assessment"]), {"1536", "2048", "3072", "4096"})
         self.assertIn("selected", report["candidate_assessment"]["2048"]["assessment"])
+
+    def test_v25_15_persisted_consumption_preserves_exact_v25_binding(self):
+        auth = self._approved_auth()
+        expected_commit = auth["live_runner_git_commit"]
+        expected_blob = auth["live_runner_blob_oid"]
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "consumed.json"
+            consumed = v25._claim_authorization_once_v25(path, auth)
+            persisted = json.loads(path.read_text(encoding="utf-8"))
+            for state in (consumed, persisted):
+                self.assertEqual(state["live_runner_version"], v25.RUNNER_VERSION)
+                self.assertEqual(state["live_run_type"], v25.RUN_TYPE)
+                self.assertEqual(state["live_runner_path"], v25.RUNNER_PATH)
+                self.assertEqual(state["live_runner_git_commit"], expected_commit)
+                self.assertEqual(state["live_runner_blob_oid"], expected_blob)
+                self.assertEqual(state["integration_base_commit"], v25.INTEGRATION_BASE_COMMIT)
+                self.assertEqual(state["max_tokens"], 2048)
+                self.assertEqual(state["status"], "CONSUMED_PRE_MODEL_CONTACT")
+                self.assertTrue(state["authorization_consumed"])
+                self.assertFalse(state["execution_authorized"])
+                self.assertFalse(state["model_run_authorized"])
+                self.assertFalse(state["model_contact_authorized"])
+                self.assertEqual(state["consumption_boundary"], "BEFORE_FIRST_MODEL_CONTACT")
 
 
 if __name__ == "__main__":
