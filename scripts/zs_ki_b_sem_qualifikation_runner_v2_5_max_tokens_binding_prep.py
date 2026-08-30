@@ -34,6 +34,8 @@ PreflightCallable = Callable[..., dict[str, Any]]
 TransportCallable = Callable[..., tuple[str, dict[str, Any]]]
 LiveRunnerError = v24.LiveRunnerError
 StructuredOutputError = v24.StructuredOutputError
+V22_CLAIM_POSIX = v24.v23.v22._claim_posix
+V22_CLAIM_WINDOWS = v24.v23.v22._claim_windows
 
 
 def current_git_commit() -> str:
@@ -69,6 +71,20 @@ def build_live_authorization_template() -> dict[str, Any]:
     template["model_run_authorized"] = False
     template["model_contact_authorized"] = False
     return template
+
+
+def _approved_probe_from_template(template: dict[str, Any]) -> dict[str, Any]:
+    probe = deepcopy(template)
+    probe.update(
+        {
+            "status": "EXPLICIT_USER_APPROVED",
+            "authorization_consumed": False,
+            "execution_authorized": True,
+            "model_run_authorized": True,
+            "model_contact_authorized": True,
+        }
+    )
+    return probe
 
 
 def _live_authorization_matches(auth: dict[str, Any]) -> bool:
@@ -127,26 +143,25 @@ def _build_consumed_state_v25(auth: dict[str, Any]) -> dict[str, Any]:
 
 
 def _claim_authorization_once_v25(path: Path, auth: dict[str, Any]) -> dict[str, Any]:
-    """Atomically consume an exact V25 authorization before any possible contact.
-
-    This deliberately reuses V22's OS-specific exclusive durable write primitives,
-    but not V22's V21-only authorization validator, so the persisted artifact keeps
-    the complete V25 runner/commit/blob/max_tokens binding.
-    """
+    """Atomically consume an exact V25 authorization before any possible contact."""
     consumed = _build_consumed_state_v25(auth)
     target = Path(path)
     if not target.parent.exists():
         raise FileNotFoundError(f"authorization state directory does not exist: {target.parent}")
     payload = (json.dumps(consumed, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
     if os.name == "nt":
-        v24.v23.v22._claim_windows(target, payload)
+        V22_CLAIM_WINDOWS(target, payload)
     else:
-        v24.v23.v22._claim_posix(target, payload)
-    auth["authorization_consumed"] = True
-    auth["execution_authorized"] = False
-    auth["model_run_authorized"] = False
-    auth["model_contact_authorized"] = False
-    auth["status"] = "CONSUMED_PRE_MODEL_CONTACT"
+        V22_CLAIM_POSIX(target, payload)
+    auth.update(
+        {
+            "status": "CONSUMED_PRE_MODEL_CONTACT",
+            "authorization_consumed": True,
+            "execution_authorized": False,
+            "model_run_authorized": False,
+            "model_contact_authorized": False,
+        }
+    )
     return consumed
 
 
@@ -295,6 +310,44 @@ def execute_once(*, authorization: dict[str, Any], consumption_path: Path, resul
     return success
 
 
+def _report_consumption_probe(template: dict[str, Any]) -> bool:
+    approved = _approved_probe_from_template(template)
+    consumed = _build_consumed_state_v25(approved)
+    immutable_keys = set(template) - {
+        "status",
+        "authorization_consumed",
+        "execution_authorized",
+        "model_run_authorized",
+        "model_contact_authorized",
+    }
+    return (
+        all(consumed.get(key) == template.get(key) for key in immutable_keys)
+        and consumed.get("max_tokens") == MAX_TOKENS
+        and consumed.get("live_runner_version") == RUNNER_VERSION
+        and consumed.get("live_run_type") == RUN_TYPE
+        and consumed.get("live_runner_path") == RUNNER_PATH
+        and consumed.get("integration_base_commit") == INTEGRATION_BASE_COMMIT
+        and consumed.get("status") == "CONSUMED_PRE_MODEL_CONTACT"
+        and consumed.get("authorization_consumed") is True
+        and consumed.get("execution_authorized") is False
+        and consumed.get("model_run_authorized") is False
+        and consumed.get("model_contact_authorized") is False
+        and consumed.get("persistence_version") == v24.v23.v22.PERSISTENCE_VERSION
+        and consumed.get("consumption_boundary") == "BEFORE_FIRST_MODEL_CONTACT"
+        and consumed.get("single_use_claimed") is True
+    )
+
+
+def _report_v22_primitive_probe() -> bool:
+    names = set(_claim_authorization_once_v25.__code__.co_names)
+    return (
+        V22_CLAIM_POSIX is v24.v23.v22._claim_posix
+        and V22_CLAIM_WINDOWS is v24.v23.v22._claim_windows
+        and "V22_CLAIM_POSIX" in names
+        and "V22_CLAIM_WINDOWS" in names
+    )
+
+
 def build_integration_report() -> dict[str, Any]:
     template = build_live_authorization_template()
     candidates = {
@@ -308,8 +361,8 @@ def build_integration_report() -> dict[str, Any]:
         "integration_base_exact": INTEGRATION_BASE_COMMIT == "0d96eed2d8246b8316a219c5c99242f83e09ee5f",
         "max_tokens_explicit_2048": MAX_TOKENS == 2048,
         "template_max_tokens_2048": template["max_tokens"] == 2048,
-        "v25_consumption_preserves_v25_binding": True,
-        "v22_atomic_write_primitives_reused": True,
+        "v25_consumption_preserves_v25_binding": _report_consumption_probe(template),
+        "v22_atomic_write_primitives_reused": _report_v22_primitive_probe(),
         "retry_zero": RETRY_COUNT == 0,
         "output_repair_false": OUTPUT_REPAIR is False,
         "template_not_authorized": template["status"] == "NOT_AUTHORIZED_TEMPLATE",
@@ -317,7 +370,7 @@ def build_integration_report() -> dict[str, Any]:
         "model_run_not_authorized": template["model_run_authorized"] is False,
         "model_contact_not_authorized": template["model_contact_authorized"] is False,
         "authorization_not_consumed": template["authorization_consumed"] is False,
-        "automatic_retry_forbidden": True,
+        "automatic_retry_forbidden": RETRY_COUNT == 0,
         "automatic_rerun_forbidden": True,
         "adaptive_token_increase_forbidden": True,
         "model_not_qualified": True,
