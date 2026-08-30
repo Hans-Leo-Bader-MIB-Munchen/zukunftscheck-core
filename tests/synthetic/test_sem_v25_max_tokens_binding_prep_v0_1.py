@@ -153,6 +153,8 @@ class SemV25MaxTokensBindingPrepTests(unittest.TestCase):
         report = v25.build_integration_report()
         self.assertEqual(report["status"], "PASS")
         self.assertEqual(report["selected_max_tokens_candidate"], 2048)
+        self.assertTrue(report["checks"]["v25_consumption_preserves_v25_binding"])
+        self.assertTrue(report["checks"]["v22_atomic_write_primitives_reused"])
         self.assertFalse(report["ready_to_execute"])
         self.assertFalse(report["model_contact_performed"])
         self.assertFalse(report["preflight_performed"])
@@ -193,6 +195,21 @@ class SemV25MaxTokensBindingPrepTests(unittest.TestCase):
                 self.assertFalse(state["model_run_authorized"])
                 self.assertFalse(state["model_contact_authorized"])
                 self.assertEqual(state["consumption_boundary"], "BEFORE_FIRST_MODEL_CONTACT")
+
+    def test_v25_16_exact_v25_authorization_with_only_1024_is_rejected(self):
+        auth = self._approved_auth()
+        auth["max_tokens"] = 1024
+        with self.assertRaises(PermissionError):
+            v25.validate_live_execution_authorization(auth)
+
+    def test_v25_17_duplicate_v25_consumption_claim_fails_closed(self):
+        first = self._approved_auth()
+        second = self._approved_auth()
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "consumed.json"
+            v25._claim_authorization_once_v25(path, first)
+            with self.assertRaises(FileExistsError):
+                v25._claim_authorization_once_v25(path, second)
 
 
 if __name__ == "__main__":
