@@ -146,6 +146,51 @@ class SemV27ApprovalCeremonyArchitecturePrepTests(unittest.TestCase):
         self.assertTrue(self.artifact["separate_gate_integration_required"])
         self.assertEqual(self.artifact["status"], "EXPLICIT_USER_APPROVAL_PROOF_PREVIEW_NOT_EXECUTABLE")
 
+    def test_v27_19_attacker_owned_challenge_is_self_consistent_but_not_real_challenge(self):
+        attacker_secret = "C" * 40
+        attacker_challenge = v27.build_challenge_preview(candidate=self.candidate, approval_secret=attacker_secret)
+        attacker_artifact = v27.build_approval_artifact_preview(
+            candidate=self.candidate,
+            challenge=attacker_challenge,
+            approval_secret=attacker_secret,
+        )
+        validated = v27.validate_approval_artifact_preview(
+            candidate=self.candidate,
+            challenge=attacker_challenge,
+            artifact=attacker_artifact,
+            approval_secret=attacker_secret,
+        )
+        self.assertEqual(validated, attacker_artifact)
+        with self.assertRaises(PermissionError):
+            v27.build_approval_artifact_preview(
+                candidate=self.candidate,
+                challenge=self.challenge,
+                approval_secret=attacker_secret,
+            )
+
+    def test_v27_20_unicode_secret_is_normalized_to_nfc(self):
+        nfc = ("Ü" * 20) + ("A" * 20)
+        nfd = ("U\u0308" * 20) + ("A" * 20)
+        self.assertEqual(v27._sha256_text(nfc), v27._sha256_text(nfd))
+        self.assertEqual(v27._require_secret(nfc), v27._require_secret(nfd))
+
+    def test_v27_21_non_string_secret_types_fail_closed(self):
+        for value in (None, 123, b"A" * 40, ["A"] * 40):
+            with self.subTest(value_type=type(value).__name__):
+                with self.assertRaises(PermissionError):
+                    v27.build_challenge_preview(candidate=self.candidate, approval_secret=value)  # type: ignore[arg-type]
+
+    def test_v27_22_secret_maximum_length_bounds_dos_surface(self):
+        too_long = "A" * (v27.MAX_SECRET_BYTES + 1)
+        with self.assertRaises(PermissionError):
+            v27.build_challenge_preview(candidate=self.candidate, approval_secret=too_long)
+
+    def test_v27_23_length_check_is_not_entropy_check(self):
+        trivial_but_long_enough = "a" * 40
+        raw = v27._require_secret(trivial_but_long_enough)
+        self.assertGreaterEqual(len(raw), v27.MIN_SECRET_BYTES)
+        self.assertEqual(raw, trivial_but_long_enough.encode("utf-8"))
+
 
 if __name__ == "__main__":
     unittest.main()
