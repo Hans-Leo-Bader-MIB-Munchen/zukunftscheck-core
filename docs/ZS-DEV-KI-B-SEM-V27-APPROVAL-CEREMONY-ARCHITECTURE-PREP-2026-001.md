@@ -35,13 +35,23 @@ For V27 tests the secret is injected synthetically. V27 does not generate a live
 
 The challenge stores only:
 
-`approval_secret_commitment_sha256 = SHA256(secret)`
+`approval_secret_commitment_sha256 = SHA256(NFC(secret))`
 
 The approval proof uses:
 
-`HMAC-SHA256(secret, canonical_approval_payload)`
+`HMAC-SHA256(NFC(secret), canonical_approval_payload)`
 
 The secret itself is absent from both challenge and approval artifact.
+
+V27 normalizes text secrets to Unicode NFC before hashing/HMAC so visually equivalent NFC/NFD input does not create platform-dependent false negatives.
+
+### Secret length is not entropy
+
+The V27 helper enforces representation bounds of 32 to 4096 UTF-8 bytes after NFC normalization. These bounds are only fail-closed input and resource limits. They are **not an entropy test**.
+
+A value such as `"a" * 40` is long enough to pass the structural length check but remains cryptographically weak and trivially guessable. A later operational ceremony must therefore generate the approval secret from a cryptographically secure random source, for example Python `secrets.token_urlsafe(32)` or an equivalent source with comparable entropy. Human-chosen passwords, repeated characters, repository-derived values, candidate hashes and predictable defaults are forbidden for a real approval secret.
+
+The unsalted `SHA256(secret)` commitment is acceptable only under that high-entropy-secret assumption. With a weak or guessable secret it permits offline guessing if the commitment is exposed.
 
 ## Why this is structurally stronger than V26 sentinels
 
@@ -79,6 +89,12 @@ The approval artifact preview binds at least:
 - bound V25 runner blob
 - `max_tokens = 2048`
 - HMAC proof over canonical payload
+
+## Known challenge-anchor boundary
+
+V27 deliberately has no persisted authoritative challenge lifecycle yet. Therefore an actor who controls both the secret and a freshly created challenge can build a self-consistent challenge/proof pair for the same candidate. That does **not** validate against a separately anchored real challenge created earlier with a different secret.
+
+This is intentional in the architecture-prep block and is now fixed as an explicit regression property. The later gate-integration block must persist the one authoritative challenge commitment before approval and accept only that exact challenge. It must not allow an untrusted caller to replace the authoritative challenge with a freshly self-created one.
 
 ## Non-executable states
 
@@ -125,14 +141,14 @@ V27 is not sufficient to run a model.
 
 A later dedicated block must:
 
-1. define the actual one-time challenge lifecycle;
-2. generate or accept the external approval secret without committing it to the repository;
-3. persist the challenge commitment before approval;
+1. define the actual one-time challenge lifecycle, including a unique nonce/challenge ID;
+2. generate or accept a high-entropy external approval secret without committing it to the repository;
+3. persist the one authoritative challenge commitment before approval;
 4. capture the user's explicit approval as a separate act;
-5. create an executable approval artifact only from the exact candidate + challenge + external secret;
+5. create an executable approval artifact only from the exact candidate + anchored challenge + external secret;
 6. integrate proof verification into the real execution gate;
 7. consume the approval atomically before first possible model contact;
-8. reject replay, stale commit/blob, stale candidate, wrong secret, wrong challenge, modified model/base URL/max_tokens/prompt/schema/suite;
+8. reject replay, replacement challenge, stale commit/blob, stale candidate, wrong secret, wrong challenge, modified model/base URL/max_tokens/prompt/schema/suite;
 9. preserve fail-closed behavior and no automatic retry/repair/rerun;
 10. undergo independent falsification before any real model authorization.
 
@@ -146,7 +162,7 @@ Until that gate-integration block is merged and separately approved:
 
 ## Tests
 
-V27 introduces 18 model-free tests covering:
+V27 now introduces 23 model-free tests covering:
 
 1. V26 candidate remains non-authorizing.
 2. Challenge stores commitment, not secret.
@@ -166,6 +182,30 @@ V27 introduces 18 model-free tests covering:
 16. No execute/transport helper exists.
 17. Exact V26 candidate validation remains mandatory.
 18. Approval preview explicitly requires separate gate integration.
+19. A self-owned challenge/proof pair is internally valid but cannot replace a different anchored challenge.
+20. NFC/NFD-equivalent secrets normalize to the same commitment/HMAC key bytes.
+21. Non-string secrets fail closed.
+22. Excessively long secrets are rejected to bound resource/DoS surface.
+23. The minimum-length rule is explicitly tested as not being an entropy guarantee.
+
+## Independent countercheck status
+
+The independent falsification found no merge blocker. It confirmed:
+
+- secret separation works as designed;
+- `hmac.compare_digest` is used for proof comparison;
+- wrong secret/tampered candidate/challenge/proof fail closed;
+- cross-candidate/rebound proof attempts fail;
+- the known V26 six-field transformation does not substitute for the external-secret proof;
+- V25/V26 remain unchanged;
+- V27 remains architecture preparation only.
+
+The countercheck additionally identified and V27 now addresses/documented before PR:
+
+- NFC normalization for secret text;
+- explicit distinction between secret length and entropy;
+- explicit challenge-anchor/self-owned-challenge boundary test;
+- non-string and excessive-length secret tests.
 
 ## Merge boundary
 
