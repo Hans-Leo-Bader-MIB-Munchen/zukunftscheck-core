@@ -76,7 +76,9 @@ class SemV26OneShotAuthorizationPrepTests(unittest.TestCase):
         report = v26.build_prep_report()
         self.assertEqual(report["status"], "PASS")
         self.assertEqual(report["governance_status"], "AWAITING_EXPLICIT_USER_APPROVAL")
-        self.assertTrue(report["ready_for_explicit_user_approval"])
+        self.assertFalse(report["ready_for_explicit_user_approval"])
+        self.assertTrue(report["separate_approval_artifact_required"])
+        self.assertFalse(report["approval_ceremony_implemented"])
         self.assertFalse(report["ready_to_execute"])
         self.assertFalse(report["model_contact_performed"])
         self.assertFalse(report["preflight_performed"])
@@ -105,6 +107,41 @@ class SemV26OneShotAuthorizationPrepTests(unittest.TestCase):
         altered["authorization_candidate_sha256"] = v26.candidate_sha256(altered)
         with self.assertRaises(PermissionError):
             v26.validate_authorization_candidate(altered)
+
+    def test_v26_16_status_escalated_candidate_is_rejected_by_actual_v25_gate(self):
+        candidate = v26.build_authorization_candidate()
+        escalated = deepcopy(candidate)
+        escalated.update(
+            {
+                "status": "EXPLICIT_USER_APPROVED",
+                "execution_authorized": True,
+                "model_run_authorized": True,
+                "model_contact_authorized": True,
+            }
+        )
+        with self.assertRaises(PermissionError):
+            v26.v25.validate_live_execution_authorization(escalated)
+        self.assertTrue(v26._status_escalated_candidate_rejected_by_v25(candidate))
+
+    def test_v26_17_stale_commit_or_blob_candidate_is_rejected(self):
+        candidate = v26.build_authorization_candidate()
+        for key in ("live_runner_git_commit", "live_runner_blob_oid", "bound_v25_runner_blob_oid"):
+            altered = deepcopy(candidate)
+            altered[key] = "0" * 40
+            altered["authorization_candidate_sha256"] = v26.candidate_sha256(altered)
+            with self.assertRaises(PermissionError):
+                v26.validate_authorization_candidate(altered)
+
+    def test_v26_18_candidate_only_identity_is_distinct_from_bound_v25_identity(self):
+        candidate = v26.build_authorization_candidate()
+        self.assertEqual(candidate["bound_v25_live_runner_version"], v26.v25.RUNNER_VERSION)
+        self.assertEqual(candidate["bound_v25_live_run_type"], v26.v25.RUN_TYPE)
+        self.assertNotEqual(candidate["live_runner_version"], v26.v25.RUNNER_VERSION)
+        self.assertNotEqual(candidate["live_run_type"], v26.v25.RUN_TYPE)
+        self.assertTrue(candidate["candidate_hash_is_integrity_checksum_not_authentication"])
+        self.assertTrue(candidate["separate_approval_artifact_required"])
+        report = v26.build_prep_report()
+        self.assertTrue(report["checks"]["status_escalation_rejected_by_actual_v25_gate"])
 
 
 if __name__ == "__main__":
