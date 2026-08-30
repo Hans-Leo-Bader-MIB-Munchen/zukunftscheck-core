@@ -4,6 +4,12 @@
 This module does not approve, persist, consume or execute an authorization. It
 builds and validates an AWAITING_EXPLICIT_USER_APPROVAL candidate bound to the
 current committed V25 runner and its exact qualification bindings.
+
+The candidate is deliberately made incompatible with the V25 execution gate by
+using candidate-only live runner identity sentinels while separately preserving
+the exact bound V25 runner identity. A later approval step must therefore create
+a distinct authorization artifact; changing only status/authorization flags on
+this candidate cannot make it executable by V25.
 """
 from __future__ import annotations
 
@@ -27,6 +33,8 @@ EXPECTED_V25_RUNNER_PATH = "scripts/zs_ki_b_sem_qualifikation_runner_v2_5_max_to
 EXPECTED_V25_RUNNER_BLOB = "9ac29c25b47cbd7762a3d8ee30de7f72e20ae866"
 AUTHORIZATION_CANDIDATE_VERSION = "ZS-KI-B-SEM-ONE-SHOT-AUTHORIZATION-CANDIDATE-2026-001_v0.1"
 AUTHORIZATION_CANDIDATE_ID = "ZS-KI-B-SEM-QUALIFIKATION-SYNTHETIC-ONE-SHOT-CANDIDATE-2026-001"
+CANDIDATE_ONLY_LIVE_RUNNER_VERSION = f"{v25.RUNNER_VERSION}::CANDIDATE_ONLY_NON_EXECUTABLE"
+CANDIDATE_ONLY_LIVE_RUN_TYPE = f"{v25.RUN_TYPE}::CANDIDATE_ONLY_NON_EXECUTABLE"
 
 
 def _canonical_bytes(payload: dict[str, Any]) -> bytes:
@@ -40,6 +48,7 @@ def _candidate_hash_payload(candidate: dict[str, Any]) -> dict[str, Any]:
 
 
 def candidate_sha256(candidate: dict[str, Any]) -> str:
+    """Integrity checksum only; this is not a user signature or authentication proof."""
     return hashlib.sha256(_canonical_bytes(_candidate_hash_payload(candidate))).hexdigest()
 
 
@@ -55,9 +64,13 @@ def build_authorization_candidate() -> dict[str, Any]:
     """Build a non-executable authorization candidate bound to current HEAD.
 
     The candidate must be regenerated after any commit change. It intentionally
-    remains non-authorizing until a later explicit user-approval step.
+    remains non-authorizing until a later explicit user-approval step. Its
+    candidate-only live runner identity makes direct use at the V25 execution
+    gate fail closed even if status and authorization flags are edited.
     """
     template = deepcopy(v25.build_live_authorization_template())
+    bound_v25_live_runner_version = template["live_runner_version"]
+    bound_v25_live_run_type = template["live_run_type"]
     candidate = template
     candidate.update(
         {
@@ -79,6 +92,12 @@ def build_authorization_candidate() -> dict[str, Any]:
             "output_repair": False,
             "model_qualified": False,
             "candidate_created_model_free": True,
+            "candidate_hash_is_integrity_checksum_not_authentication": True,
+            "separate_approval_artifact_required": True,
+            "live_runner_version": CANDIDATE_ONLY_LIVE_RUNNER_VERSION,
+            "live_run_type": CANDIDATE_ONLY_LIVE_RUN_TYPE,
+            "bound_v25_live_runner_version": bound_v25_live_runner_version,
+            "bound_v25_live_run_type": bound_v25_live_run_type,
             "bound_main_commit": _current_git_commit(),
             "bound_v25_runner_path": EXPECTED_V25_RUNNER_PATH,
             "bound_v25_runner_blob_oid": _current_v25_runner_blob(),
@@ -107,7 +126,34 @@ def validate_authorization_candidate(candidate: dict[str, Any] | None) -> dict[s
         raise PermissionError("V26 candidate must not be consumed")
     if candidate.get("no_execution_from_candidate") is not True:
         raise PermissionError("V26 candidate must remain non-executable")
+    if candidate.get("separate_approval_artifact_required") is not True:
+        raise PermissionError("V26 candidate requires a separate later approval artifact")
+    if candidate.get("live_runner_version") != CANDIDATE_ONLY_LIVE_RUNNER_VERSION:
+        raise PermissionError("V26 candidate must retain candidate-only runner identity")
+    if candidate.get("live_run_type") != CANDIDATE_ONLY_LIVE_RUN_TYPE:
+        raise PermissionError("V26 candidate must retain candidate-only run type")
+    if candidate.get("bound_v25_live_runner_version") != v25.RUNNER_VERSION:
+        raise PermissionError("V26 bound V25 runner version mismatch")
+    if candidate.get("bound_v25_live_run_type") != v25.RUN_TYPE:
+        raise PermissionError("V26 bound V25 run type mismatch")
     return candidate
+
+
+def _status_escalated_candidate_rejected_by_v25(candidate: dict[str, Any]) -> bool:
+    escalated = deepcopy(candidate)
+    escalated.update(
+        {
+            "status": "EXPLICIT_USER_APPROVED",
+            "execution_authorized": True,
+            "model_run_authorized": True,
+            "model_contact_authorized": True,
+        }
+    )
+    try:
+        v25.validate_live_execution_authorization(escalated)
+    except PermissionError:
+        return True
+    return False
 
 
 def build_prep_report() -> dict[str, Any]:
@@ -118,10 +164,16 @@ def build_prep_report() -> dict[str, Any]:
     except PermissionError:
         candidate_valid = False
 
+    direct_gate_rejection = _status_escalated_candidate_rejected_by_v25(candidate)
     checks = {
         "candidate_exact_current_binding": candidate_valid,
         "v25_runner_path_exact": candidate["bound_v25_runner_path"] == EXPECTED_V25_RUNNER_PATH,
         "v25_runner_blob_exact": candidate["bound_v25_runner_blob_oid"] == EXPECTED_V25_RUNNER_BLOB,
+        "v25_runner_version_bound_exact": candidate["bound_v25_live_runner_version"] == v25.RUNNER_VERSION,
+        "v25_run_type_bound_exact": candidate["bound_v25_live_run_type"] == v25.RUN_TYPE,
+        "candidate_live_runner_identity_non_executable": candidate["live_runner_version"] == CANDIDATE_ONLY_LIVE_RUNNER_VERSION,
+        "candidate_live_run_type_non_executable": candidate["live_run_type"] == CANDIDATE_ONLY_LIVE_RUN_TYPE,
+        "status_escalation_rejected_by_actual_v25_gate": direct_gate_rejection,
         "max_tokens_2048_exact": candidate["max_tokens"] == 2048 == v25.MAX_TOKENS,
         "expected_request_count_16": candidate["expected_model_request_count"] == 16,
         "status_awaiting_explicit_user_approval": candidate["status"] == "AWAITING_EXPLICIT_USER_APPROVAL",
@@ -131,6 +183,8 @@ def build_prep_report() -> dict[str, Any]:
         "authorization_not_consumed": candidate["authorization_consumed"] is False,
         "single_use_only": candidate["single_use_only"] is True,
         "no_execution_from_candidate": candidate["no_execution_from_candidate"] is True,
+        "separate_approval_artifact_required": candidate["separate_approval_artifact_required"] is True,
+        "hash_explicitly_not_authentication": candidate["candidate_hash_is_integrity_checksum_not_authentication"] is True,
         "retry_forbidden": candidate["automatic_retry_authorized"] is False and v25.RETRY_COUNT == 0,
         "automatic_rerun_forbidden": candidate["automatic_rerun_authorized"] is False,
         "output_repair_false": candidate["output_repair"] is False,
@@ -147,7 +201,9 @@ def build_prep_report() -> dict[str, Any]:
         "base_main_commit": BASE_MAIN_COMMIT,
         "checks": checks,
         "authorization_candidate": candidate,
-        "ready_for_explicit_user_approval": passed,
+        "ready_for_explicit_user_approval": False,
+        "separate_approval_artifact_required": True,
+        "approval_ceremony_implemented": False,
         "ready_to_execute": False,
         "execution_authorized": False,
         "model_run_authorized": False,
