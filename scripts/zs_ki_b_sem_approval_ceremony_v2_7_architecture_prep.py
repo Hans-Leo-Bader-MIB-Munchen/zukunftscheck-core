@@ -12,6 +12,7 @@ import hashlib
 import hmac
 import json
 import sys
+import unicodedata
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
@@ -28,22 +29,32 @@ BASE_MAIN_COMMIT = "b6bd223005911f930901a4918c333dc53c66204f"
 CHALLENGE_VERSION = "ZS-KI-B-SEM-APPROVAL-CHALLENGE-2026-001_v0.1"
 APPROVAL_ARTIFACT_VERSION = "ZS-KI-B-SEM-APPROVAL-ARTIFACT-PREVIEW-2026-001_v0.1"
 MIN_SECRET_BYTES = 32
+MAX_SECRET_BYTES = 4096
 
 
 def _canonical_bytes(payload: dict[str, Any]) -> bytes:
     return json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
 
 
+def _normalize_secret_text(value: str) -> str:
+    if not isinstance(value, str):
+        raise PermissionError("approval secret must be text")
+    return unicodedata.normalize("NFC", value)
+
+
 def _sha256_text(value: str) -> str:
-    return hashlib.sha256(value.encode("utf-8")).hexdigest()
+    normalized = _normalize_secret_text(value)
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
 
 
 def _require_secret(secret: str) -> bytes:
-    if not isinstance(secret, str):
-        raise PermissionError("approval secret must be text")
-    raw = secret.encode("utf-8")
+    """Validate representation bounds only; length is not an entropy guarantee."""
+    normalized = _normalize_secret_text(secret)
+    raw = normalized.encode("utf-8")
     if len(raw) < MIN_SECRET_BYTES:
         raise PermissionError("approval secret is too short")
+    if len(raw) > MAX_SECRET_BYTES:
+        raise PermissionError("approval secret is too long")
     return raw
 
 
