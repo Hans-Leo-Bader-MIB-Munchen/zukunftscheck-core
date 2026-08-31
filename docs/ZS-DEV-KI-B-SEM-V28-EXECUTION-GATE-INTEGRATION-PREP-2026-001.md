@@ -46,21 +46,24 @@ The atomic claim only proves that one exact challenge/proof pair has been valida
 
 ## Gate challenge
 
-A challenge is built from the exact validated V26 candidate and additionally binds:
+A challenge is built from the exact validated V26 candidate and additionally binds the canonical authorization fields already present in the V21/V25/V26 chain:
 
 - V28 gate version/type;
 - V28 base-main commit;
 - candidate SHA-256 and candidate ID;
 - candidate-bound main commit;
 - V25 runner blob;
-- model;
-- base URL;
+- `model`;
+- `required_base_url`;
 - `max_tokens = 2048`;
-- prompt SHA-256;
-- response-schema SHA-256;
-- case-suite SHA-256;
+- `prompt_sha256`;
+- `response_format_sha256`;
+- `qualification_snapshot_sha256`;
+- `ordered_case_ids_sha256`;
 - 256-bit nonce;
 - external-secret SHA-256 commitment.
+
+V28 deliberately uses the existing canonical authorization vocabulary. It does not invent aliases such as `base_url`, `response_schema_sha256` or `case_suite_sha256` that are not fields of the V26 candidate.
 
 The `challenge_id` is SHA-256 over the canonical challenge core.
 
@@ -76,7 +79,7 @@ A later real ceremony must establish the authoritative challenge location and li
 
 ## Approval proof
 
-The V28 approval-proof payload includes the exact challenge ID and nonce in addition to the candidate/runtime bindings.
+The V28 approval-proof payload includes the exact challenge ID and nonce in addition to the canonical candidate/runtime bindings.
 
 Proof:
 
@@ -102,6 +105,18 @@ This is an explicit preview of consume-before-contact semantics. Because V28 per
 The known V26 six-field edit remains rejected before the V28 gate because every V28 challenge starts with `v26.validate_authorization_candidate(candidate)`.
 
 Changing the V26 candidate into a V25-compatible authorization invalidates its V26 candidate identity/hash and therefore cannot directly obtain a valid V28 challenge/proof.
+
+## First local test finding and repair
+
+The first focused V28 run failed 27/27 during `setUp()` with `KeyError: 'base_url'`. The cause was an incorrect V28 assumption about V26 field names, not a replay, authorization or model-contact failure.
+
+The correction binds the actual canonical candidate fields:
+
+- `required_base_url` instead of nonexistent `base_url`;
+- `response_format_sha256` instead of nonexistent `response_schema_sha256`;
+- `qualification_snapshot_sha256` plus `ordered_case_ids_sha256` instead of nonexistent `case_suite_sha256`.
+
+V25/V26/V27 remain unchanged.
 
 ## No hidden execution path
 
@@ -129,7 +144,7 @@ After V28 is merged and independently falsified, a separate block must still def
 5. atomically consume/claim the exact approval before first possible model contact;
 6. create at most one executable authorization from the already-claimed exact bindings;
 7. bind the final merged main commit and runner blob after that block is merged;
-8. reject stale challenge, stale proof, stale commit/blob/model/base URL/max_tokens/prompt/schema/suite;
+8. reject stale challenge, stale proof, stale commit/blob/model/base URL/max_tokens/prompt/response-format/qualification-snapshot/case-order binding;
 9. prohibit retry, rerun and output repair unless separately authorized;
 10. undergo independent falsification before any model authorization is presented to the user.
 
@@ -148,18 +163,18 @@ V28 introduces 27 model-free tests covering:
 1. candidate remains non-authorizing;
 2. 256-bit nonce generation;
 3. fail-closed nonce validation;
-4. nonce/candidate binding;
+4. nonce/candidate/canonical-binding checks;
 5. challenge-ID separation across nonces;
 6. secret absence from challenge;
 7. non-authorizing challenge flags;
 8. exact challenge validation;
 9. wrong-secret rejection;
 10. tampered-nonce rejection;
-11. tampered runtime-binding rejection;
+11. tampered canonical runtime-binding rejection;
 12. one-time challenge persistence and exact reload;
 13. duplicate challenge persistence rejection;
 14. noncanonical persisted challenge rejection;
-15. approval-proof challenge/nonce binding;
+15. approval-proof challenge/nonce/canonical-binding checks;
 16. non-authorizing proof flags;
 17. wrong-secret proof rejection;
 18. tampered-proof rejection;
