@@ -14,29 +14,13 @@ Bound base:
 
 `14a21889a2ab0192bbfea364b627ca24444bf143`
 
-V28 established:
-
-- a 256-bit nonce;
-- deterministic challenge IDs;
-- persist-before-approval challenge semantics;
-- HMAC proof binding;
-- atomic single-use claim semantics;
-- replay rejection;
-- a non-executable claim receipt.
-
-V28 deliberately stopped before creating an executable run authorization.
+V28 established a nonce-bound challenge, HMAC proof, atomic single-use claim semantics, replay rejection and a non-executable claim receipt. V28 deliberately stopped before creating an executable run authorization.
 
 ## Purpose of V29
 
-V29 proves the transformation boundary between the exact V28 challenge/proof/claim chain and a later V25-compatible run authorization.
+V29 proves that the exact V28 challenge/proof/claim provenance and the exact current V25 runtime binding can be represented together without creating a V25-compatible top-level authorization object.
 
-The transformation output in V29 is still a preview only and is deliberately rejected by the actual V25 execution gate.
-
-V29 therefore closes the structural question:
-
-Can the exact canonical V25 runtime bindings and exact V28 approval-chain provenance be represented in one run-authorization object without silently authorizing model contact?
-
-Expected answer: yes, but the object remains non-executable until a separate explicit approval act and authoritative trust-anchor verification exist.
+The V25 binding is therefore carried only as a nested `proposed_v25_binding` snapshot. The outer V29 preview is a distinct document type and remains deliberately non-executable.
 
 ## Exact scope boundary
 
@@ -50,102 +34,76 @@ V29 keeps all authorization states false:
 - `explicit_user_approval_recorded = false`
 - `authoritative_external_anchor_verified = false`
 
-A V29 preview may never be treated as user approval.
+A V29 preview may never be treated as user approval or as a V25 live authorization.
 
 ## Trust-anchor preview
 
-`build_trust_anchor_preview()` represents only the future shape of an external authority binding.
-
-It binds:
-
-- challenge ID;
-- candidate SHA-256;
-- approval-secret commitment;
-- candidate-bound main commit;
-- V25 runner blob.
-
-It explicitly states:
-
-- `status = TRUST_ANCHOR_PREVIEW_NOT_AUTHORITATIVE`
-- `authoritative_external_anchor = false`
-- `explicit_user_approval_recorded = false`
-
-V29 cannot promote this preview to an authoritative anchor.
+`build_trust_anchor_preview()` represents only the future shape of an external authority binding. It binds challenge ID, candidate SHA-256, secret commitment, bound main commit and V25 runner blob, while explicitly remaining non-authoritative and non-approving.
 
 The real approval block must establish the authoritative anchor outside self-generated repository state.
 
 ## Claim validation
 
-V29 validates the exact V28 claim receipt against:
-
-- the exact V26 candidate;
-- the exact V28 challenge;
-- the exact HMAC proof artifact;
-- the supplied external secret.
-
-Any change to challenge ID, candidate hash, proof HMAC, claim flags or status fails closed.
+V29 validates the exact V28 claim receipt against the V26 candidate, V28 challenge, HMAC proof artifact and supplied external secret. Any change to challenge ID, candidate hash, proof HMAC, claim flags or status fails closed.
 
 V29 also provides an exact canonical JSON loader for persisted inputs.
 
-## Run-authorization preview
+## Detached run-authorization preview
 
-`build_run_authorization_preview()` starts from the exact current V25 live-authorization template and adds provenance to the V28/V29 chain.
+The first V29 implementation copied `v25.build_live_authorization_template()` directly to the preview top level. The focused test `test_v29_18_self_escalated_preview_still_rejected_by_v25` correctly falsified that design: changing only `status` plus the three authorization flags made the preview pass `v25.validate_live_execution_authorization()`.
 
-The preview therefore carries the canonical V25 bindings, including:
+That was a real merge-blocking architectural defect. The V25 validator compares the expected V25 fields but does not reject unrelated additional V29 provenance keys. Therefore a top-level object already shaped like V25 cannot safely be called a non-executable preview merely because it initially carries false flags.
 
-- live runner version/type;
-- live runner git commit/blob/path;
-- model;
-- `required_base_url`;
-- prompt binding;
-- response-format binding;
-- qualification snapshot binding;
-- ordered case IDs binding;
-- `max_tokens = 2048`;
-- retry/output-repair restrictions.
+V29 was repaired by structurally detaching the preview from the V25 authorization shape.
 
-It additionally binds:
+`build_run_authorization_preview()` now creates an outer V29-specific object containing:
 
 - source V26 candidate SHA-256;
 - source V28 challenge ID;
 - source V28 claim version;
 - source approval-proof HMAC;
 - source trust-anchor-preview SHA-256;
-- V29 transform version/type/base.
+- transform version/type/base;
+- a nested `proposed_v25_binding`;
+- `proposed_v25_binding_sha256`;
+- the V29 preview integrity hash.
 
-The preview is integrity-hashed as `run_authorization_preview_sha256`.
+The canonical V25 runtime fields, including model, required base URL, prompt hash, response-format hash, qualification snapshot, ordered cases, live-runner binding and `max_tokens = 2048`, exist only inside `proposed_v25_binding`, not at the outer top level.
 
-## Actual V25 gate rejection
+Consequently, changing only outer `status` and authorization flags cannot turn the V29 preview into a V25 authorization.
 
-A core V29 invariant is:
+## Important remaining V25 gate boundary
 
-The V29 transform preview must be rejected by `v25.validate_live_execution_authorization()`.
+V29 does not claim that arbitrary data reconstruction is impossible.
 
-This remains true because the preview status and authorization flags are non-authorizing and because V29 adds provenance fields not present in an exact V25 executable authorization.
+A caller who deliberately extracts the nested V25 fields and constructs a completely new V25-shaped dictionary can still present that new object to the current V25 validator. This is not solved by a preview sentinel or integrity hash because the current V25 gate does not itself require V28/V29 proof provenance.
 
-Even manually escalating only status and model authorization flags does not make the preview an exact V25 authorization.
+Therefore the next execution-gate block must close this boundary structurally: the actual live authorization path must require and verify the authoritative challenge/proof/claim/trust-anchor chain before materializing or accepting any executable V25-compatible authorization.
+
+Until that integration exists, no V29 object, development approval, merge approval or generic `green` is a run authorization.
+
+## Actual V25 gate rejection invariant
+
+The V29 outer preview itself must be rejected by `v25.validate_live_execution_authorization()`.
+
+This must remain true both in its original non-authorizing state and after a direct self-escalation of only:
+
+- `status = EXPLICIT_USER_APPROVED`
+- `execution_authorized = true`
+- `model_run_authorized = true`
+- `model_contact_authorized = true`
+
+This invariant now follows from the detached structure, not from ignored extra metadata.
 
 ## No hidden approval or execution path
 
-V29 contains no:
-
-- approval command/action;
-- authoritative trust-anchor creation;
-- conversion to `EXPLICIT_USER_APPROVED`;
-- model transport;
-- HTTP request;
-- live preflight;
-- `execute_once`;
-- result handling;
-- automatic retry;
-- automatic rerun;
-- output repair.
+V29 contains no approval command/action, authoritative trust-anchor creation, conversion to `EXPLICIT_USER_APPROVED`, model transport, HTTP request, live preflight, `execute_once`, result handling, automatic retry, automatic rerun or output repair.
 
 `main()` only prints a model-free transform report.
 
 ## Required later block
 
-After V29 is merged and independently falsified, a separate approval/run block must still:
+After V29 is merged and independently falsified, a separate execution-gate/approval block must still:
 
 1. establish one authoritative persisted challenge location;
 2. establish the external trust anchor and secret-handling process;
@@ -154,14 +112,15 @@ After V29 is merged and independently falsified, a separate approval/run block m
 5. validate the exact persisted challenge, proof and durable claim receipt;
 6. reject deleted, rotated or reused claim state;
 7. bind the then-final merged `main` commit and exact runner blob;
-8. create at most one exact executable authorization;
-9. atomically consume that authorization before the first possible model contact;
-10. prohibit retries, reruns and output repair unless separately authorized;
-11. undergo an independent final pre-run falsification before any model contact.
+8. require proof-chain verification before any V25-compatible executable authorization can be materialized or accepted;
+9. create at most one exact executable authorization;
+10. atomically consume that authorization before the first possible model contact;
+11. prohibit retries, reruns and output repair unless separately authorized;
+12. undergo an independent final pre-run falsification before any model contact.
 
 No development approval, PR merge approval, generic `green`, or completion of V29 can substitute for item 3.
 
-Until that later explicit approval exists:
+Until that later explicit approval and proof-enforcing gate exist:
 
 `MODEL_RUN_AUTHORIZED = false`
 
@@ -171,32 +130,9 @@ Until that later explicit approval exists:
 
 ## Tests
 
-V29 introduces 24 model-free tests covering:
+V29 introduces 24 model-free tests covering candidate/anchor/claim validation, wrong-secret and tamper rejection, nested exact V25 binding, source-chain provenance, non-authorizing flags, preview integrity, actual V25 rejection, direct self-escalation rejection, canonical persisted-input loading, model-free reporting, and absence of transport/execute/preflight/approval helpers.
 
-1. candidate remains awaiting approval;
-2. trust-anchor preview remains non-authoritative;
-3. anchor challenge/candidate binding;
-4. anchor candidate mismatch rejection;
-5. exact V28 claim validation;
-6. wrong-secret rejection;
-7. claim challenge-ID tamper rejection;
-8. claim proof tamper rejection;
-9. claim authorization escalation rejection;
-10. exact V25 canonical field binding in preview;
-11. source-chain provenance binding;
-12. preview authorizes nothing;
-13. preview records no user approval;
-14. preview integrity hash validation;
-15. preview payload tamper rejection;
-16. authorization-flag escalation rejection;
-17. actual V25 gate rejection;
-18. manually escalated preview still rejected by V25;
-19. authoritative-anchor escalation rejected;
-20. user-approval escalation rejected;
-21. canonical persisted-input loading;
-22. model-free report;
-23. non-authorizing report;
-24. absence of transport/execute/preflight/approval helpers.
+The originally failing test 18 is retained as the regression test for the discovered top-level V25-shape vulnerability.
 
 ## Merge boundary
 
