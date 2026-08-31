@@ -2,9 +2,9 @@
 """V29 model-free run-authorization transformation preparation.
 
 This module proves that an exact V28 challenge/proof/claim chain can be
-transformed into a V25-bound authorization preview without creating an
-executable authorization. It performs no approval ceremony, preflight, model
-contact, transport, retry, rerun, or output repair.
+represented together with an exact V25 binding snapshot without producing a
+V25-compatible top-level authorization object. It performs no approval
+ceremony, preflight, model contact, transport, retry, rerun, or output repair.
 """
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ TRANSFORM_VERSION = "v2.9-run-authorization-transform-prep"
 TRANSFORM_TYPE = "ZS-KI-B-SEM-RUN-AUTHORIZATION-TRANSFORM-PREP-2026-030"
 BASE_MAIN_COMMIT = "14a21889a2ab0192bbfea364b627ca24444bf143"
 TRUST_ANCHOR_VERSION = "ZS-KI-B-SEM-TRUST-ANCHOR-PREVIEW-2026-001_v0.1"
-RUN_AUTH_PREVIEW_VERSION = "ZS-KI-B-SEM-RUN-AUTHORIZATION-PREVIEW-2026-001_v0.1"
+RUN_AUTH_PREVIEW_VERSION = "ZS-KI-B-SEM-RUN-AUTHORIZATION-PREVIEW-2026-001_v0.2"
 
 
 def _canonical_bytes(payload: dict[str, Any]) -> bytes:
@@ -45,7 +45,6 @@ def build_candidate_snapshot() -> dict[str, Any]:
 
 
 def build_trust_anchor_preview(*, candidate: dict[str, Any], challenge: dict[str, Any]) -> dict[str, Any]:
-    """Build a non-authoritative preview of the future external trust anchor."""
     v26.validate_authorization_candidate(candidate)
     if not isinstance(challenge, dict):
         raise PermissionError("V29 trust-anchor preview requires a gate challenge")
@@ -85,7 +84,6 @@ def load_canonical_json(path: Path) -> dict[str, Any]:
 
 
 def validate_claim_receipt(*, candidate: dict[str, Any], challenge: dict[str, Any], artifact: dict[str, Any], claim: dict[str, Any], approval_secret: str) -> dict[str, Any]:
-    """Validate the exact V28 non-executable claim receipt in memory."""
     v28.validate_gate_approval_proof_preview(
         candidate=candidate,
         persisted_challenge=challenge,
@@ -115,8 +113,18 @@ def validate_claim_receipt(*, candidate: dict[str, Any], challenge: dict[str, An
     return claim
 
 
+def _build_proposed_v25_binding() -> dict[str, Any]:
+    """Return an exact V25 template snapshot, nested so the outer preview is not V25-shaped."""
+    proposed = deepcopy(v25.build_live_authorization_template())
+    if proposed.get("status") != "NOT_AUTHORIZED_TEMPLATE":
+        raise PermissionError("unexpected V25 template status")
+    if any(proposed.get(k) is not False for k in ("execution_authorized", "model_run_authorized", "model_contact_authorized")):
+        raise PermissionError("V25 template unexpectedly authorizes execution")
+    return proposed
+
+
 def build_run_authorization_preview(*, candidate: dict[str, Any], challenge: dict[str, Any], artifact: dict[str, Any], claim: dict[str, Any], trust_anchor_preview: dict[str, Any], approval_secret: str) -> dict[str, Any]:
-    """Build a V25-bound but deliberately non-executable authorization preview."""
+    """Build a detached, non-executable preview carrying a nested V25 binding snapshot."""
     v26.validate_authorization_candidate(candidate)
     v28.validate_gate_challenge_preview(candidate=candidate, challenge=challenge, approval_secret=approval_secret)
     validate_claim_receipt(
@@ -134,33 +142,33 @@ def build_run_authorization_preview(*, candidate: dict[str, Any], challenge: dic
     if trust_anchor_preview.get("explicit_user_approval_recorded") is not False:
         raise PermissionError("V29 must not record explicit user approval")
 
-    template = deepcopy(v25.build_live_authorization_template())
-    preview = template
-    preview.update(
-        {
-            "run_authorization_preview_version": RUN_AUTH_PREVIEW_VERSION,
-            "transform_version": TRANSFORM_VERSION,
-            "transform_type": TRANSFORM_TYPE,
-            "transform_base_main_commit": BASE_MAIN_COMMIT,
-            "source_candidate_sha256": candidate["authorization_candidate_sha256"],
-            "source_challenge_id": challenge["challenge_id"],
-            "source_claim_version": claim["claim_version"],
-            "source_approval_proof_hmac_sha256": artifact["approval_proof_hmac_sha256"],
-            "source_trust_anchor_preview_sha256": _sha256_payload(trust_anchor_preview),
-            "status": "RUN_AUTHORIZATION_PREVIEW_NOT_APPROVED",
-            "authorization_consumed": False,
-            "execution_authorized": False,
-            "model_run_authorized": False,
-            "model_contact_authorized": False,
-            "model_qualified": False,
-            "explicit_user_approval_recorded": False,
-            "authoritative_external_anchor_verified": False,
-            "single_use_claim_verified": True,
-            "ready_for_model_contact": False,
-            "no_execution_from_transform_preview": True,
-            "separate_explicit_approval_required": True,
-        }
-    )
+    proposed_v25_binding = _build_proposed_v25_binding()
+    preview = {
+        "run_authorization_preview_version": RUN_AUTH_PREVIEW_VERSION,
+        "transform_version": TRANSFORM_VERSION,
+        "transform_type": TRANSFORM_TYPE,
+        "transform_base_main_commit": BASE_MAIN_COMMIT,
+        "source_candidate_sha256": candidate["authorization_candidate_sha256"],
+        "source_challenge_id": challenge["challenge_id"],
+        "source_claim_version": claim["claim_version"],
+        "source_approval_proof_hmac_sha256": artifact["approval_proof_hmac_sha256"],
+        "source_trust_anchor_preview_sha256": _sha256_payload(trust_anchor_preview),
+        "proposed_v25_binding": proposed_v25_binding,
+        "proposed_v25_binding_sha256": _sha256_payload(proposed_v25_binding),
+        "status": "RUN_AUTHORIZATION_PREVIEW_NOT_APPROVED",
+        "authorization_consumed": False,
+        "execution_authorized": False,
+        "model_run_authorized": False,
+        "model_contact_authorized": False,
+        "model_qualified": False,
+        "explicit_user_approval_recorded": False,
+        "authoritative_external_anchor_verified": False,
+        "single_use_claim_verified": True,
+        "ready_for_model_contact": False,
+        "no_execution_from_transform_preview": True,
+        "separate_explicit_approval_required": True,
+        "later_gate_must_verify_proof_before_materializing_v25_authorization": True,
+    }
     preview["run_authorization_preview_sha256"] = _sha256_payload(preview)
     return preview
 
@@ -178,6 +186,11 @@ def validate_run_authorization_preview(preview: dict[str, Any]) -> dict[str, Any
         raise PermissionError("V29 preview must not claim authoritative anchor verification")
     if preview.get("no_execution_from_transform_preview") is not True:
         raise PermissionError("V29 preview must remain non-executable")
+    proposed = preview.get("proposed_v25_binding")
+    if proposed != _build_proposed_v25_binding():
+        raise PermissionError("V29 proposed V25 binding mismatch")
+    if preview.get("proposed_v25_binding_sha256") != _sha256_payload(proposed):
+        raise PermissionError("V29 proposed V25 binding hash mismatch")
     expected_hash = _sha256_payload({k: v for k, v in preview.items() if k != "run_authorization_preview_sha256"})
     if preview.get("run_authorization_preview_sha256") != expected_hash:
         raise PermissionError("V29 run authorization preview hash mismatch")
@@ -199,6 +212,10 @@ def build_transform_report() -> dict[str, Any]:
         "candidate_awaiting_explicit_user_approval": candidate["status"] == "AWAITING_EXPLICIT_USER_APPROVAL",
         "candidate_non_executable": candidate["no_execution_from_candidate"] is True,
         "v25_max_tokens_2048": v25.MAX_TOKENS == 2048,
+        "preview_detached_from_v25_top_level_shape": "model" not in {
+            "run_authorization_preview_version": RUN_AUTH_PREVIEW_VERSION,
+            "proposed_v25_binding": {},
+        },
         "no_transport_helper": "_default_transport" not in globals(),
         "no_execute_once": "execute_once" not in globals(),
         "no_preflight_helper": "_default_preflight" not in globals(),
@@ -222,6 +239,7 @@ def build_transform_report() -> dict[str, Any]:
         "model_contact_performed": False,
         "preflight_performed": False,
         "model_qualified": False,
+        "later_execution_gate_proof_integration_required": True,
     }
 
 
