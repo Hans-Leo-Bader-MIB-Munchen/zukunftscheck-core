@@ -50,6 +50,10 @@ class SemV28ExecutionGateIntegrationPrepTests(unittest.TestCase):
         self.assertEqual(self.challenge["gate_nonce"], NONCE_A)
         self.assertEqual(self.challenge["candidate_sha256"], self.candidate["authorization_candidate_sha256"])
         self.assertEqual(self.challenge["bound_main_commit"], self.candidate["bound_main_commit"])
+        self.assertEqual(self.challenge["required_base_url"], self.candidate["required_base_url"])
+        self.assertEqual(self.challenge["response_format_sha256"], self.candidate["response_format_sha256"])
+        self.assertEqual(self.challenge["qualification_snapshot_sha256"], self.candidate["qualification_snapshot_sha256"])
+        self.assertEqual(self.challenge["ordered_case_ids_sha256"], self.candidate["ordered_case_ids_sha256"])
         self.assertEqual(self.challenge["max_tokens"], 2048)
 
     def test_v28_05_challenge_id_changes_with_nonce(self):
@@ -103,7 +107,10 @@ class SemV28ExecutionGateIntegrationPrepTests(unittest.TestCase):
             ("bound_main_commit", "0" * 40),
             ("bound_v25_runner_blob_oid", "0" * 40),
             ("model", "tampered-model"),
-            ("base_url", "http://127.0.0.1:9999"),
+            ("required_base_url", "http://127.0.0.1:9999"),
+            ("response_format_sha256", "0" * 64),
+            ("qualification_snapshot_sha256", "0" * 64),
+            ("ordered_case_ids_sha256", "0" * 64),
         ):
             tampered = deepcopy(self.challenge)
             tampered[field] = value
@@ -140,6 +147,8 @@ class SemV28ExecutionGateIntegrationPrepTests(unittest.TestCase):
         self.assertEqual(self.artifact["challenge_id"], self.challenge["challenge_id"])
         self.assertEqual(self.artifact["gate_nonce"], NONCE_A)
         self.assertEqual(self.artifact["candidate_sha256"], self.candidate["authorization_candidate_sha256"])
+        self.assertEqual(self.artifact["required_base_url"], self.candidate["required_base_url"])
+        self.assertEqual(self.artifact["qualification_snapshot_sha256"], self.candidate["qualification_snapshot_sha256"])
 
     def test_v28_16_approval_proof_authorizes_nothing(self):
         self.assertFalse(self.artifact["execution_authorized"])
