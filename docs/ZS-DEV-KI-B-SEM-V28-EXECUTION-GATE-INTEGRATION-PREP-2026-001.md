@@ -44,6 +44,8 @@ The output states remain:
 
 The atomic claim only proves that one exact challenge/proof pair has been validated and claimed once. It is not itself permission to contact the model.
 
+V28 verifies only internal cryptographic consistency. It does not yet verify that the external secret originates from an authoritative approving party. A locally chosen secret can therefore produce a locally valid, non-executable challenge/proof/claim chain. The later real approval block must establish the external trust anchor and bind the authoritative persisted challenge to the user's explicit approval act.
+
 ## Gate challenge
 
 A challenge is built from the exact validated V26 candidate and additionally binds the canonical authorization fields already present in the V21/V25/V26 chain:
@@ -98,6 +100,8 @@ Replay is addressed at two levels:
 
 A second claim at the same authoritative claim path fails closed.
 
+The single-use property is durable only while that authoritative claim receipt is retained. Deleting, rotating, replacing or reusing the claim path would permit a fresh create-if-absent claim. The later real gate must therefore treat the claim store/receipt as immutable or append-only and must never delete or rotate the authoritative claim path for an approval that has already been consumed.
+
 This is an explicit preview of consume-before-contact semantics. Because V28 performs no model contact, it cannot yet prove ordering relative to a real transport call. The later run-authorization/execution block must preserve the same ordering and ensure that the atomic claim occurs before the first possible model contact.
 
 ## Known V26 six-field transformation
@@ -117,6 +121,17 @@ The correction binds the actual canonical candidate fields:
 - `qualification_snapshot_sha256` plus `ordered_case_ids_sha256` instead of nonexistent `case_suite_sha256`.
 
 V25/V26/V27 remain unchanged.
+
+## Independent falsification result
+
+Independent falsification after the repair returned `TRAGFÄHIG` with no blocker before merge. The countercheck additionally stress-tested concurrent challenge persistence and claim creation: exactly one success occurred under 200 competing attempts at the same path, with all competing attempts rejected. The same review confirmed that no V25/V26/V27 file changed and found no hidden transport, preflight, execute or model-authorization path in the V28 diff.
+
+Two intentionally open boundaries were confirmed and are now explicit invariants for the later real gate:
+
+- V28 has no authoritative external trust anchor; self-selected local secrets can establish only internally consistent, non-executable claims.
+- path-based single use assumes durable retention of the authoritative claim receipt; deleting or rotating the claim path is forbidden once consumed.
+
+Cross-platform atomicity on Windows remains to be verified in the environment where the later live gate will actually run.
 
 ## No hidden execution path
 
@@ -138,10 +153,10 @@ The module's `main()` only prints a model-free gate report and persists nothing.
 After V28 is merged and independently falsified, a separate block must still define the real approval/run-authorization transformation. That block must:
 
 1. establish the authoritative persisted challenge path/state;
-2. establish the external trust anchor/secret handling process;
+2. establish the external trust anchor/secret handling process and reject self-selected/unanchored approval material as authoritative approval;
 3. capture explicit user approval as a distinct action;
 4. verify the exact persisted challenge and HMAC proof;
-5. atomically consume/claim the exact approval before first possible model contact;
+5. atomically consume/claim the exact approval before first possible model contact and durably retain the authoritative claim receipt in an immutable or append-only store; the consumed claim path must never be deleted, rotated or reused;
 6. create at most one executable authorization from the already-claimed exact bindings;
 7. bind the final merged main commit and runner blob after that block is merged;
 8. reject stale challenge, stale proof, stale commit/blob/model/base URL/max_tokens/prompt/response-format/qualification-snapshot/case-order binding;
@@ -187,6 +202,8 @@ V28 introduces 27 model-free tests covering:
 25. model-free/non-authorizing report;
 26. report persists/generates no live artifacts or secret;
 27. absence of transport/execute/preflight helpers.
+
+The independent countercheck additionally exercised concurrency, self-selected-secret boundaries, in-memory claim mutation, and claim-path deletion semantics. Claim-path deletion remains intentionally a later operational invariant rather than a V28 code path because V28 itself has no authoritative live claim store.
 
 ## Merge boundary
 
