@@ -122,12 +122,15 @@ class SemV29RunAuthorizationTransformPrepTests(unittest.TestCase):
                 approval_secret=SECRET_A,
             )
 
-    def test_v29_10_preview_binds_v25_template_fields(self):
-        self.assertEqual(self.preview["max_tokens"], 2048)
-        self.assertEqual(self.preview["required_base_url"], self.candidate["required_base_url"])
-        self.assertEqual(self.preview["model"], self.candidate["model"])
-        self.assertEqual(self.preview["prompt_sha256"], self.candidate["prompt_sha256"])
-        self.assertEqual(self.preview["response_format_sha256"], self.candidate["response_format_sha256"])
+    def test_v29_10_preview_binds_v25_template_fields_nested(self):
+        proposed = self.preview["proposed_v25_binding"]
+        self.assertEqual(proposed["max_tokens"], 2048)
+        self.assertEqual(proposed["required_base_url"], self.candidate["required_base_url"])
+        self.assertEqual(proposed["model"], self.candidate["model"])
+        self.assertEqual(proposed["prompt_sha256"], self.candidate["prompt_sha256"])
+        self.assertEqual(proposed["response_format_sha256"], self.candidate["response_format_sha256"])
+        self.assertNotIn("model", self.preview)
+        self.assertNotIn("live_runner_version", self.preview)
 
     def test_v29_11_preview_binds_source_chain(self):
         self.assertEqual(self.preview["source_candidate_sha256"], self.candidate["authorization_candidate_sha256"])
@@ -146,13 +149,14 @@ class SemV29RunAuthorizationTransformPrepTests(unittest.TestCase):
         self.assertFalse(self.preview["explicit_user_approval_recorded"])
         self.assertFalse(self.preview["authoritative_external_anchor_verified"])
         self.assertTrue(self.preview["separate_explicit_approval_required"])
+        self.assertTrue(self.preview["later_gate_must_verify_proof_before_materializing_v25_authorization"])
 
     def test_v29_14_preview_hash_validates(self):
         self.assertEqual(v29.validate_run_authorization_preview(self.preview), self.preview)
 
     def test_v29_15_preview_hash_tamper_rejected(self):
         tampered = deepcopy(self.preview)
-        tampered["model"] = "tampered-model"
+        tampered["proposed_v25_binding"]["model"] = "tampered-model"
         with self.assertRaises(PermissionError):
             v29.validate_run_authorization_preview(tampered)
 
@@ -232,6 +236,7 @@ class SemV29RunAuthorizationTransformPrepTests(unittest.TestCase):
         self.assertFalse(report["model_contact_authorized"])
         self.assertFalse(report["ready_for_model_contact"])
         self.assertFalse(report["model_qualified"])
+        self.assertTrue(report["later_execution_gate_proof_integration_required"])
 
     def test_v29_24_no_transport_execute_preflight_or_approval_action(self):
         self.assertFalse(hasattr(v29, "_default_transport"))
