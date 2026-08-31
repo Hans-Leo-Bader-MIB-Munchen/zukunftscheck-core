@@ -78,6 +78,10 @@ V29 does not claim that arbitrary data reconstruction is impossible.
 
 A caller who deliberately extracts the nested V25 fields and constructs a completely new V25-shaped dictionary can still present that new object to the current V25 validator. This is not solved by a preview sentinel or integrity hash because the current V25 gate does not itself require V28/V29 proof provenance.
 
+The independent V29 falsification reproduced this exact path successfully. That behavior is now intentionally covered by `test_v29_25_extracted_nested_binding_documents_known_v25_gap`. The test asserts the current V25 acceptance as a documented pre-existing architecture boundary; it must not be interpreted as permission or as a desired live execution path.
+
+If a future change causes that regression test to stop passing, the change must be reviewed deliberately because it means the V25 boundary has changed. The desired long-term resolution is not to preserve the gap, but to replace or extend the live execution gate so that V28/V29 provenance is mandatory.
+
 Therefore the next execution-gate block must close this boundary structurally: the actual live authorization path must require and verify the authoritative challenge/proof/claim/trust-anchor chain before materializing or accepting any executable V25-compatible authorization.
 
 Until that integration exists, no V29 object, development approval, merge approval or generic `green` is a run authorization.
@@ -130,9 +134,11 @@ Until that later explicit approval and proof-enforcing gate exist:
 
 ## Tests
 
-V29 introduces 24 model-free tests covering candidate/anchor/claim validation, wrong-secret and tamper rejection, nested exact V25 binding, source-chain provenance, non-authorizing flags, preview integrity, actual V25 rejection, direct self-escalation rejection, canonical persisted-input loading, model-free reporting, and absence of transport/execute/preflight/approval helpers.
+V29 introduces 25 model-free tests covering candidate/anchor/claim validation, wrong-secret and tamper rejection, nested exact V25 binding, source-chain provenance, non-authorizing flags, preview integrity, actual V25 rejection, direct self-escalation rejection, canonical persisted-input loading, model-free reporting, absence of transport/execute/preflight/approval helpers, and explicit regression coverage of the known provenance-blind V25 acceptance path.
 
 The originally failing test 18 is retained as the regression test for the discovered top-level V25-shape vulnerability.
+
+Test 25 deliberately documents the remaining V25 architecture gap: extracting `proposed_v25_binding`, reconstructing a fresh V25-shaped object and manually setting the V25 approval/authorization fields is still accepted by the current provenance-blind V25 validator. V29 itself does not produce this reconstructed object. The next proof-enforcing execution-gate block must eliminate this path before any model contact can be authorized.
 
 ## Merge boundary
 
