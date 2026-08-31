@@ -245,6 +245,22 @@ class SemV29RunAuthorizationTransformPrepTests(unittest.TestCase):
         self.assertFalse(hasattr(v29, "approve_and_execute"))
         self.assertFalse(hasattr(v29, "approve"))
 
+    def test_v29_25_extracted_nested_binding_documents_known_v25_gap(self):
+        """Known boundary: current V25 is provenance-blind and must be replaced/extended later."""
+        reconstructed = deepcopy(self.preview["proposed_v25_binding"])
+        reconstructed.update(
+            {
+                "status": "EXPLICIT_USER_APPROVED",
+                "execution_authorized": True,
+                "model_run_authorized": True,
+                "model_contact_authorized": True,
+            }
+        )
+        # This acceptance is intentionally asserted as a documented pre-existing V25 gap.
+        # V29 itself never produces this reconstructed object. A later proof-enforcing
+        # execution gate must make this path impossible before any model contact.
+        self.assertEqual(v29.v25.validate_live_execution_authorization(reconstructed), reconstructed)
+
 
 if __name__ == "__main__":
     unittest.main()
