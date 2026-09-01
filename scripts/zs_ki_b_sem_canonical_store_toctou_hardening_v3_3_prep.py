@@ -74,6 +74,13 @@ def _resolved_external_dir(path_text: str) -> Path:
     return resolved
 
 
+def _root_identity(root: Path) -> tuple[int, int]:
+    current = os.stat(os.fspath(root), follow_symlinks=False)
+    if not stat.S_ISDIR(current.st_mode):
+        raise PermissionError("V33 canonical store root identity is not a directory")
+    return int(current.st_dev), int(current.st_ino)
+
+
 def canonical_consume_path(*, store_root: str, consume_record_id: str) -> Path:
     record_id = _validate_record_id(consume_record_id)
     root = _resolved_external_dir(store_root)
@@ -91,6 +98,7 @@ def build_canonical_store_profile_preview(
     target = canonical_consume_path(
         store_root=os.fspath(root), consume_record_id=authority_contract["consume_record_id"]
     )
+    root_dev, root_ino = _root_identity(root)
     posix_handle_hardening = _supports_dirfd_hardening()
     preview = {
         "store_profile_version": STORE_PROFILE_VERSION,
@@ -101,6 +109,9 @@ def build_canonical_store_profile_preview(
         "source_external_state_sha256": external_state_preview["external_state_sha256"],
         "consume_record_id": authority_contract["consume_record_id"],
         "canonical_store_root_resolved": os.fspath(root),
+        "canonical_store_root_st_dev": root_dev,
+        "canonical_store_root_st_ino": root_ino,
+        "canonical_store_root_identity_persisted": True,
         "canonical_consume_filename": target.name,
         "canonical_consume_path_resolved": os.fspath(target),
         "canonical_location_bound": True,
@@ -128,7 +139,8 @@ def build_canonical_store_profile_preview(
 _PROFILE_KEYS = {
     "store_profile_version", "prep_version", "prep_type", "prep_base_main_commit",
     "source_authority_contract_sha256", "source_external_state_sha256", "consume_record_id",
-    "canonical_store_root_resolved", "canonical_consume_filename", "canonical_consume_path_resolved",
+    "canonical_store_root_resolved", "canonical_store_root_st_dev", "canonical_store_root_st_ino",
+    "canonical_store_root_identity_persisted", "canonical_consume_filename", "canonical_consume_path_resolved",
     "canonical_location_bound", "alternate_path_allowed", "dirfd_nofollow_supported",
     "directory_fsync_supported", "inode_handle_binding_verified", "delete_denied_verified",
     "rotation_denied_verified", "authoritative_external_anchor_verified",
@@ -148,6 +160,7 @@ def validate_canonical_store_profile_preview(
     v32.validate_external_state_resolution_preview(external_state_preview, authority_contract=authority_contract)
     root = _resolved_external_dir(store_root)
     target = canonical_consume_path(store_root=os.fspath(root), consume_record_id=authority_contract["consume_record_id"])
+    current_dev, current_ino = _root_identity(root)
     expected = {
         "store_profile_version": STORE_PROFILE_VERSION,
         "prep_version": PREP_VERSION,
@@ -157,6 +170,9 @@ def validate_canonical_store_profile_preview(
         "source_external_state_sha256": external_state_preview["external_state_sha256"],
         "consume_record_id": authority_contract["consume_record_id"],
         "canonical_store_root_resolved": os.fspath(root),
+        "canonical_store_root_st_dev": profile["canonical_store_root_st_dev"],
+        "canonical_store_root_st_ino": profile["canonical_store_root_st_ino"],
+        "canonical_store_root_identity_persisted": True,
         "canonical_consume_filename": target.name,
         "canonical_consume_path_resolved": os.fspath(target),
         "canonical_location_bound": True,
@@ -180,6 +196,10 @@ def validate_canonical_store_profile_preview(
     for key, value in expected.items():
         if profile.get(key) != value:
             raise PermissionError(f"V33 store profile binding mismatch: {key}")
+    if not isinstance(profile["canonical_store_root_st_dev"], int) or not isinstance(profile["canonical_store_root_st_ino"], int):
+        raise PermissionError("V33 persisted store-root identity must be integer device/inode values")
+    if (profile["canonical_store_root_st_dev"], profile["canonical_store_root_st_ino"]) != (current_dev, current_ino):
+        raise PermissionError("V33 canonical store root identity changed since profile creation")
     expected_hash = _sha256_payload({k: v for k, v in profile.items() if k != "store_profile_sha256"})
     if profile["store_profile_sha256"] != expected_hash:
         raise PermissionError("V33 store profile hash mismatch")
@@ -237,6 +257,10 @@ def atomic_create_hardened_receipt_preview(
     root = Path(store_profile["canonical_store_root_resolved"])
     filename = store_profile["canonical_consume_filename"]
     target = root / filename
+    expected_identity = (
+        store_profile["canonical_store_root_st_dev"],
+        store_profile["canonical_store_root_st_ino"],
+    )
     hardened = _supports_dirfd_hardening()
     directory_fsync = False
     dir_fd: int | None = None
@@ -246,8 +270,12 @@ def atomic_create_hardened_receipt_preview(
             root_flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
             dir_fd = os.open(os.fspath(root), root_flags)
             opened = os.fstat(dir_fd)
+            opened_identity = (int(opened.st_dev), int(opened.st_ino))
+            if opened_identity != expected_identity:
+                raise PermissionError("V33 opened canonical store root differs from persisted profile identity")
             current = os.stat(os.fspath(root), follow_symlinks=False)
-            if (opened.st_dev, opened.st_ino) != (current.st_dev, current.st_ino):
+            current_identity = (int(current.st_dev), int(current.st_ino))
+            if opened_identity != current_identity:
                 raise PermissionError("V33 canonical store root identity changed before create")
             file_flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW
             file_fd = os.open(filename, file_flags, 0o600, dir_fd=dir_fd)
@@ -255,6 +283,9 @@ def atomic_create_hardened_receipt_preview(
             if not stat.S_ISREG(fst.st_mode):
                 raise PermissionError("V33 hardened receipt target is not a regular file")
         else:
+            current_identity = _root_identity(root)
+            if current_identity != expected_identity:
+                raise PermissionError("V33 canonical store root identity changed since profile creation")
             file_flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
             file_fd = os.open(os.fspath(target), file_flags, 0o600)
 
@@ -342,6 +373,7 @@ def build_prep_report() -> dict[str, Any]:
     checks = {
         "base_main_commit_exact": BASE_MAIN_COMMIT == "2553116951ed38fbc357232f9a4abdc1aece8423",
         "canonical_location_binding_present": True,
+        "store_root_identity_persisted": True,
         "alternate_path_disallowed_by_builder": True,
         "fail_closed_partial_claim_retained": True,
         "no_live_materializer": "materialize_live_authorization" not in globals(),
