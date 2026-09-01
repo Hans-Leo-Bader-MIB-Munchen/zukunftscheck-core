@@ -38,7 +38,15 @@ This means a simple symlink/junction-style indirection into the repository canno
 
 The V32 external-state preview records both the original and resolved paths.
 
-V32 still does not claim that the external filesystem enforces append-only, delete-denied or rotation-denied semantics. Those flags remain false.
+### Remaining TOCTOU boundary
+
+The V32 path check is still **path-resolution based, not inode-/handle-bound**.
+
+There is a remaining time-of-check/time-of-use window between `validate_external_location()` and the later `os.open()` call. V32 does not use `O_NOFOLLOW`, a pre-opened parent directory descriptor with `dir_fd`/`openat`, or a post-open inode/handle verification such as `fstat` against a previously bound filesystem object.
+
+Therefore a sufficiently privileged actor may be able to replace or redirect a parent directory between path validation and file creation. V32 does **not** claim that this race is closed and no later live authorization may treat the resolved-path check alone as an authoritative store binding.
+
+V32 also does not claim that the external filesystem enforces append-only, delete-denied or rotation-denied semantics. Those flags remain false.
 
 ## Atomic technical consume receipt
 
@@ -46,7 +54,9 @@ V32 still does not claim that the external filesystem enforces append-only, dele
 
 `O_WRONLY | O_CREAT | O_EXCL`
 
-The write is flushed and fsynced before return.
+The receipt content is flushed and the **file descriptor itself is fsynced** before return.
+
+V32 does **not** fsync the parent directory. Accordingly, it does not claim crash-/power-loss durability of the directory entry equivalent to a fully hardened durable store.
 
 If the same target already exists, the second attempt fails closed.
 
@@ -94,6 +104,10 @@ The consume receipt is bound to:
 
 Validation revalidates the source objects themselves; self-consistent rehashing of an isolated receipt is insufficient.
 
+## Cross-platform boundary
+
+The current V32 implementation and independent falsification establish the intended behavior in the tested environment. Windows-specific `O_EXCL` behavior, junction/reparse-point semantics and platform-specific path normalization are not independently proven by V32 and remain a later cross-platform verification requirement before operational use.
+
 ## No positive live path
 
 V32 contains no live materializer, no transport, no preflight, no model runner call and no model endpoint contact.
@@ -110,15 +124,17 @@ After V32 is merged and independently falsified, a later operational block must 
 2. verify the trust-anchor fingerprint against that store;
 3. enforce and independently verify append-only/delete-denied/rotation-denied semantics;
 4. bind one canonical consume location so alternate-path rotation cannot reset single-use state;
-5. persist the exact frozen pre-run package at the then-current main commit and runner blob;
-6. present that exact package to the user;
-7. obtain a new separate explicit user run authorization referring only to that package;
-8. persist that approval independently from development/merge approvals;
-9. materialize at most one live authorization;
-10. atomically consume that live authorization before first possible model contact;
-11. reject deleted/replaced/reused/rotated state;
-12. prohibit retry/rerun/output repair unless separately authorized;
-13. undergo an independent final pre-run falsification.
+5. harden the store binding against TOCTOU using filesystem-object/handle semantics rather than resolved path text alone;
+6. establish the required crash/persistence guarantees, including directory-entry durability where applicable;
+7. persist the exact frozen pre-run package at the then-current main commit and runner blob;
+8. present that exact package to the user;
+9. obtain a new separate explicit user run authorization referring only to that package;
+10. persist that approval independently from development/merge approvals;
+11. materialize at most one live authorization;
+12. atomically consume that live authorization before first possible model contact;
+13. reject deleted/replaced/reused/rotated state;
+14. prohibit retry/rerun/output repair unless separately authorized;
+15. undergo an independent final pre-run falsification.
 
 Until then:
 
@@ -152,6 +168,8 @@ V32 introduces 20 model-free tests covering:
 18. non-authorizing report;
 19. absence of live/transport helpers;
 20. receipt does not claim durable store guarantees.
+
+The current suite does not claim to close a live parent-directory swap race, parent-directory fsync durability, or Windows junction/reparse-point semantics. Those remain explicit operational boundaries.
 
 ## Merge boundary
 
