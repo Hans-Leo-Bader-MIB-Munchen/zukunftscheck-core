@@ -27,6 +27,62 @@ BASE_MAIN_COMMIT = "3935a5bd514e9fe159bc217214a90a61c5eebcf0"
 CONTRACT_VERSION = "ZS-KI-B-SEM-AUTHORITY-STATE-CONTRACT-2026-001_v0.1"
 APPROVAL_REQUEST_VERSION = "ZS-KI-B-SEM-EXPLICIT-RUN-APPROVAL-REQUEST-2026-001_v0.1"
 
+CONTRACT_KEYS = frozenset(
+    {
+        "contract_version",
+        "prep_version",
+        "prep_type",
+        "prep_base_main_commit",
+        "authority_state_path",
+        "trust_anchor_id",
+        "trust_anchor_fingerprint_sha256",
+        "durable_claim_record_id",
+        "consume_record_id",
+        "final_main_commit",
+        "final_runner_blob_oid",
+        "required_storage_semantics",
+        "status",
+        "authoritative_external_anchor_verified",
+        "authority_state_persistence_verified",
+        "durable_single_use_claim_verified",
+        "atomic_consume_implemented",
+        "explicit_user_approval_recorded",
+        "live_authorization_materialized",
+        "authorization_consumed",
+        "execution_authorized",
+        "model_run_authorized",
+        "model_contact_authorized",
+        "ready_for_model_contact",
+        "model_qualified",
+        "contract_sha256",
+    }
+)
+
+APPROVAL_REQUEST_KEYS = frozenset(
+    {
+        "approval_request_version",
+        "prep_version",
+        "source_v30_gate_envelope_sha256",
+        "source_authority_contract_sha256",
+        "requested_final_main_commit",
+        "requested_final_runner_blob_oid",
+        "requested_v25_binding",
+        "requested_v25_binding_sha256",
+        "approval_scope",
+        "status",
+        "explicit_user_approval_recorded",
+        "authoritative_external_anchor_verified",
+        "durable_single_use_claim_verified",
+        "atomic_consume_ready",
+        "execution_authorized",
+        "model_run_authorized",
+        "model_contact_authorized",
+        "ready_for_model_contact",
+        "model_qualified",
+        "approval_request_sha256",
+    }
+)
+
 
 def _canonical_bytes(payload: dict[str, Any]) -> bytes:
     return json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
@@ -64,6 +120,14 @@ def _looks_repo_local(value: str) -> bool:
     normalized = value.replace("\\", "/").lower()
     root_name = ROOT.name.lower()
     return f"/{root_name}/" in normalized or normalized.endswith(f"/{root_name}")
+
+
+def _require_exact_keys(payload: dict[str, Any], expected: frozenset[str], label: str) -> None:
+    actual = frozenset(payload.keys())
+    if actual != expected:
+        missing = sorted(expected - actual)
+        extra = sorted(actual - expected)
+        raise PermissionError(f"V31 {label} keyset mismatch: missing={missing}, extra={extra}")
 
 
 def build_authority_state_contract_preview(
@@ -129,13 +193,20 @@ def build_authority_state_contract_preview(
 def validate_authority_state_contract_preview(contract: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(contract, dict):
         raise PermissionError("V31 authority-state contract must be an object")
+    _require_exact_keys(contract, CONTRACT_KEYS, "authority-state contract")
     if contract.get("contract_version") != CONTRACT_VERSION or contract.get("prep_version") != PREP_VERSION:
         raise PermissionError("V31 authority-state contract identity mismatch")
+    if contract.get("prep_type") != PREP_TYPE:
+        raise PermissionError("V31 authority-state contract type mismatch")
     if contract.get("prep_base_main_commit") != BASE_MAIN_COMMIT:
         raise PermissionError("V31 base-main binding mismatch")
     path = contract.get("authority_state_path")
     if not isinstance(path, str) or not _is_absolute_path_text(path) or _looks_repo_local(path):
         raise PermissionError("V31 authority-state path is not external")
+    for key in ("trust_anchor_id", "durable_claim_record_id", "consume_record_id"):
+        value = contract.get(key)
+        if not isinstance(value, str) or not value.strip():
+            raise PermissionError(f"V31 {key} invalid")
     if contract.get("required_storage_semantics") != "APPEND_ONLY_DELETE_DENIED_ROTATION_DENIED":
         raise PermissionError("V31 durable-store semantics mismatch")
     if not _is_sha256(contract.get("trust_anchor_fingerprint_sha256")):
@@ -200,18 +271,46 @@ def build_explicit_run_approval_request_preview(
     return request
 
 
-def validate_explicit_run_approval_request_preview(request: dict[str, Any]) -> dict[str, Any]:
+def validate_explicit_run_approval_request_preview(
+    request: dict[str, Any],
+    *,
+    gate_envelope: dict[str, Any] | None = None,
+    authority_contract: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Validate an approval request against its actual V30/V31 source objects.
+
+    Isolated self-authenticating request objects are deliberately rejected.
+    The caller must provide the exact source gate envelope and authority contract
+    so hashes and runtime bindings are recomputed from trusted inputs rather than
+    accepted from strings carried inside the request itself.
+    """
     if not isinstance(request, dict):
         raise PermissionError("V31 approval request must be an object")
-    if request.get("approval_request_version") != APPROVAL_REQUEST_VERSION:
+    _require_exact_keys(request, APPROVAL_REQUEST_KEYS, "approval request")
+    if gate_envelope is None or authority_contract is None:
+        raise PermissionError("V31 approval request validation requires exact source objects")
+    v30.validate_proof_gate_envelope_preview(gate_envelope)
+    validate_authority_state_contract_preview(authority_contract)
+    if request.get("approval_request_version") != APPROVAL_REQUEST_VERSION or request.get("prep_version") != PREP_VERSION:
         raise PermissionError("V31 approval-request identity mismatch")
     if request.get("status") != "AWAITING_SEPARATE_EXPLICIT_USER_RUN_APPROVAL":
         raise PermissionError("V31 approval request must remain awaiting approval")
     if request.get("approval_scope") != "EXACTLY_ONE_SYNTHETIC_MODEL_RUN_NO_RETRY_NO_RERUN_NO_REPAIR":
         raise PermissionError("V31 approval scope mismatch")
+    if request.get("source_v30_gate_envelope_sha256") != gate_envelope["proof_gate_envelope_sha256"]:
+        raise PermissionError("V31 approval request V30 source binding mismatch")
+    if request.get("source_authority_contract_sha256") != authority_contract["contract_sha256"]:
+        raise PermissionError("V31 approval request authority-contract source binding mismatch")
+    if request.get("requested_final_main_commit") != authority_contract["final_main_commit"]:
+        raise PermissionError("V31 approval request final-main binding mismatch")
+    if request.get("requested_final_runner_blob_oid") != authority_contract["final_runner_blob_oid"]:
+        raise PermissionError("V31 approval request runner-blob binding mismatch")
     proposed = request.get("requested_v25_binding")
-    if not isinstance(proposed, dict) or request.get("requested_v25_binding_sha256") != _sha256_payload(proposed):
-        raise PermissionError("V31 requested V25 binding mismatch")
+    expected_proposed = gate_envelope["proposed_v25_binding"]
+    if proposed != expected_proposed:
+        raise PermissionError("V31 requested V25 binding differs from canonical V30 binding")
+    if request.get("requested_v25_binding_sha256") != _sha256_payload(expected_proposed):
+        raise PermissionError("V31 requested V25 binding hash mismatch")
     for key in (
         "explicit_user_approval_recorded",
         "authoritative_external_anchor_verified",
@@ -231,9 +330,18 @@ def validate_explicit_run_approval_request_preview(request: dict[str, Any]) -> d
     return request
 
 
-def reject_any_live_use(*, authority_contract: dict[str, Any], approval_request: dict[str, Any]) -> None:
+def reject_any_live_use(
+    *,
+    gate_envelope: dict[str, Any],
+    authority_contract: dict[str, Any],
+    approval_request: dict[str, Any],
+) -> None:
     validate_authority_state_contract_preview(authority_contract)
-    validate_explicit_run_approval_request_preview(approval_request)
+    validate_explicit_run_approval_request_preview(
+        approval_request,
+        gate_envelope=gate_envelope,
+        authority_contract=authority_contract,
+    )
     raise PermissionError(
         "V31 remains non-live: external authority verification, separate explicit user approval, durable claim verification, and atomic consume are not implemented"
     )
@@ -242,6 +350,9 @@ def reject_any_live_use(*, authority_contract: dict[str, Any], approval_request:
 def build_prep_report() -> dict[str, Any]:
     checks = {
         "base_main_commit_exact": BASE_MAIN_COMMIT == "3935a5bd514e9fe159bc217214a90a61c5eebcf0",
+        "exact_contract_keyset_enforced": True,
+        "exact_approval_request_keyset_enforced": True,
+        "approval_request_requires_actual_source_objects": True,
         "no_live_materializer": "materialize_live_authorization" not in globals(),
         "no_transport": "_default_transport" not in globals(),
         "no_preflight": "_default_preflight" not in globals(),
