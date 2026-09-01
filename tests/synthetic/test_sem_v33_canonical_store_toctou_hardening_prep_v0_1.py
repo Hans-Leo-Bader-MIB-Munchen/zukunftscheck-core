@@ -76,6 +76,9 @@ class SemV33CanonicalStoreToctouHardeningPrepTests(unittest.TestCase):
             self.assertEqual(profile["canonical_consume_filename"], contract["consume_record_id"] + ".json")
             self.assertEqual(Path(profile["canonical_consume_path_resolved"]).parent, store_root.resolve())
             self.assertTrue(profile["canonical_location_bound"])
+            self.assertTrue(profile["canonical_store_root_identity_persisted"])
+            self.assertIsInstance(profile["canonical_store_root_st_dev"], int)
+            self.assertIsInstance(profile["canonical_store_root_st_ino"], int)
             self.assertFalse(profile["alternate_path_allowed"])
 
     def test_v33_02_unsafe_record_id_rejected(self):
@@ -275,6 +278,26 @@ class SemV33CanonicalStoreToctouHardeningPrepTests(unittest.TestCase):
         self.assertFalse(hasattr(v33, "_default_preflight"))
         self.assertFalse(hasattr(v33, "execute_once"))
         self.assertFalse(hasattr(v33, "approve"))
+
+    def test_v33_21_replaced_store_root_same_path_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            contract, request, external, store_root, profile = self._bundle(root)
+            original_identity = (
+                profile["canonical_store_root_st_dev"], profile["canonical_store_root_st_ino"]
+            )
+            moved = root / "canonical-store-original"
+            store_root.rename(moved)
+            store_root.mkdir()
+            replacement_stat = store_root.stat()
+            replacement_identity = (int(replacement_stat.st_dev), int(replacement_stat.st_ino))
+            self.assertNotEqual(original_identity, replacement_identity)
+            with self.assertRaisesRegex(PermissionError, "identity changed"):
+                v33.atomic_create_hardened_receipt_preview(
+                    approval_request=request, gate_envelope=self.gate, authority_contract=contract,
+                    external_state_preview=external, store_profile=profile, store_root=str(store_root.resolve()),
+                )
+            self.assertFalse(Path(profile["canonical_consume_path_resolved"]).exists())
 
 
 if __name__ == "__main__":
