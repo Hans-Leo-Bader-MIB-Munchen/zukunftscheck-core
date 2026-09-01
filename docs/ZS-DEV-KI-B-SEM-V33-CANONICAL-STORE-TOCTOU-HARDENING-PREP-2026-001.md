@@ -35,12 +35,13 @@ It adds:
 
 1. a canonical technical consume filename derived only from `consume_record_id`;
 2. one resolved external store root per V33 profile;
-3. rejection of unsafe record identifiers containing traversal or path separators;
-4. platform-capability-aware directory-handle hardening;
-5. `O_NOFOLLOW` + `dir_fd` create semantics where supported;
-6. opened-directory identity comparison via `fstat`/`stat` where supported;
-7. file fsync plus parent-directory fsync where the hardened directory-handle path is supported;
-8. fail-closed retention of a partial claim after post-create failures instead of deleting and silently reopening the replay window.
+3. persisted `(st_dev, st_ino)` identity for the store root at profile-creation time;
+4. rejection of unsafe record identifiers containing traversal or path separators;
+5. platform-capability-aware directory-handle hardening;
+6. `O_NOFOLLOW` + `dir_fd` create semantics where supported;
+7. opened-directory identity comparison against the persisted profile identity and current pathname identity where supported;
+8. file fsync plus parent-directory fsync where the hardened directory-handle path is supported;
+9. fail-closed retention of a partial claim after post-create failures instead of deleting and silently reopening the replay window.
 
 ## Canonical location
 
@@ -59,28 +60,47 @@ Important limitation: V33 still does **not** prove that the chosen `store_root` 
 
 This must remain unresolved until an authoritative external state source fixes the one allowed store root.
 
+## Store-root lifetime identity binding
+
+The independent V33 countercheck found that a same-path directory replacement could previously occur between store-profile creation and receipt creation without being detected: the path string remained unchanged, while the underlying directory inode changed.
+
+The hardened V33 profile now persists the store root identity observed at profile creation:
+
+- `canonical_store_root_st_dev`
+- `canonical_store_root_st_ino`
+- `canonical_store_root_identity_persisted = true`
+
+Every later profile validation requires the current directory identity at the bound path to match those persisted values. On the hardened `dir_fd` path, `atomic_create_hardened_receipt_preview()` additionally requires the directory actually opened for the relative create to match the persisted profile identity. This binds receipt creation to the same directory object that was profiled, not merely to the same pathname.
+
+A regression test replaces the profiled store directory with a newly created real directory at the identical path and verifies fail-closed rejection before receipt creation.
+
+This is still not proof that the store is globally authoritative, undeletable, append-only or immune to privileged filesystem replacement outside the assumptions of the actual execution platform.
+
 ## TOCTOU hardening
 
 On platforms where Python exposes all required capabilities (`dir_fd` support for `os.open`, `O_NOFOLLOW`, `O_DIRECTORY`), V33:
 
-1. opens the already-resolved store directory itself;
-2. uses `O_NOFOLLOW` on the directory open;
-3. compares the opened directory's `(st_dev, st_ino)` to the current resolved directory path;
-4. creates the canonical receipt filename relative to that already-opened directory handle;
-5. uses `O_EXCL | O_NOFOLLOW` for the target;
-6. verifies the opened target is a regular file.
+1. persists the store-root `(st_dev, st_ino)` identity when the store profile is created;
+2. revalidates that persisted identity against the current store root before create;
+3. opens the resolved store directory itself;
+4. uses `O_NOFOLLOW` on the directory open;
+5. compares the opened directory's `(st_dev, st_ino)` to the identity persisted in the store profile;
+6. also compares the opened directory identity to the current pathname identity;
+7. creates the canonical receipt filename relative to that already-opened directory handle;
+8. uses `O_EXCL | O_NOFOLLOW` for the target;
+9. verifies the opened target is a regular file.
 
-This materially reduces the V32 path-check/create TOCTOU window because the create operation is bound to the already-open directory object rather than a freshly resolved full pathname.
+This closes the countercheck's same-path/non-symlink directory-replacement gap across the profile lifetime and materially reduces the remaining check/create race because the create operation is bound to the already-open directory object rather than a freshly resolved full pathname.
 
 V33 records these capabilities explicitly. It does not pretend they exist on platforms where Python does not expose them.
 
-On platforms without this capability set, V33 falls back to the V32-style direct `O_EXCL` create and records:
+On platforms without this capability set, V33 still compares the current store-root device/inode identity to the identity persisted in the profile immediately before direct `O_EXCL` creation, but cannot make the same handle-bound guarantee across the final pathname create. It records:
 
 - `dirfd_nofollow_used = false`
 - `inode_handle_binding_verified = false`
 - `directory_fsync_performed = false`
 
-Such a platform result is still a non-live technical preview and is not sufficient for later live authorization.
+Such a platform result is still a non-live technical preview and is not sufficient for later live authorization. Windows/Junction/Reparse-Point semantics remain a separately verified execution-platform boundary.
 
 ## Durability
 
@@ -131,6 +151,7 @@ The hardened receipt is bound to:
 - exact V33 store-profile SHA-256;
 - exact consume-record identifier;
 - exact canonical resolved receipt path;
+- persisted store-root device/inode identity through the store-profile hash;
 - V33 base-main commit.
 
 Exact-keyset validation continues to reject unknown fields and rehashed escalation attempts.
@@ -160,6 +181,7 @@ V33 is capability-aware rather than pretending POSIX and Windows are identical.
 The independent countercheck must explicitly verify:
 
 - Linux/POSIX `dir_fd` + `O_NOFOLLOW` behavior where available;
+- persisted store-root identity survives profile-to-create substitution attempts;
 - Windows behavior separately;
 - Junction/Reparse-Point handling separately;
 - that unsupported handle hardening is reported as unsupported rather than silently claimed as verified.
@@ -168,9 +190,9 @@ A later live block must not rely on inode/handle guarantees that were never veri
 
 ## Tests
 
-V33 introduces 20 model-free tests covering:
+V33 introduces 21 model-free tests covering:
 
-1. canonical filename binding;
+1. canonical filename and persisted store-root identity binding;
 2. traversal/path-separator rejection in consume IDs;
 3. repo-local store-root rejection;
 4. exact-keyset enforcement for store profile;
@@ -189,7 +211,8 @@ V33 introduces 20 model-free tests covering:
 17. platform hardening flags match actual capability;
 18. unconditional live-use rejection;
 19. non-authorizing report;
-20. absence of live/transport/execute helpers.
+20. absence of live/transport/execute helpers;
+21. same-path real-directory replacement between profile creation and receipt creation is rejected by persisted device/inode binding.
 
 ## Required next block before real run authorization
 
@@ -225,7 +248,7 @@ V33 may only be considered merge-ready after:
 - focused V33 tests GREEN;
 - full suite GREEN;
 - exact base/head/diff verification;
-- independent falsification focused on canonical-root substitution, parent-directory swaps, symlink/Junction behavior, partial-write failure, O_EXCL concurrency, directory-fsync claims, deletion/recreation and accidental live escalation;
+- independent falsification focused on canonical-root substitution, parent-directory swaps, same-path real-directory replacement, symlink/Junction behavior, partial-write failure, O_EXCL concurrency, directory-fsync claims, deletion/recreation and accidental live escalation;
 - separate explicit merge approval.
 
 Merging V33 does not authorize any model run or model contact.
