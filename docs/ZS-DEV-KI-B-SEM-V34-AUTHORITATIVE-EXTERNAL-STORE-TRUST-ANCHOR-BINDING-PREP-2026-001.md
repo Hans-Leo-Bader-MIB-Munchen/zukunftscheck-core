@@ -80,6 +80,14 @@ The V34 binding additionally requires exact equality between descriptor store id
 
 This does not make the chosen root globally authoritative. It only proves structural consistency between the V33 profile and the V34 descriptor preview.
 
+## Cross-platform boundary
+
+The V34 store-identity binding inherits the platform semantics of the V33 filesystem identity model. The current independent falsification was performed on Linux/POSIX, where `(st_dev, st_ino)` identity checks are meaningful and were verified against real directory replacement.
+
+V34 does **not** independently prove equivalent semantics for Windows Junctions, Reparse Points, volume/file identifiers, path normalization, or other Windows-specific indirection behavior. A later live-capable block must verify the actual execution platform and must not infer Windows-equivalent guarantees from the POSIX result.
+
+Therefore platform-specific store identity remains an explicit open boundary until independently verified on the real execution platform.
+
 ## Trust-anchor cross-binding
 
 The V34 authority descriptor carries:
@@ -150,6 +158,8 @@ V34 introduces 20 model-free tests covering:
 19. absence of live/transport/execute helpers;
 20. structural-only binding status.
 
+The independent countercheck also actively probed self-attestation, alternate-root descriptor creation, trust-anchor substitution, rehashed unknown fields, and real store-root replacement on Linux/POSIX. Windows Junction/Reparse-Point behavior was not independently tested and is not claimed verified.
+
 ## Required next block before real run authorization
 
 After V34 is independently falsified and, if appropriate, merged, the next block must address the difference between a structural descriptor preview and a genuine authority source. It must still:
@@ -159,7 +169,7 @@ After V34 is independently falsified and, if appropriate, merged, the next block
 3. verify the actual trust anchor rather than merely compare fingerprints;
 4. fix one globally authoritative store root and reject alternate-root rotation;
 5. establish or independently verify delete-denied / append-only semantics;
-6. verify the actual execution platform's store guarantees;
+6. verify the actual execution platform's store guarantees, including Windows Junction/Reparse-Point semantics if Windows is the execution platform;
 7. bind the then-current `main` and exact live runner blob;
 8. freeze the exact pre-run package;
 9. obtain separate explicit one-run user authorization;
