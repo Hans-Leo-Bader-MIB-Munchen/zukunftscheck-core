@@ -2,8 +2,8 @@
 """V35 model-free external-attestation / global-single-use preparation.
 
 V35 introduces contracts for externally supplied authority evidence and a
-single globally pinned store identity. It deliberately does not authenticate
-that evidence itself and therefore cannot authorize model use.
+single structurally pinned store identity. It deliberately does not
+authenticate that evidence itself and therefore cannot authorize model use.
 """
 from __future__ import annotations
 
@@ -43,7 +43,9 @@ def _require_exact_keys(payload: dict[str, Any], expected: set[str], label: str)
         raise PermissionError(f"V35 {label} must be an object")
     actual = set(payload)
     if actual != expected:
-        raise PermissionError(f"V35 {label} keyset mismatch: missing={sorted(expected-actual)}, extra={sorted(actual-expected)}")
+        raise PermissionError(
+            f"V35 {label} keyset mismatch: missing={sorted(expected-actual)}, extra={sorted(actual-expected)}"
+        )
 
 
 def _require_id(value: str, label: str) -> str:
@@ -59,10 +61,13 @@ def _require_sha256(value: str, label: str) -> str:
 
 
 def _external_existing_file(path_text: str) -> Path:
-    location = v34.v33.v32.validate_external_location(path_text)
-    path = Path(location["resolved_absolute_path"])
-    resolved = Path(os.path.realpath(os.fspath(path)))
-    v34.v33.v32.validate_external_location(os.fspath(resolved))
+    try:
+        location = v34.v33.v32.validate_external_location(path_text)
+        path = Path(location["resolved_absolute_path"])
+        resolved = Path(os.path.realpath(os.fspath(path)))
+        v34.v33.v32.validate_external_location(os.fspath(resolved))
+    except (ValueError, OSError, TypeError) as exc:
+        raise PermissionError("V35 invalid external evidence path") from exc
     if not resolved.is_file():
         raise PermissionError("V35 external evidence path must be an existing file")
     return resolved
@@ -76,20 +81,44 @@ def _sha256_file(path: Path) -> str:
     return h.hexdigest()
 
 
+def _validate_v34_provenance(
+    *, authority_binding: dict[str, Any], authority_descriptor: dict[str, Any],
+    store_profile: dict[str, Any], authority_contract: dict[str, Any],
+    external_state_preview: dict[str, Any], store_root: str,
+) -> None:
+    """Revalidate the complete V31->V34 source chain before V35 trusts values."""
+    v34.validate_external_authority_descriptor_preview(authority_descriptor)
+    v34.validate_authority_binding_preview(
+        authority_binding,
+        authority_descriptor=authority_descriptor,
+        store_profile=store_profile,
+        authority_contract=authority_contract,
+        external_state_preview=external_state_preview,
+        store_root=store_root,
+    )
+
+
 def build_external_evidence_reference_preview(
     *, authority_binding: dict[str, Any], authority_descriptor: dict[str, Any],
+    store_profile: dict[str, Any], authority_contract: dict[str, Any],
+    external_state_preview: dict[str, Any], store_root: str,
     evidence_path: str, evidence_id: str, expected_evidence_sha256: str,
 ) -> dict[str, Any]:
     """Bind an already-existing external evidence file without attesting it."""
     _require_id(evidence_id, "evidence_id")
     _require_sha256(expected_evidence_sha256, "expected_evidence_sha256")
-    v34.validate_external_authority_descriptor_preview(authority_descriptor)
+    _validate_v34_provenance(
+        authority_binding=authority_binding,
+        authority_descriptor=authority_descriptor,
+        store_profile=store_profile,
+        authority_contract=authority_contract,
+        external_state_preview=external_state_preview,
+        store_root=store_root,
+    )
     path = _external_existing_file(evidence_path)
     actual_sha = _sha256_file(path)
     if actual_sha != expected_evidence_sha256:
         raise PermissionError("V35 external evidence file hash mismatch")
-    if authority_binding["source_authority_descriptor_sha256"] != authority_descriptor["authority_descriptor_sha256"]:
-        raise PermissionError("V35 authority binding/descriptor mismatch")
     evidence = {
         "external_evidence_version": EVIDENCE_VERSION,
         "prep_version": PREP_VERSION,
@@ -100,10 +129,14 @@ def build_external_evidence_reference_preview(
         "evidence_file_sha256": actual_sha,
         "source_authority_binding_sha256": authority_binding["authority_binding_sha256"],
         "source_authority_descriptor_sha256": authority_descriptor["authority_descriptor_sha256"],
+        "source_store_profile_sha256": store_profile["store_profile_sha256"],
+        "source_authority_contract_sha256": authority_contract["contract_sha256"],
+        "source_external_state_sha256": external_state_preview["external_state_sha256"],
         "authority_id": authority_descriptor["authority_id"],
         "authority_epoch": authority_descriptor["authority_epoch"],
         "trust_anchor_id": authority_descriptor["trust_anchor_id"],
         "trust_anchor_fingerprint_sha256": authority_descriptor["trust_anchor_fingerprint_sha256"],
+        "v34_full_provenance_revalidated": True,
         "evidence_file_present_and_hash_bound": True,
         "evidence_origin_externally_attested": False,
         "external_authority_attested": False,
@@ -127,19 +160,22 @@ def build_external_evidence_reference_preview(
 _EVIDENCE_KEYS = {
     "external_evidence_version", "prep_version", "prep_type", "prep_base_main_commit",
     "evidence_id", "evidence_path_resolved", "evidence_file_sha256",
-    "source_authority_binding_sha256", "source_authority_descriptor_sha256", "authority_id",
-    "authority_epoch", "trust_anchor_id", "trust_anchor_fingerprint_sha256",
-    "evidence_file_present_and_hash_bound", "evidence_origin_externally_attested",
-    "external_authority_attested", "external_trust_anchor_verified", "delete_denied_verified",
-    "rotation_denied_verified", "explicit_user_approval_recorded", "live_authorization_materialized",
-    "authorization_consumed", "execution_authorized", "model_run_authorized",
-    "model_contact_authorized", "ready_for_model_contact", "model_qualified", "status",
-    "external_evidence_sha256",
+    "source_authority_binding_sha256", "source_authority_descriptor_sha256",
+    "source_store_profile_sha256", "source_authority_contract_sha256", "source_external_state_sha256",
+    "authority_id", "authority_epoch", "trust_anchor_id", "trust_anchor_fingerprint_sha256",
+    "v34_full_provenance_revalidated", "evidence_file_present_and_hash_bound",
+    "evidence_origin_externally_attested", "external_authority_attested",
+    "external_trust_anchor_verified", "delete_denied_verified", "rotation_denied_verified",
+    "explicit_user_approval_recorded", "live_authorization_materialized", "authorization_consumed",
+    "execution_authorized", "model_run_authorized", "model_contact_authorized",
+    "ready_for_model_contact", "model_qualified", "status", "external_evidence_sha256",
 }
 
 
 def validate_external_evidence_reference_preview(
-    evidence: dict[str, Any], *, authority_binding: dict[str, Any], authority_descriptor: dict[str, Any]
+    evidence: dict[str, Any], *, authority_binding: dict[str, Any], authority_descriptor: dict[str, Any],
+    store_profile: dict[str, Any], authority_contract: dict[str, Any],
+    external_state_preview: dict[str, Any], store_root: str,
 ) -> dict[str, Any]:
     _require_exact_keys(evidence, _EVIDENCE_KEYS, "external evidence reference")
     path = _external_existing_file(evidence["evidence_path_resolved"])
@@ -148,6 +184,10 @@ def validate_external_evidence_reference_preview(
     expected = build_external_evidence_reference_preview(
         authority_binding=authority_binding,
         authority_descriptor=authority_descriptor,
+        store_profile=store_profile,
+        authority_contract=authority_contract,
+        external_state_preview=external_state_preview,
+        store_root=store_root,
         evidence_path=os.fspath(path),
         evidence_id=evidence["evidence_id"],
         expected_evidence_sha256=evidence["evidence_file_sha256"],
@@ -160,15 +200,21 @@ def validate_external_evidence_reference_preview(
 
 def build_global_store_binding_preview(
     *, authority_binding: dict[str, Any], authority_descriptor: dict[str, Any],
+    store_profile: dict[str, Any], authority_contract: dict[str, Any],
+    external_state_preview: dict[str, Any], store_root: str,
     evidence_reference: dict[str, Any], global_store_binding_id: str,
 ) -> dict[str, Any]:
-    """Pin one V34 store identity for this preview; not a global authority proof."""
+    """Pin one validated V34 store identity for this preview; not global authority proof."""
     _require_id(global_store_binding_id, "global_store_binding_id")
     validate_external_evidence_reference_preview(
-        evidence_reference, authority_binding=authority_binding, authority_descriptor=authority_descriptor
+        evidence_reference,
+        authority_binding=authority_binding,
+        authority_descriptor=authority_descriptor,
+        store_profile=store_profile,
+        authority_contract=authority_contract,
+        external_state_preview=external_state_preview,
+        store_root=store_root,
     )
-    if authority_binding["bound_store_root_resolved"] != authority_descriptor["authoritative_store_root_resolved"]:
-        raise PermissionError("V35 store-root mismatch")
     binding = {
         "global_store_binding_version": GLOBAL_BINDING_VERSION,
         "prep_version": PREP_VERSION,
@@ -177,6 +223,9 @@ def build_global_store_binding_preview(
         "global_store_binding_id": global_store_binding_id,
         "source_authority_binding_sha256": authority_binding["authority_binding_sha256"],
         "source_external_evidence_sha256": evidence_reference["external_evidence_sha256"],
+        "source_store_profile_sha256": store_profile["store_profile_sha256"],
+        "source_authority_contract_sha256": authority_contract["contract_sha256"],
+        "source_external_state_sha256": external_state_preview["external_state_sha256"],
         "authority_id": authority_descriptor["authority_id"],
         "authority_epoch": authority_descriptor["authority_epoch"],
         "pinned_store_root_resolved": authority_binding["bound_store_root_resolved"],
@@ -184,6 +233,7 @@ def build_global_store_binding_preview(
         "pinned_store_root_st_ino": authority_binding["bound_store_root_st_ino"],
         "pinned_trust_anchor_id": authority_binding["bound_trust_anchor_id"],
         "pinned_trust_anchor_fingerprint_sha256": authority_binding["bound_trust_anchor_fingerprint_sha256"],
+        "v34_full_provenance_revalidated": True,
         "single_store_identity_structurally_pinned": True,
         "evidence_file_hash_bound": True,
         "global_store_authority_verified": False,
@@ -209,9 +259,10 @@ def build_global_store_binding_preview(
 _GLOBAL_KEYS = {
     "global_store_binding_version", "prep_version", "prep_type", "prep_base_main_commit",
     "global_store_binding_id", "source_authority_binding_sha256", "source_external_evidence_sha256",
+    "source_store_profile_sha256", "source_authority_contract_sha256", "source_external_state_sha256",
     "authority_id", "authority_epoch", "pinned_store_root_resolved", "pinned_store_root_st_dev",
     "pinned_store_root_st_ino", "pinned_trust_anchor_id", "pinned_trust_anchor_fingerprint_sha256",
-    "single_store_identity_structurally_pinned", "evidence_file_hash_bound",
+    "v34_full_provenance_revalidated", "single_store_identity_structurally_pinned", "evidence_file_hash_bound",
     "global_store_authority_verified", "external_authority_attested", "external_trust_anchor_verified",
     "delete_denied_verified", "rotation_denied_verified", "global_single_use_verified",
     "explicit_user_approval_recorded", "live_authorization_materialized", "authorization_consumed",
@@ -222,12 +273,18 @@ _GLOBAL_KEYS = {
 
 def validate_global_store_binding_preview(
     binding: dict[str, Any], *, authority_binding: dict[str, Any], authority_descriptor: dict[str, Any],
-    evidence_reference: dict[str, Any]
+    store_profile: dict[str, Any], authority_contract: dict[str, Any],
+    external_state_preview: dict[str, Any], store_root: str,
+    evidence_reference: dict[str, Any],
 ) -> dict[str, Any]:
     _require_exact_keys(binding, _GLOBAL_KEYS, "global store binding")
     expected = build_global_store_binding_preview(
         authority_binding=authority_binding,
         authority_descriptor=authority_descriptor,
+        store_profile=store_profile,
+        authority_contract=authority_contract,
+        external_state_preview=external_state_preview,
+        store_root=store_root,
         evidence_reference=evidence_reference,
         global_store_binding_id=binding["global_store_binding_id"],
     )
@@ -247,6 +304,7 @@ def build_prep_report() -> dict[str, Any]:
     checks = {
         "base_main_commit_exact": BASE_MAIN_COMMIT == "02760e876ee10790bf63d04449681d366247e9f7",
         "external_evidence_boundary_present": True,
+        "v34_full_provenance_revalidation_required": True,
         "global_store_structural_pin_present": True,
         "no_live_materializer": "materialize_live_authorization" not in globals(),
         "no_transport": "_default_transport" not in globals(),
