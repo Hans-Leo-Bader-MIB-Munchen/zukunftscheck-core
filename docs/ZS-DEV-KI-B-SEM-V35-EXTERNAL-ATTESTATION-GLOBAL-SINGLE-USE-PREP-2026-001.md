@@ -14,14 +14,7 @@ Bound base:
 
 `02760e876ee10790bf63d04449681d366247e9f7`
 
-V34 established structural cross-binding among:
-
-- one V33 canonical store profile;
-- one V34 authority descriptor preview;
-- the V31 authority contract;
-- the V32 external-state preview;
-- trust-anchor ID and SHA-256 fingerprint;
-- store-root path and persisted device/inode identity.
+V34 established structural cross-binding among one V33 canonical store profile, one V34 authority descriptor preview, the V31 authority contract, the V32 external-state preview, trust-anchor ID/fingerprint, and store-root path plus persisted device/inode identity.
 
 V34 deliberately left real external attestation and real trust verification false.
 
@@ -35,14 +28,15 @@ It introduces two additional preview objects:
    - requires an already existing file outside the repository;
    - resolves the file path through the existing external-location boundary;
    - binds the exact file SHA-256;
-   - binds the V34 authority-binding SHA-256 and authority-descriptor SHA-256;
-   - carries authority ID/epoch and trust-anchor ID/fingerprint;
+   - revalidates the complete V34 binding against the supplied V33 profile, V31 authority contract, V32 external-state preview and store root;
+   - records the hashes of those validated source objects;
    - explicitly does not claim that the file's origin is externally attested.
 
 2. **Global store binding preview**
-   - pins one V34 store path and device/inode identity;
+   - accepts only an evidence reference whose complete V34 provenance is revalidated;
+   - pins one validated V34 store path and device/inode identity;
    - pins one trust-anchor ID/fingerprint;
-   - binds the external evidence reference hash;
+   - binds the validated source hashes and external evidence reference hash;
    - records that the identity is structurally pinned inside this preview;
    - explicitly does not claim that this is the one globally authoritative store.
 
@@ -55,6 +49,7 @@ The important distinction is:
 A file may be copied, locally created or supplied from an untrusted source and still have a stable SHA-256. V35 therefore records only:
 
 - `evidence_file_present_and_hash_bound = true`
+- `v34_full_provenance_revalidated = true`
 
 while keeping:
 
@@ -64,9 +59,44 @@ while keeping:
 
 A later block needs a genuine out-of-repository trust mechanism that authenticates the origin/signature/attestation of the evidence rather than merely hashing it.
 
+## V34 provenance repair after independent falsification
+
+The initial V35 candidate accepted a structurally self-consistent but forged `authority_binding` because it validated the V34 descriptor but did not call `v34.validate_authority_binding_preview(...)` with the full V31/V32/V33 source bundle.
+
+Independent falsification demonstrated that forged source hashes and forged `bound_store_root_st_dev` / `bound_store_root_st_ino` values could therefore be copied into a V35 global binding while all live flags still remained false.
+
+This gap is repaired on the same V35 branch before PR creation.
+
+Every V35 evidence/global-binding path now requires and revalidates:
+
+- `authority_descriptor`;
+- `store_profile`;
+- `authority_contract`;
+- `external_state_preview`;
+- exact `store_root`;
+- `authority_binding` via `v34.validate_authority_binding_preview(...)`.
+
+The resulting V35 objects additionally bind the validated source hashes and record `v34_full_provenance_revalidated = true`.
+
+A dedicated regression test recreates the falsification attack with fabricated V34 source hashes and fabricated device/inode values and requires fail-closed rejection.
+
+This repair strengthens structural provenance only. It does not turn any repository-generated object into external authority evidence.
+
+## Evidence hashing TOCTOU boundary
+
+V35 currently calculates the evidence SHA-256 by a sequential file read. It does not bind a stable open-file identity plus pre/post `fstat`, size and mtime invariants around the entire read.
+
+Therefore a concurrently modified evidence file could, in principle, yield a hash representing bytes observed during the read rather than a separately proven immutable file snapshot.
+
+V35 makes no positive origin, immutability or external-attestation claim from that hash, so this remains a documented non-live boundary rather than a live-authorization guarantee. A later genuine attestation block must use an authenticated immutable payload or strengthen the snapshot/read semantics before relying on evidence bytes as authority proof.
+
+## External-path error boundary
+
+Malformed path inputs such as embedded NULs are normalized to fail closed with `PermissionError`. Repository-local paths and resolved paths returning into the repository remain rejected through the existing external-location validator.
+
 ## Global-store boundary
 
-The V35 global-store binding pins one exact store identity for one preview object. It is not evidence that no second root exists.
+The V35 global-store binding pins one exact, fully V34-revalidated store identity for one preview object. It is not evidence that no second root exists.
 
 Therefore:
 
@@ -79,13 +109,7 @@ A second structurally valid preview may still be constructed for another externa
 
 ## Delete / persistence boundary
 
-V35 does not prevent a privileged actor from deleting:
-
-- the evidence file;
-- a technical consume receipt;
-- the external store itself.
-
-It also does not prove append-only or WORM semantics.
+V35 does not prevent a privileged actor from deleting the evidence file, a technical consume receipt or the external store itself. It also does not prove append-only or WORM semantics.
 
 Therefore:
 
@@ -93,14 +117,6 @@ Therefore:
 - `global_single_use_verified = false`
 
 Any later positive claim needs a concrete external persistence mechanism and an independently verifiable policy/implementation.
-
-## Provenance limitation
-
-V35 binds to the V34 authority-binding SHA-256 and authority-descriptor SHA-256. It does not convert those V34 previews into externally authoritative facts.
-
-The V34 binding itself remains structural-only. A later external verifier must authenticate the complete provenance chain rather than rely on self-generated repository objects.
-
-This is a deliberate falsification target for the independent V35 countercheck: determine whether a substituted but self-consistent V34 binding can be fed into V35 without revalidating its full V31/V32/V33 source bundle, and classify that precisely. Because all V35 authority/live flags remain false, such a finding would be a provenance-hardening issue, not a model-authorization escalation; nevertheless it should be repaired before a live block.
 
 ## Cross-platform boundary
 
@@ -130,62 +146,42 @@ The following remain false:
 
 ## Tests
 
-V35 introduces 20 model-free tests covering:
+V35 now contains 21 model-free focused tests. The original 20-test coverage remains, and test 21 specifically reproduces the independently found forged-V34-binding provenance attack and requires fail-closed rejection.
 
-1. hash-bound evidence without attestation;
-2. wrong evidence hash rejection;
-3. repository-local evidence rejection;
-4. missing evidence rejection;
-5. evidence mutation after binding;
-6. evidence exact-keyset enforcement;
-7. evidence positive-flag escalation rejection;
-8. structural single-store pin semantics;
-9. global-binding exact-keyset enforcement;
-10. global-binding live escalation rejection;
-11. delete/rotation/global-single-use flags remain false;
-12. copied evidence does not become attested;
-13. alternate-root preview remains possible and non-authoritative;
-14. unsafe evidence ID rejection;
-15. unsafe global-binding ID rejection;
-16. authority-descriptor substitution rejection;
-17. unconditional live-use rejection;
-18. non-authorizing report;
-19. absence of live/transport/execute helpers;
-20. structural-only statuses.
+The focused suite covers evidence hash binding, repository-local/missing evidence rejection, evidence mutation, exact-keyset and positive-flag tampering, structural single-store semantics, delete/rotation/global-single-use flags remaining false, copied evidence, alternate-root previews, unsafe identifiers, descriptor substitution, unconditional live-use rejection, absence of transport/execute helpers, structural-only statuses, and full V34 provenance revalidation.
 
-## Required independent falsification
+## Independent falsification result and repair status
 
-Before merge, independently test at least:
+Initial independent verdict: **TRAGFÄHIG MIT KORREKTUR**.
 
-- evidence-copy and evidence-replacement attacks;
-- evidence rehash after positive-field injection;
-- V34 binding/descriptor substitution;
-- whether a self-consistent fabricated V34 binding can bypass full V34 provenance revalidation;
-- alternate-root rotation;
-- store-root identity replacement;
-- delete/recreate semantics;
-- same evidence hash at different paths;
-- path/symlink/Junction behavior;
-- hidden live escalation or transport.
+Confirmed findings:
 
-The countercheck must explicitly answer whether V35 has established any genuine external attestation or globally durable single-use guarantee. Expected answer: **No.**
+1. one real V34 provenance-substitution gap — repaired before PR;
+2. evidence-read TOCTOU / unstable-snapshot boundary — documented, still non-live;
+3. malformed/NUL path error normalization — repaired for consistent fail-closed behavior;
+4. no live/model escalation found;
+5. no hidden transport/model execution found;
+6. external authority, trust verification, delete/rotation denial and global single-use remain unproven and false.
+
+The repaired head requires a fresh focused and full-suite run before PR creation.
 
 ## Required next block before real run authorization
 
-After V35 is independently falsified and, if appropriate, merged, a later block must still:
+After repaired V35 is re-tested, independently checked as appropriate, merged and post-merge verified, a later block must still:
 
 1. authenticate genuine external authority evidence using a trust mechanism outside self-generated repository data;
 2. verify the real trust anchor rather than compare a stored fingerprint only;
 3. make one authoritative store root globally enforceable or independently verifiable;
 4. establish delete-denied / append-only persistence semantics;
 5. establish rotation denial and global single-use across alternate roots;
-6. verify execution-platform filesystem semantics;
-7. freeze then-current `main` and exact runner blob;
-8. freeze the exact pre-run package;
-9. undergo final independent falsification;
-10. obtain separate explicit user approval for exactly one synthetic model run;
-11. atomically consume that approval before first possible model contact;
-12. prohibit retry/rerun/output repair absent separate authorization.
+6. strengthen or independently verify immutable evidence snapshot semantics;
+7. verify execution-platform filesystem semantics;
+8. freeze then-current `main` and exact runner blob;
+9. freeze the exact pre-run package;
+10. undergo final independent falsification;
+11. obtain separate explicit user approval for exactly one synthetic model run;
+12. atomically consume that approval before first possible model contact;
+13. prohibit retry/rerun/output repair absent separate authorization.
 
 Until then:
 
@@ -197,6 +193,6 @@ Until then:
 
 ## Merge boundary
 
-V35 may only be considered merge-ready after focused tests, full-suite regression, exact base/head/diff verification and independent adversarial falsification. A separate explicit user merge approval remains required.
+V35 may only be considered merge-ready after the repaired focused tests, repaired full-suite regression, exact base/head/diff verification and confirmation that the forged-V34-binding exploit is closed. A separate explicit user merge approval remains required.
 
 Merging V35 does not authorize any model run or model contact.
