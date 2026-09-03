@@ -17,12 +17,19 @@ import sys
 from pathlib import Path
 from typing import Any
 
+# Direct execution as `python scripts/<file>.py` puts `scripts/` rather than the
+# repository root on sys.path. Add the deterministic repository root so the
+# internal `scripts.*` import works identically for module and CLI execution.
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
 import scripts.zs_ki_b_sem_crypto_backend_dependency_binding_v3_8_prep as v38
 
 PREP_VERSION = "v3.9-crypto-artifact-runtime-binding-prep"
 PREP_TYPE = "ZS-KI-B-SEM-CRYPTO-ARTIFACT-RUNTIME-BINDING-PREP-2026-001"
 BASE_MAIN_COMMIT = "03acd43461cb75aadf9d4594bec34ccd30982ee1"
-BINDING_VERSION = "ZS-KI-B-SEM-CRYPTO-ARTIFACT-RUNTIME-BINDING-2026-001_v0.1"
+BINDING_VERSION = "ZS-KI-B-SEM-CRYPTO-ARTIFACT-RUNTIME-BINDING-2026-001_v0.2"
 SOURCE_V38_SCRIPT_BLOB_SHA = "5c6ccdeeb94e086dfea48361279461c0d5cad2f8"
 
 BACKEND_PACKAGE = "cryptography"
@@ -276,7 +283,7 @@ def _main(argv: list[str] | None = None) -> int:
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--report", action="store_true")
     group.add_argument("--check-runtime", action="store_true")
-    group.add_argument("--verify-artifact", metavar="PATH")
+    group.add_argument("--verify-artifact", "--verify-wheel", dest="verify_artifact", metavar="PATH")
     args = parser.parse_args(argv)
     if args.report:
         result = build_prep_report()
