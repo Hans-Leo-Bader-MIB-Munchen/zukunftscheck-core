@@ -15,24 +15,18 @@ import sys
 from pathlib import Path
 from typing import Any
 
-_REPO_ROOT = Path(__file__).resolve().parents[1]
-if str(_REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(_REPO_ROOT))
-
-import scripts.zs_ki_b_sem_crypto_backend_dependency_binding_v3_8_prep as v38
-import scripts.zs_ki_b_sem_crypto_artifact_runtime_binding_v3_9_prep as v39
-
 PREP_VERSION = "v4.0-cryptographic-signature-verification-prep"
 PREP_TYPE = "ZS-KI-B-SEM-CRYPTOGRAPHIC-SIGNATURE-VERIFICATION-PREP-2026-001"
 BASE_MAIN_COMMIT = "53bb1deaeda70466b82d666fa32e727b8c30d16d"
-VERIFICATION_VERSION = "ZS-KI-B-SEM-CRYPTOGRAPHIC-SIGNATURE-VERIFICATION-2026-001_v0.1"
+VERIFICATION_VERSION = "ZS-KI-B-SEM-CRYPTOGRAPHIC-SIGNATURE-VERIFICATION-2026-001_v0.2"
+SOURCE_V37_SCRIPT_BLOB_SHA = "a7c2192983be9c580b3dd8b8e68ee3e80e7afb02"
 SOURCE_V38_SCRIPT_BLOB_SHA = "5c6ccdeeb94e086dfea48361279461c0d5cad2f8"
 SOURCE_V39_SCRIPT_BLOB_SHA = "071f4d5d8ee7fa91f28a38b8cd8804be2c53b584"
 
-BACKEND_PACKAGE = v39.BACKEND_PACKAGE
-BACKEND_VERSION = v39.BACKEND_VERSION
-BACKEND_REQUIREMENT = v39.BACKEND_REQUIREMENT
-SUPPORTED_ALGORITHMS = frozenset(v38.ALGORITHM_PROFILES)
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+_V37_PATH = _REPO_ROOT / "scripts" / "zs_ki_b_sem_external_signature_trust_verification_v3_7_prep.py"
+_V38_PATH = _REPO_ROOT / "scripts" / "zs_ki_b_sem_crypto_backend_dependency_binding_v3_8_prep.py"
+_V39_PATH = _REPO_ROOT / "scripts" / "zs_ki_b_sem_crypto_artifact_runtime_binding_v3_9_prep.py"
 
 
 def _git_text_blob_sha1(path: str | Path) -> str:
@@ -45,6 +39,43 @@ def _git_text_blob_sha1(path: str | Path) -> str:
         raise PermissionError("V40 bound source contains non-canonical bare CR bytes")
     header = f"blob {len(canonical)}\0".encode("ascii")
     return hashlib.sha1(header + canonical).hexdigest()
+
+
+def _validate_bound_source_path(path: Path, expected_blob: str, label: str) -> str:
+    observed = _git_text_blob_sha1(path)
+    if observed != expected_blob:
+        raise PermissionError(f"V40 {label} source blob mismatch before import")
+    return observed
+
+
+# Security boundary: verify the complete V37->V39 source chain before importing
+# any of those modules, so tampered Python cannot execute before provenance is
+# checked. This closes the import-before-verification gap at the V40 crypto edge.
+_PREIMPORT_V37_BLOB = _validate_bound_source_path(_V37_PATH, SOURCE_V37_SCRIPT_BLOB_SHA, "V37")
+_PREIMPORT_V38_BLOB = _validate_bound_source_path(_V38_PATH, SOURCE_V38_SCRIPT_BLOB_SHA, "V38")
+_PREIMPORT_V39_BLOB = _validate_bound_source_path(_V39_PATH, SOURCE_V39_SCRIPT_BLOB_SHA, "V39")
+
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+import scripts.zs_ki_b_sem_crypto_backend_dependency_binding_v3_8_prep as v38
+import scripts.zs_ki_b_sem_crypto_artifact_runtime_binding_v3_9_prep as v39
+
+BACKEND_PACKAGE = "cryptography"
+BACKEND_VERSION = "50.0.1"
+BACKEND_REQUIREMENT = "cryptography==50.0.1"
+SUPPORTED_ALGORITHMS = frozenset({"ED25519", "ECDSA-P256-SHA256", "RSA-PSS-SHA256"})
+
+if (
+    v38.BACKEND_PACKAGE != BACKEND_PACKAGE
+    or v38.BACKEND_VERSION != BACKEND_VERSION
+    or v38.BACKEND_REQUIREMENT != BACKEND_REQUIREMENT
+    or v39.BACKEND_PACKAGE != BACKEND_PACKAGE
+    or v39.BACKEND_VERSION != BACKEND_VERSION
+    or v39.BACKEND_REQUIREMENT != BACKEND_REQUIREMENT
+    or frozenset(v38.ALGORITHM_PROFILES) != SUPPORTED_ALGORITHMS
+):
+    raise PermissionError("V40 imported V38/V39 backend binding does not match V40 constants")
 
 
 def _validate_source(module: Any, expected_blob: str, label: str) -> str:
@@ -128,6 +159,7 @@ def verify_bound_signature(*, signature_algorithm: str, public_key_der: bytes,
     Authority, signer identity, trust anchors and model/execution authorization
     remain explicitly unverified/false.
     """
+    _validate_bound_source_path(_V37_PATH, SOURCE_V37_SCRIPT_BLOB_SHA, "V37")
     _validate_source(v38, SOURCE_V38_SCRIPT_BLOB_SHA, "V38")
     _validate_source(v39, SOURCE_V39_SCRIPT_BLOB_SHA, "V39")
     profile = _validate_profile(signature_algorithm)
@@ -184,7 +216,7 @@ def verify_bound_signature(*, signature_algorithm: str, public_key_der: bytes,
                 padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=32),
                 hashes.SHA256(),
             )
-        else:  # defensive: SUPPORTED_ALGORITHMS is already checked above
+        else:
             raise PermissionError("V40 unsupported signature algorithm")
     except PermissionError:
         raise
@@ -215,6 +247,7 @@ def verify_bound_signature(*, signature_algorithm: str, public_key_der: bytes,
 
 
 def build_prep_report() -> dict[str, Any]:
+    v37_blob = _validate_bound_source_path(_V37_PATH, SOURCE_V37_SCRIPT_BLOB_SHA, "V37")
     v38_blob = _validate_source(v38, SOURCE_V38_SCRIPT_BLOB_SHA, "V38")
     v39_blob = _validate_source(v39, SOURCE_V39_SCRIPT_BLOB_SHA, "V39")
     return {
@@ -222,6 +255,7 @@ def build_prep_report() -> dict[str, Any]:
         "status": "PASS",
         "base_main_commit": BASE_MAIN_COMMIT,
         "backend_requirement": BACKEND_REQUIREMENT,
+        "source_v37_script_blob_sha": v37_blob,
         "source_v38_script_blob_sha": v38_blob,
         "source_v39_script_blob_sha": v39_blob,
         "supported_algorithms": sorted(SUPPORTED_ALGORITHMS),
