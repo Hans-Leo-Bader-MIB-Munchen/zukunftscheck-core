@@ -39,7 +39,7 @@ Besonders teuer waren:
 
 Daraus folgt: Testanzahl ist kein brauchbarer Proxy für Laufzeit. Der schnelle Iterations-Gate muss laufzeitbasiert und ausdrücklich versioniert sein.
 
-Mit Orchestrierungsfassung v0.6 wurden V38, V39, V40 und V41 gemäß Pflege-Regel in die Security-Allowlisten aufgenommen. Die historische Messung von 51.465 s gilt nur für die ursprünglichen acht Fast-Module und wird nicht als Messwert für die aktuelle Zwölf-Modul-Fassung ausgegeben.
+Mit Orchestrierungsfassung v0.7 wurden V38, V39, V40, V41 und V42 gemäß Pflege-Regel in die Security-Allowlisten aufgenommen. Die historische Messung von 51.465 s gilt nur für die ursprünglichen acht Fast-Module und wird nicht als Messwert für die aktuelle Dreizehn-Modul-Fassung ausgegeben.
 
 ## Testprofile
 
@@ -48,7 +48,7 @@ Mit Orchestrierungsfassung v0.6 wurden V38, V39, V40 und V41 gemäß Pflege-Rege
 Für den gerade bearbeiteten Block:
 
 ```powershell
-python scripts/zs_ki_b_test_orchestration_risk_based_regression_v0_1.py --profile focused --module tests.synthetic.test_sem_v41_external_signature_trust_anchor_binding_prep_v0_1
+python scripts/zs_ki_b_test_orchestration_risk_based_regression_v0_1.py --profile focused --module tests.synthetic.test_sem_v42_external_trust_anchor_provenance_authority_attestation_prep_v0_1
 ```
 
 Focused akzeptiert nur existierende Module mit dem Muster `tests.synthetic.test_<name>` und lehnt Pfadtraversal, Shell-Fragmente und Module außerhalb `tests/synthetic` fail-closed ab.
@@ -61,7 +61,7 @@ Für normale Entwicklungsiterationen:
 python scripts/zs_ki_b_test_orchestration_risk_based_regression_v0_1.py --profile critical-fast
 ```
 
-Explizite aktuelle Allowlist mit zwölf Modulen:
+Explizite aktuelle Allowlist mit dreizehn Modulen:
 
 - V35 External Attestation / Global Single Use Prep
 - V36 Persistent Global Single Use Requirements
@@ -70,19 +70,20 @@ Explizite aktuelle Allowlist mit zwölf Modulen:
 - V39 Crypto Artifact / Runtime Binding Prep
 - V40 Cryptographic Signature Verification Prep
 - V41 External Signature / Trust Anchor Binding Prep
+- V42 External Trust Anchor Provenance / Authority Attestation Prep
 - Runtime Guard Frozen Suite Sweep
 - Semantic Runtime Guard
 - Canonical Binding Integrity
 - System Qualification Execute Gate
 - System Qualification Freeze Final
 
-Die ursprünglichen acht Fast-Module waren mit 51.465 s gemessen. V38, V39, V40 und V41 wurden aufgrund ihres hohen Sicherheitsbezugs und ihrer kurzen fokussierten Tests ergänzt. Die aktuelle Zwölf-Modul-Laufzeit wird nicht aus der historischen Messung abgeleitet, sondern jeweils praktisch gemessen.
+Die ursprünglichen acht Fast-Module waren mit 51.465 s gemessen. V38 bis V42 wurden aufgrund ihres hohen Sicherheitsbezugs und ihrer kurzen fokussierten Tests ergänzt. Die aktuelle Dreizehn-Modul-Laufzeit wird nicht aus der historischen Messung abgeleitet, sondern jeweils praktisch gemessen.
 
 `critical-fast` ist zwingend eine Teilmenge von `critical-deep` und wird technisch darauf geprüft.
 
 ### 3. Critical Deep
 
-Die aktuelle Allowlist enthält 22 Module:
+Die aktuelle Allowlist enthält 23 Module:
 
 ```powershell
 python scripts/zs_ki_b_test_orchestration_risk_based_regression_v0_1.py --profile critical-deep
@@ -96,7 +97,7 @@ python scripts/zs_ki_b_test_orchestration_risk_based_regression_v0_1.py --profil
 
 identisch zu `critical-deep`. `critical` wird **nicht** still auf die schnellere Suite umgebogen.
 
-Critical Deep enthält die komplette Governance-/Authorization-/Persistence-/Trust-/Crypto-Kette V25 bis V41 plus die globalen Runtime-/Binding-/Qualification-Gates.
+Critical Deep enthält die komplette Governance-/Authorization-/Persistence-/Trust-/Crypto-Kette V25 bis V42 plus die globalen Runtime-/Binding-/Qualification-Gates.
 
 ### 4. Full
 
@@ -131,7 +132,7 @@ Wenn eine Änderung V25–V34 oder einen anderen nicht in `critical-fast` enthal
 
 ### Bewusster Deep-Security-Zwischengate
 
-`critical-deep` kann bei Änderungen an Authorization-, Atomic-Consume-, Persistence-, Concurrency-, Provenance-, Trust-, Crypto-Backend-, Artifact-Binding-, Signature-Verification- oder Trust-Anchor-Binding-Grenzen zusätzlich ausgeführt werden. Da Full ohnehin alle Tests enthält, ist `critical-deep` kein zusätzlicher Pflichtlauf unmittelbar neben einem bereits erforderlichen Full-Lauf.
+`critical-deep` kann bei Änderungen an Authorization-, Atomic-Consume-, Persistence-, Concurrency-, Provenance-, Trust-, Crypto-Backend-, Artifact-Binding-, Signature-Verification-, Trust-Anchor-Binding- oder Authority-Attestation-Grenzen zusätzlich ausgeführt werden. Da Full ohnehin alle Tests enthält, ist `critical-deep` kein zusätzlicher Pflichtlauf unmittelbar neben einem bereits erforderlichen Full-Lauf.
 
 ### Vor PR
 
@@ -183,7 +184,7 @@ Neue sicherheitsrelevante Entwicklungsblöcke müssen bei ihrem Abschluss darauf
 
 Aufnahme in `critical-fast` erfordert sowohl hohen Sicherheitsnutzen für den schnellen Gate als auch vertretbare gemessene Laufzeit. Teure adversariale, Concurrency-, Persistence- oder Race-Tests dürfen in `critical-deep` verbleiben, solange sie durch Focused/Full an den definierten Gates weiterhin vollständig erhalten bleiben.
 
-V38, V39, V40 und V41 wurden als kurze, sicherheitsrelevante Crypto-/Binding-Module bewertet und deshalb in beide Profile aufgenommen.
+V38 bis V42 wurden als kurze, sicherheitsrelevante Crypto-/Binding-/Attestation-Module bewertet und deshalb in beide Profile aufgenommen.
 
 ## Abgrenzung
 
