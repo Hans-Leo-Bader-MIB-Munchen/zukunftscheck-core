@@ -12,7 +12,11 @@ Exact base main commit:
 
 `71d5a70420b4c976c0e822ba34514a63c6b7ac87`
 
-V37 remains the source boundary for exact public-key, signature and signed-payload bytes. V37 explicitly requires a later reviewed cryptographic backend before any positive signature-verification result can exist.
+V37 remains the source boundary for exact public-key, signature and signed-payload bytes. V38 binds the exact V37 implementation blob used for this preparation:
+
+`a7c2192983be9c580b3dd8b8e68ee3e80e7afb02`
+
+This prevents a different V37 implementation with reused version labels from silently becoming the source boundary for V38.
 
 ## Backend selection
 
@@ -25,7 +29,12 @@ Selected future backend:
 
 At V38 this is a binding only. `pyproject.toml` remains unchanged and the package is not imported by the V38 implementation.
 
-Rationale: the repository currently declares no runtime dependencies. One reviewed backend supports all three V36/V37 signature algorithms, avoiding multiple crypto implementations and algorithm-specific dependency drift.
+The package/version pin is **not yet an installation-artifact trust proof**. Before any real backend load, the exact distribution artifact used by the runtime must be separately selected and SHA-256 verified. V38 therefore records:
+
+- `dependency_artifact_hash_required = true`
+- `dependency_artifact_hash_verified = false`
+
+V38 does not claim supply-chain verification.
 
 ## Public-key serialization boundary
 
@@ -63,7 +72,7 @@ This deliberately excludes PEM-text normalization and algorithm-specific ad-hoc 
 - hash: SHA-256
 - padding: PSS
 - MGF: MGF1/SHA-256
-- PSS salt length: 32 bytes (SHA-256 digest length)
+- PSS salt length: 32 bytes
 - signature encoding: raw RSA signature bytes
 
 No PKCS#1 v1.5 signature mode, alternate curve, alternate hash, `PSS.MAX_LENGTH`, prehashed message mode or algorithm fallback is permitted by the V38 profile.
@@ -73,11 +82,12 @@ No PKCS#1 v1.5 signature mode, alternate curve, alternate hash, `PSS.MAX_LENGTH`
 The V38 backend-binding preview binds:
 
 - exact V38 base commit;
-- exact V37 prep and request versions;
+- exact V37 prep/request versions and exact V37 script blob SHA;
 - package name, version and requirement string;
 - backend API family;
 - canonical public-key serialization;
 - complete exact algorithm-profile object;
+- mandatory future installation-artifact hash verification state;
 - explicit false values for dependency import/presence, cryptographic verification, authority/trust state and all execution/model authorization state.
 
 The binding is canonical-JSON SHA-256 hashed. Validation reconstructs the exact expected object; rehashing a modified object does not make it valid.
@@ -89,6 +99,8 @@ V38 must remain true to all of the following:
 - `dependency_declared_in_project = false`
 - `dependency_imported = false`
 - `cryptographic_backend_present = false`
+- `dependency_artifact_hash_required = true`
+- `dependency_artifact_hash_verified = false`
 - `cryptographic_verification_performed = false`
 - `external_signature_verified = false`
 - `external_verifier_identity_verified = false`
@@ -100,41 +112,22 @@ V38 must remain true to all of the following:
 - `ready_for_model_contact = false`
 - `model_qualified = false`
 
-A backend selection or dependency version pin is not evidence of cryptographic validity or external trust.
+A backend selection or dependency version pin is not evidence of artifact authenticity, cryptographic validity or external trust.
 
 ## Tests
 
-V38 adds model-free focused tests covering:
-
-1. exact base binding;
-2. exact package/version pin;
-3. exact binding reconstruction;
-4. exact three-algorithm set;
-5. uniform DER/SPKI serialization;
-6. Ed25519 semantics;
-7. ECDSA P-256/SHA-256 semantics;
-8. RSA-PSS/SHA-256 semantics;
-9. unsupported algorithm rejection;
-10. extra-field injection after rehash;
-11. positive verification escalation after rehash;
-12. false backend-presence escalation;
-13. algorithm-profile substitution;
-14. dependency-version substitution;
-15. V37 source-version binding;
-16. absence of crypto imports/verifier helpers;
-17. authorization/trust flags remain false;
-18. unconditional live/crypto-use rejection;
-19. non-authorizing report semantics.
+V38 adds model-free focused tests covering exact base/package/version/algorithm bindings, V37 source-blob provenance, unsupported algorithm rejection, rehash attacks, false backend/verification escalation, dependency artifact hash required-but-unverified semantics, unconditional live-use rejection and non-authorizing report semantics.
 
 ## Required countercheck before merge
 
 Independently falsify at least:
 
 - alternate dependency/version substitution;
+- V37 source-implementation substitution while retaining version labels;
 - package-name lookalikes or unpinned requirements;
+- false installation-artifact hash verification;
 - algorithm downgrade/fallback;
-- ECDSA curve substitution;
-- ECDSA signature-encoding ambiguity;
+- ECDSA curve/signature-encoding substitution;
 - RSA padding/MGF/hash/salt-length substitution;
 - Ed25519 raw-key versus SPKI confusion;
 - PEM/DER normalization ambiguity;
@@ -145,7 +138,7 @@ Independently falsify at least:
 
 The countercheck must explicitly answer:
 
-**Has V38 installed or executed a cryptographic backend or verified a signature, external authority or trust anchor?**
+**Has V38 installed or executed a cryptographic backend, verified an installation artifact, or verified a signature, external authority or trust anchor?**
 
 Expected answer: **No.**
 
@@ -153,15 +146,16 @@ Expected answer: **No.**
 
 Before any positive `external_signature_verified=true` path, a later block must:
 
-1. make the reviewed dependency installation/runtime binding explicit;
-2. verify that the runtime dependency is exactly the pinned implementation/version;
-3. parse DER/SPKI fail-closed and enforce the expected key type/curve;
-4. implement mathematical verification using the exact V38 algorithm profile;
-5. map only backend success to signature validity;
-6. keep signature validity distinct from verifier identity, external authority and trust-anchor validity;
-7. add adversarial test vectors for malformed keys/signatures, algorithm confusion and parser edge cases;
-8. keep all model authorization/contact flags false;
-9. separately continue the authoritative persistence/global-single-use track;
-10. require independent countercheck and separate explicit merge approval.
+1. select the exact reviewed distribution artifact for the target runtime and bind/verify its SHA-256;
+2. make dependency installation/runtime binding explicit;
+3. verify that the imported runtime dependency is exactly the pinned implementation/version/artifact;
+4. parse DER/SPKI fail-closed and enforce expected key type/curve;
+5. implement mathematical verification using the exact V38 algorithm profile;
+6. map only backend success to signature validity;
+7. keep signature validity distinct from verifier identity, external authority and trust-anchor validity;
+8. add adversarial test vectors for malformed keys/signatures, algorithm confusion and parser edge cases;
+9. keep all model authorization/contact flags false;
+10. separately continue the authoritative persistence/global-single-use track;
+11. require independent countercheck and separate explicit merge approval.
 
 No model run/contact is authorized by V38 or by merging V38.
