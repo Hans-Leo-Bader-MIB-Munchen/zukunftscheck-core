@@ -144,6 +144,21 @@ class TestSemV38CryptoBackendDependencyBindingPrep(unittest.TestCase):
                 with self.assertRaises(PermissionError):
                     v38.build_backend_binding_preview()
 
+    def test_23_crlf_checkout_normalizes_to_same_git_blob(self):
+        source = Path(v38.v37.__file__).read_bytes().replace(b"\r\n", b"\n")
+        self.assertNotIn(b"\r", source)
+        with tempfile.TemporaryDirectory() as td:
+            fake = Path(td) / "v37_crlf.py"
+            fake.write_bytes(source.replace(b"\n", b"\r\n"))
+            self.assertEqual(v38._git_blob_sha1(fake), v38.SOURCE_V37_SCRIPT_BLOB_SHA)
+
+    def test_24_bare_cr_source_fails_closed(self):
+        with tempfile.TemporaryDirectory() as td:
+            fake = Path(td) / "v37_bare_cr.py"
+            fake.write_bytes(b"line1\rline2\n")
+            with self.assertRaises(PermissionError):
+                v38._git_blob_sha1(fake)
+
 
 if __name__ == "__main__":
     unittest.main()
