@@ -17,7 +17,7 @@ import scripts.zs_ki_b_sem_external_signature_trust_verification_v3_7_prep as v3
 PREP_VERSION = "v3.8-crypto-backend-dependency-binding-prep"
 PREP_TYPE = "ZS-KI-B-SEM-CRYPTO-BACKEND-DEPENDENCY-BINDING-PREP-2026-001"
 BASE_MAIN_COMMIT = "71d5a70420b4c976c0e822ba34514a63c6b7ac87"
-BINDING_VERSION = "ZS-KI-B-SEM-CRYPTO-BACKEND-BINDING-2026-001_v0.3"
+BINDING_VERSION = "ZS-KI-B-SEM-CRYPTO-BACKEND-BINDING-2026-001_v0.4"
 SOURCE_V37_SCRIPT_BLOB_SHA = "a7c2192983be9c580b3dd8b8e68ee3e80e7afb02"
 
 BACKEND_PACKAGE = "cryptography"
@@ -82,12 +82,20 @@ def _require_exact_keys(payload: dict[str, Any], expected: set[str], label: str)
 
 
 def _git_blob_sha1(path: str | Path) -> str:
+    """Compute the repository text blob SHA while tolerating Git CRLF checkout conversion only."""
     try:
         data = Path(path).read_bytes()
     except (OSError, TypeError, ValueError) as exc:
         raise PermissionError("V38 cannot read loaded V37 source for blob verification") from exc
-    header = f"blob {len(data)}\0".encode("ascii")
-    return hashlib.sha1(header + data).hexdigest()
+
+    # Git on Windows may materialize repository LF text as CRLF in the working tree.
+    # Canonicalize that one platform conversion only; bare CR remains ambiguous and is rejected.
+    canonical = data.replace(b"\r\n", b"\n")
+    if b"\r" in canonical:
+        raise PermissionError("V38 loaded V37 source contains non-canonical bare CR bytes")
+
+    header = f"blob {len(canonical)}\0".encode("ascii")
+    return hashlib.sha1(header + canonical).hexdigest()
 
 
 def _validate_loaded_v37_blob() -> str:
