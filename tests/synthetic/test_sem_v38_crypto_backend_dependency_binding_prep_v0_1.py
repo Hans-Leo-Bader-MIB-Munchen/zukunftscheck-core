@@ -55,7 +55,6 @@ class TestSemV38CryptoBackendDependencyBindingPrep(unittest.TestCase):
 
     def test_10_extra_field_injection_rejected_even_if_rehashed(self):
         forged = copy.deepcopy(self.binding)
-        forged["external_signature_verified"] = False
         forged["attacker_note"] = "extra"
         forged["backend_binding_sha256"] = v38._sha256_payload({k: val for k, val in forged.items() if k != "backend_binding_sha256"})
         with self.assertRaises(PermissionError):
@@ -95,6 +94,7 @@ class TestSemV38CryptoBackendDependencyBindingPrep(unittest.TestCase):
     def test_15_v37_source_binding_exact(self):
         self.assertEqual(self.binding["source_v37_prep_version"], v38.v37.PREP_VERSION)
         self.assertEqual(self.binding["source_v37_request_version"], v38.v37.REQUEST_VERSION)
+        self.assertEqual(self.binding["source_v37_script_blob_sha"], "a7c2192983be9c580b3dd8b8e68ee3e80e7afb02")
 
     def test_16_no_crypto_backend_import_or_verifier_helper(self):
         names = set(vars(v38))
@@ -120,6 +120,17 @@ class TestSemV38CryptoBackendDependencyBindingPrep(unittest.TestCase):
         self.assertFalse(report["dependency_imported"])
         self.assertFalse(report["cryptographic_verification_performed"])
         self.assertFalse(report["model_contact_authorized"])
+
+    def test_20_dependency_artifact_hash_is_required_but_not_verified(self):
+        self.assertIs(self.binding["dependency_artifact_hash_required"], True)
+        self.assertIs(self.binding["dependency_artifact_hash_verified"], False)
+
+    def test_21_artifact_hash_verification_escalation_rejected(self):
+        forged = copy.deepcopy(self.binding)
+        forged["dependency_artifact_hash_verified"] = True
+        forged["backend_binding_sha256"] = v38._sha256_payload({k: val for k, val in forged.items() if k != "backend_binding_sha256"})
+        with self.assertRaises(PermissionError):
+            v38.validate_backend_binding_preview(forged)
 
 
 if __name__ == "__main__":
