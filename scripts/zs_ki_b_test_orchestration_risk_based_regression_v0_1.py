@@ -11,6 +11,7 @@ import argparse
 import importlib.util
 import re
 import sys
+import time
 import unittest
 from pathlib import Path
 from typing import Iterable
@@ -19,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-ORCHESTRATION_VERSION = "ZS-KI-B-TEST-ORCHESTRATION-RISK-BASED-REGRESSION-2026-001_v0.1"
+ORCHESTRATION_VERSION = "ZS-KI-B-TEST-ORCHESTRATION-RISK-BASED-REGRESSION-2026-001_v0.2"
 BASE_MAIN_COMMIT = "39d57ded8108b0c8f724db15d36dbce1c22bf212"
 
 # Explicit allowlist. A change here is a governance-relevant review event.
@@ -101,17 +102,67 @@ def run_profile(profile: str, focused_modules: Iterable[str] = (), verbosity: in
     return 0 if result.wasSuccessful() else 1
 
 
+def run_critical_module_timings(verbosity: int = 0) -> int:
+    """Run the unchanged critical allowlist module-by-module and report timings.
+
+    This is diagnostic only. It does not alter pass/fail semantics and does not
+    define a new security gate. The same modules are executed as --profile
+    critical, but each module is timed separately so expensive modules can be
+    identified before a reviewed fast/deep split is proposed.
+    """
+    if len(SECURITY_CRITICAL_MODULES) != len(set(SECURITY_CRITICAL_MODULES)):
+        raise RuntimeError("critical module allowlist contains duplicates")
+
+    rows: list[tuple[float, int, str, bool]] = []
+    all_ok = True
+    total_start = time.perf_counter()
+
+    print("ZS-KI-B critical timing diagnostic")
+    print(f"orchestration_version: {ORCHESTRATION_VERSION}")
+    print(f"base_main_commit: {BASE_MAIN_COMMIT}")
+
+    for module_name in SECURITY_CRITICAL_MODULES:
+        suite = _load_named_modules((module_name,))
+        test_count = suite.countTestCases()
+        start = time.perf_counter()
+        result = unittest.TextTestRunner(verbosity=verbosity).run(suite)
+        elapsed = time.perf_counter() - start
+        ok = result.wasSuccessful()
+        rows.append((elapsed, test_count, module_name, ok))
+        all_ok = all_ok and ok
+        print(f"TIMING {elapsed:10.3f}s  tests={test_count:3d}  ok={str(ok):5s}  {module_name}")
+        if not ok:
+            print("FAIL_CLOSED: timing diagnostic stopped after failing module", file=sys.stderr)
+            break
+
+    total_elapsed = time.perf_counter() - total_start
+    print("\nSLOWEST_CRITICAL_MODULES")
+    for elapsed, test_count, module_name, ok in sorted(rows, reverse=True)[:10]:
+        print(f"{elapsed:10.3f}s  tests={test_count:3d}  ok={str(ok):5s}  {module_name}")
+    print(f"TOTAL_CRITICAL_TIMING {total_elapsed:.3f}s  modules={len(rows)}  tests={sum(r[1] for r in rows)}")
+    return 0 if all_ok else 1
+
+
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run ZS-KI-B unittest profiles")
-    parser.add_argument("--profile", required=True, choices=("focused", "critical", "full"))
+    parser.add_argument("--profile", choices=("focused", "critical", "full"))
     parser.add_argument(
         "--module",
         action="append",
         default=[],
         help="focused unittest module, e.g. tests.synthetic.test_sem_v37_external_signature_trust_verification_prep_v0_1",
     )
+    parser.add_argument(
+        "--critical-timings",
+        action="store_true",
+        help="diagnostic: run unchanged critical allowlist module-by-module and print timings",
+    )
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args(argv)
+    if args.critical_timings and args.profile is not None:
+        parser.error("--critical-timings cannot be combined with --profile")
+    if not args.critical_timings and args.profile is None:
+        parser.error("one of --profile or --critical-timings is required")
     if args.profile != "focused" and args.module:
         parser.error("--module is valid only with --profile focused")
     return args
@@ -120,6 +171,8 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv)
     try:
+        if args.critical_timings:
+            return run_critical_module_timings(verbosity=2 if args.verbose else 0)
         return run_profile(args.profile, args.module, verbosity=2 if args.verbose else 1)
     except (ValueError, RuntimeError) as exc:
         print(f"FAIL_CLOSED: {exc}", file=sys.stderr)
