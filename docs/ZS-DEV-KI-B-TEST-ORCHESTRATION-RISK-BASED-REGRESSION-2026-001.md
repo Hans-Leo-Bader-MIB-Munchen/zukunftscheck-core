@@ -10,19 +10,19 @@ Base main commit:
 
 Dieser Block ändert ausschließlich die Test-Ausführungsstrategie. Er löscht keine Tests, ändert keine bestehenden Testassertions und senkt keine Governance-Anforderung.
 
-Ausgangspunkt ist eine Full Suite von 1024 Tests mit zuletzt rund 16–17 Minuten Laufzeit. Die vollständige Suite bleibt das maßgebliche Regression-Gate, wird aber nicht mehr für jede Entwicklungsiteration verlangt.
+Ausgangspunkt war eine Full Suite von 1024 Tests mit rund 16–17 Minuten Laufzeit. Die vollständige Suite bleibt das maßgebliche Regression-Gate, wird aber nicht für jede Entwicklungsiteration verlangt.
 
 ## Gemessene Profilierung
 
-Erste Critical-Fassung:
+Ursprüngliche Critical-Fassung:
 
 `Ran 295 tests in 863.064s — OK`
 
-Modulweise Profilierung derselben 18 Module:
+Modulweise Profilierung derselben damaligen 18 Module:
 
 `TOTAL_CRITICAL_TIMING 875.894s  modules=18  tests=295`
 
-Die zehn teuersten Module summierten sich auf 824.429 s. Die verbleibenden acht Module benötigten zusammen nur 51.465 s.
+Die zehn teuersten Module summierten sich auf 824.429 s. Die damaligen verbleibenden acht Module benötigten zusammen nur 51.465 s.
 
 Besonders teuer waren:
 
@@ -39,6 +39,8 @@ Besonders teuer waren:
 
 Daraus folgt: Testanzahl ist kein brauchbarer Proxy für Laufzeit. Der schnelle Iterations-Gate muss laufzeitbasiert und ausdrücklich versioniert sein.
 
+Mit Orchestrierungsfassung v0.4 wurden V38 und V39 gemäß Pflege-Regel in die Security-Allowlisten aufgenommen. Die historische Messung von 51.465 s gilt nur für die ursprünglichen acht Fast-Module und wird nicht als Messwert für die nun zehn Module ausgegeben.
+
 ## Testprofile
 
 ### 1. Focused
@@ -46,7 +48,7 @@ Daraus folgt: Testanzahl ist kein brauchbarer Proxy für Laufzeit. Der schnelle 
 Für den gerade bearbeiteten Block:
 
 ```powershell
-python scripts/zs_ki_b_test_orchestration_risk_based_regression_v0_1.py --profile focused --module tests.synthetic.test_sem_v37_external_signature_trust_verification_prep_v0_1
+python scripts/zs_ki_b_test_orchestration_risk_based_regression_v0_1.py --profile focused --module tests.synthetic.test_sem_v39_crypto_artifact_runtime_binding_prep_v0_1
 ```
 
 Focused akzeptiert nur existierende Module mit dem Muster `tests.synthetic.test_<name>` und lehnt Pfadtraversal, Shell-Fragmente und Module außerhalb `tests/synthetic` fail-closed ab.
@@ -59,24 +61,26 @@ Für normale Entwicklungsiterationen:
 python scripts/zs_ki_b_test_orchestration_risk_based_regression_v0_1.py --profile critical-fast
 ```
 
-Explizite Allowlist mit acht Modulen:
+Explizite aktuelle Allowlist mit zehn Modulen:
 
 - V35 External Attestation / Global Single Use Prep
 - V36 Persistent Global Single Use Requirements
 - V37 External Signature / Trust Verification Prep
+- V38 Crypto Backend / Dependency Binding Prep
+- V39 Crypto Artifact / Runtime Binding Prep
 - Runtime Guard Frozen Suite Sweep
 - Semantic Runtime Guard
 - Canonical Binding Integrity
 - System Qualification Execute Gate
 - System Qualification Freeze Final
 
-Diese acht Module waren im Profilierungslauf zusammen mit 51.465 s gemessen. Diese Laufzeit ist eine Messung, kein garantiertes Budget.
+Die ursprünglichen acht Fast-Module waren mit 51.465 s gemessen. V38 und V39 wurden aufgrund ihres hohen Sicherheitsbezugs und ihrer kurzen fokussierten Tests ergänzt. Die aktuelle Zehn-Modul-Laufzeit wird bei V39 erneut praktisch gemessen.
 
 `critical-fast` ist zwingend eine Teilmenge von `critical-deep` und wird technisch darauf geprüft.
 
 ### 3. Critical Deep
 
-Die bisherige 18-Modul-Allowlist bleibt vollständig erhalten:
+Die aktuelle Allowlist enthält 20 Module:
 
 ```powershell
 python scripts/zs_ki_b_test_orchestration_risk_based_regression_v0_1.py --profile critical-deep
@@ -90,7 +94,7 @@ python scripts/zs_ki_b_test_orchestration_risk_based_regression_v0_1.py --profil
 
 identisch zu `critical-deep`. `critical` wird **nicht** still auf die schnellere Suite umgebogen.
 
-Critical Deep enthält weiterhin die komplette Governance-/Authorization-/Persistence-/Trust-Kette V25 bis V37 plus die globalen Runtime-/Binding-/Qualification-Gates.
+Critical Deep enthält die komplette Governance-/Authorization-/Persistence-/Trust-/Crypto-Binding-Kette V25 bis V39 plus die globalen Runtime-/Binding-/Qualification-Gates.
 
 ### 4. Full
 
@@ -110,7 +114,7 @@ Der Diagnosemodus bleibt erhalten:
 python scripts/zs_ki_b_test_orchestration_risk_based_regression_v0_1.py --critical-timings
 ```
 
-Er misst unverändert die komplette `critical-deep`-Allowlist Modul für Modul und ist kein eigener Gate-PASS.
+Er misst die jeweils aktuelle komplette `critical-deep`-Allowlist Modul für Modul und ist kein eigener Gate-PASS.
 
 ## Gate-Policy
 
@@ -125,7 +129,7 @@ Wenn eine Änderung V25–V34 oder einen anderen nicht in `critical-fast` enthal
 
 ### Bewusster Deep-Security-Zwischengate
 
-`critical-deep` kann bei Änderungen an Authorization-, Atomic-Consume-, Persistence-, Concurrency-, Provenance- oder Trust-Grenzen zusätzlich ausgeführt werden. Da Full ohnehin alle Tests enthält, ist `critical-deep` kein zusätzlicher Pflichtlauf unmittelbar neben einem bereits erforderlichen Full-Lauf.
+`critical-deep` kann bei Änderungen an Authorization-, Atomic-Consume-, Persistence-, Concurrency-, Provenance-, Trust-, Crypto-Backend- oder Artifact-Binding-Grenzen zusätzlich ausgeführt werden. Da Full ohnehin alle Tests enthält, ist `critical-deep` kein zusätzlicher Pflichtlauf unmittelbar neben einem bereits erforderlichen Full-Lauf.
 
 ### Vor PR
 
@@ -176,6 +180,8 @@ Governance bleibt:
 Neue sicherheitsrelevante Entwicklungsblöcke müssen bei ihrem Abschluss darauf geprüft werden, ob ihr fokussiertes Testmodul in `critical-deep` und gegebenenfalls zusätzlich in `critical-fast` aufgenommen werden muss.
 
 Aufnahme in `critical-fast` erfordert sowohl hohen Sicherheitsnutzen für den schnellen Gate als auch vertretbare gemessene Laufzeit. Teure adversariale, Concurrency-, Persistence- oder Race-Tests dürfen in `critical-deep` verbleiben, solange sie durch Focused/Full an den definierten Gates weiterhin vollständig erhalten bleiben.
+
+V38 und V39 wurden bei V39-Abschlussprüfung als kurze, sicherheitsrelevante Binding-Module bewertet und deshalb in beide Profile aufgenommen.
 
 ## Abgrenzung
 
