@@ -3,7 +3,7 @@
 
 This module changes only *which existing tests are run at which development
 stage*. It does not remove tests, weaken test assertions, authorize model use,
-or make a critical-profile pass equivalent to the full suite.
+or make a fast-profile pass equivalent to the full suite.
 """
 from __future__ import annotations
 
@@ -20,11 +20,11 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-ORCHESTRATION_VERSION = "ZS-KI-B-TEST-ORCHESTRATION-RISK-BASED-REGRESSION-2026-001_v0.2"
+ORCHESTRATION_VERSION = "ZS-KI-B-TEST-ORCHESTRATION-RISK-BASED-REGRESSION-2026-001_v0.3"
 BASE_MAIN_COMMIT = "39d57ded8108b0c8f724db15d36dbce1c22bf212"
 
-# Explicit allowlist. A change here is a governance-relevant review event.
-SECURITY_CRITICAL_MODULES: tuple[str, ...] = (
+# Deep baseline: unchanged 18-module security allowlist measured at 295 tests / 875.894 s.
+SECURITY_CRITICAL_DEEP_MODULES: tuple[str, ...] = (
     "tests.synthetic.test_sem_v25_max_tokens_binding_prep_v0_1",
     "tests.synthetic.test_sem_v26_one_shot_authorization_prep_v0_1",
     "tests.synthetic.test_sem_v27_approval_ceremony_architecture_prep_v0_1",
@@ -44,6 +44,22 @@ SECURITY_CRITICAL_MODULES: tuple[str, ...] = (
     "tests.synthetic.test_sem_system_qualification_execute_v0_2_gate",
     "tests.synthetic.test_sem_system_qualification_freeze_final_v0_2",
 )
+
+# Fast iteration gate: measured remainder after the ten expensive modules.
+# Measured aggregate runtime for these eight modules: 51.465 s in the profiling run.
+SECURITY_CRITICAL_FAST_MODULES: tuple[str, ...] = (
+    "tests.synthetic.test_sem_v35_external_attestation_global_single_use_prep_v0_1",
+    "tests.synthetic.test_sem_v36_external_attestation_persistent_global_single_use_prep_v0_1",
+    "tests.synthetic.test_sem_v37_external_signature_trust_verification_prep_v0_1",
+    "tests.synthetic.test_sem_runtime_guard_frozen_suite_sweep_v0_1",
+    "tests.synthetic.test_semantic_runtime_guard_v0_1",
+    "tests.synthetic.test_sem_canonical_binding_integrity_v0_1",
+    "tests.synthetic.test_sem_system_qualification_execute_v0_2_gate",
+    "tests.synthetic.test_sem_system_qualification_freeze_final_v0_2",
+)
+
+# Backward-compatible name: must remain the deep suite, never silently weaken.
+SECURITY_CRITICAL_MODULES = SECURITY_CRITICAL_DEEP_MODULES
 
 _FOCUSED_MODULE_RE = re.compile(r"^tests\.synthetic\.test_[A-Za-z0-9_]+$")
 
@@ -73,11 +89,20 @@ def _load_named_modules(module_names: Iterable[str]) -> unittest.TestSuite:
     return suite
 
 
+def _validate_allowlist(name: str, modules: tuple[str, ...]) -> None:
+    if len(modules) != len(set(modules)):
+        raise RuntimeError(f"{name} module allowlist contains duplicates")
+
+
 def build_suite(profile: str, focused_modules: Iterable[str] = ()) -> unittest.TestSuite:
-    if profile == "critical":
-        if len(SECURITY_CRITICAL_MODULES) != len(set(SECURITY_CRITICAL_MODULES)):
-            raise RuntimeError("critical module allowlist contains duplicates")
-        return _load_named_modules(SECURITY_CRITICAL_MODULES)
+    if profile in {"critical", "critical-deep"}:
+        _validate_allowlist("critical-deep", SECURITY_CRITICAL_DEEP_MODULES)
+        return _load_named_modules(SECURITY_CRITICAL_DEEP_MODULES)
+    if profile == "critical-fast":
+        _validate_allowlist("critical-fast", SECURITY_CRITICAL_FAST_MODULES)
+        if not set(SECURITY_CRITICAL_FAST_MODULES).issubset(set(SECURITY_CRITICAL_DEEP_MODULES)):
+            raise RuntimeError("critical-fast must be a subset of critical-deep")
+        return _load_named_modules(SECURITY_CRITICAL_FAST_MODULES)
     if profile == "full":
         return unittest.defaultTestLoader.discover(
             start_dir=str(ROOT / "tests"), pattern="test*.py", top_level_dir=str(ROOT)
@@ -103,25 +128,15 @@ def run_profile(profile: str, focused_modules: Iterable[str] = (), verbosity: in
 
 
 def run_critical_module_timings(verbosity: int = 0) -> int:
-    """Run the unchanged critical allowlist module-by-module and report timings.
-
-    This is diagnostic only. It does not alter pass/fail semantics and does not
-    define a new security gate. The same modules are executed as --profile
-    critical, but each module is timed separately so expensive modules can be
-    identified before a reviewed fast/deep split is proposed.
-    """
-    if len(SECURITY_CRITICAL_MODULES) != len(set(SECURITY_CRITICAL_MODULES)):
-        raise RuntimeError("critical module allowlist contains duplicates")
-
+    """Run the unchanged deep allowlist module-by-module and report timings."""
+    _validate_allowlist("critical-deep", SECURITY_CRITICAL_DEEP_MODULES)
     rows: list[tuple[float, int, str, bool]] = []
     all_ok = True
     total_start = time.perf_counter()
-
-    print("ZS-KI-B critical timing diagnostic")
+    print("ZS-KI-B critical-deep timing diagnostic")
     print(f"orchestration_version: {ORCHESTRATION_VERSION}")
     print(f"base_main_commit: {BASE_MAIN_COMMIT}")
-
-    for module_name in SECURITY_CRITICAL_MODULES:
+    for module_name in SECURITY_CRITICAL_DEEP_MODULES:
         suite = _load_named_modules((module_name,))
         test_count = suite.countTestCases()
         start = time.perf_counter()
@@ -134,7 +149,6 @@ def run_critical_module_timings(verbosity: int = 0) -> int:
         if not ok:
             print("FAIL_CLOSED: timing diagnostic stopped after failing module", file=sys.stderr)
             break
-
     total_elapsed = time.perf_counter() - total_start
     print("\nSLOWEST_CRITICAL_MODULES")
     for elapsed, test_count, module_name, ok in sorted(rows, reverse=True)[:10]:
@@ -145,7 +159,10 @@ def run_critical_module_timings(verbosity: int = 0) -> int:
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run ZS-KI-B unittest profiles")
-    parser.add_argument("--profile", choices=("focused", "critical", "full"))
+    parser.add_argument(
+        "--profile",
+        choices=("focused", "critical-fast", "critical", "critical-deep", "full"),
+    )
     parser.add_argument(
         "--module",
         action="append",
@@ -155,7 +172,7 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--critical-timings",
         action="store_true",
-        help="diagnostic: run unchanged critical allowlist module-by-module and print timings",
+        help="diagnostic: run critical-deep module-by-module and print timings",
     )
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args(argv)
