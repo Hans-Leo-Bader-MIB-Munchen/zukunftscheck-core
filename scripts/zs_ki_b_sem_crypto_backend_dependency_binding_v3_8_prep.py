@@ -16,7 +16,8 @@ import scripts.zs_ki_b_sem_external_signature_trust_verification_v3_7_prep as v3
 PREP_VERSION = "v3.8-crypto-backend-dependency-binding-prep"
 PREP_TYPE = "ZS-KI-B-SEM-CRYPTO-BACKEND-DEPENDENCY-BINDING-PREP-2026-001"
 BASE_MAIN_COMMIT = "71d5a70420b4c976c0e822ba34514a63c6b7ac87"
-BINDING_VERSION = "ZS-KI-B-SEM-CRYPTO-BACKEND-BINDING-2026-001_v0.1"
+BINDING_VERSION = "ZS-KI-B-SEM-CRYPTO-BACKEND-BINDING-2026-001_v0.2"
+SOURCE_V37_SCRIPT_BLOB_SHA = "a7c2192983be9c580b3dd8b8e68ee3e80e7afb02"
 
 BACKEND_PACKAGE = "cryptography"
 BACKEND_VERSION = "50.0.1"
@@ -88,6 +89,7 @@ def build_backend_binding_preview() -> dict[str, Any]:
         "prep_base_main_commit": BASE_MAIN_COMMIT,
         "source_v37_prep_version": v37.PREP_VERSION,
         "source_v37_request_version": v37.REQUEST_VERSION,
+        "source_v37_script_blob_sha": SOURCE_V37_SCRIPT_BLOB_SHA,
         "backend_package": BACKEND_PACKAGE,
         "backend_version": BACKEND_VERSION,
         "backend_requirement": BACKEND_REQUIREMENT,
@@ -97,6 +99,8 @@ def build_backend_binding_preview() -> dict[str, Any]:
         "dependency_declared_in_project": False,
         "dependency_imported": False,
         "cryptographic_backend_present": False,
+        "dependency_artifact_hash_required": True,
+        "dependency_artifact_hash_verified": False,
         "cryptographic_verification_performed": False,
         "external_signature_verified": False,
         "external_verifier_identity_verified": False,
@@ -107,7 +111,7 @@ def build_backend_binding_preview() -> dict[str, Any]:
         "model_contact_authorized": False,
         "ready_for_model_contact": False,
         "model_qualified": False,
-        "status": "CRYPTO_BACKEND_DEPENDENCY_BOUND_NOT_INSTALLED_NOT_VERIFIED",
+        "status": "CRYPTO_BACKEND_DEPENDENCY_BOUND_ARTIFACT_HASH_NOT_VERIFIED_NOT_INSTALLED_NOT_VERIFIED",
     }
     binding["backend_binding_sha256"] = _sha256_payload(binding)
     return binding
@@ -115,10 +119,11 @@ def build_backend_binding_preview() -> dict[str, Any]:
 
 _BINDING_KEYS = {
     "binding_version", "prep_version", "prep_type", "prep_base_main_commit",
-    "source_v37_prep_version", "source_v37_request_version", "backend_package",
-    "backend_version", "backend_requirement", "backend_api_family", "public_key_serialization",
-    "algorithm_profiles", "dependency_declared_in_project", "dependency_imported",
-    "cryptographic_backend_present", "cryptographic_verification_performed",
+    "source_v37_prep_version", "source_v37_request_version", "source_v37_script_blob_sha",
+    "backend_package", "backend_version", "backend_requirement", "backend_api_family",
+    "public_key_serialization", "algorithm_profiles", "dependency_declared_in_project",
+    "dependency_imported", "cryptographic_backend_present", "dependency_artifact_hash_required",
+    "dependency_artifact_hash_verified", "cryptographic_verification_performed",
     "external_signature_verified", "external_verifier_identity_verified",
     "external_authority_attested", "external_trust_anchor_verified", "execution_authorized",
     "model_run_authorized", "model_contact_authorized", "ready_for_model_contact",
@@ -152,9 +157,12 @@ def build_prep_report() -> dict[str, Any]:
         "status": "PASS",
         "base_main_commit": BASE_MAIN_COMMIT,
         "backend_requirement": BACKEND_REQUIREMENT,
+        "source_v37_script_blob_sha": SOURCE_V37_SCRIPT_BLOB_SHA,
         "dependency_declared_in_project": False,
         "dependency_imported": False,
         "cryptographic_backend_present": False,
+        "dependency_artifact_hash_required": True,
+        "dependency_artifact_hash_verified": False,
         "cryptographic_verification_performed": False,
         "external_signature_verified": False,
         "external_authority_attested": False,
