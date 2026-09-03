@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from pathlib import Path
 from typing import Any
 
 import scripts.zs_ki_b_sem_external_signature_trust_verification_v3_7_prep as v37
@@ -16,7 +17,7 @@ import scripts.zs_ki_b_sem_external_signature_trust_verification_v3_7_prep as v3
 PREP_VERSION = "v3.8-crypto-backend-dependency-binding-prep"
 PREP_TYPE = "ZS-KI-B-SEM-CRYPTO-BACKEND-DEPENDENCY-BINDING-PREP-2026-001"
 BASE_MAIN_COMMIT = "71d5a70420b4c976c0e822ba34514a63c6b7ac87"
-BINDING_VERSION = "ZS-KI-B-SEM-CRYPTO-BACKEND-BINDING-2026-001_v0.2"
+BINDING_VERSION = "ZS-KI-B-SEM-CRYPTO-BACKEND-BINDING-2026-001_v0.3"
 SOURCE_V37_SCRIPT_BLOB_SHA = "a7c2192983be9c580b3dd8b8e68ee3e80e7afb02"
 
 BACKEND_PACKAGE = "cryptography"
@@ -80,8 +81,28 @@ def _require_exact_keys(payload: dict[str, Any], expected: set[str], label: str)
         )
 
 
+def _git_blob_sha1(path: str | Path) -> str:
+    try:
+        data = Path(path).read_bytes()
+    except (OSError, TypeError, ValueError) as exc:
+        raise PermissionError("V38 cannot read loaded V37 source for blob verification") from exc
+    header = f"blob {len(data)}\0".encode("ascii")
+    return hashlib.sha1(header + data).hexdigest()
+
+
+def _validate_loaded_v37_blob() -> str:
+    loaded_path = getattr(v37, "__file__", None)
+    if not isinstance(loaded_path, str) or not loaded_path:
+        raise PermissionError("V38 loaded V37 module has no source path")
+    observed = _git_blob_sha1(loaded_path)
+    if observed != SOURCE_V37_SCRIPT_BLOB_SHA:
+        raise PermissionError("V38 loaded V37 implementation blob mismatch")
+    return observed
+
+
 def build_backend_binding_preview() -> dict[str, Any]:
     """Build the exact non-executing backend/dependency selection artifact."""
+    observed_v37_blob = _validate_loaded_v37_blob()
     binding = {
         "binding_version": BINDING_VERSION,
         "prep_version": PREP_VERSION,
@@ -89,7 +110,7 @@ def build_backend_binding_preview() -> dict[str, Any]:
         "prep_base_main_commit": BASE_MAIN_COMMIT,
         "source_v37_prep_version": v37.PREP_VERSION,
         "source_v37_request_version": v37.REQUEST_VERSION,
-        "source_v37_script_blob_sha": SOURCE_V37_SCRIPT_BLOB_SHA,
+        "source_v37_script_blob_sha": observed_v37_blob,
         "backend_package": BACKEND_PACKAGE,
         "backend_version": BACKEND_VERSION,
         "backend_requirement": BACKEND_REQUIREMENT,
@@ -152,12 +173,13 @@ def reject_any_crypto_or_live_use() -> None:
 
 
 def build_prep_report() -> dict[str, Any]:
+    observed_v37_blob = _validate_loaded_v37_blob()
     return {
         "mode": "MODEL_FREE_CRYPTO_BACKEND_DEPENDENCY_BINDING_PREP",
         "status": "PASS",
         "base_main_commit": BASE_MAIN_COMMIT,
         "backend_requirement": BACKEND_REQUIREMENT,
-        "source_v37_script_blob_sha": SOURCE_V37_SCRIPT_BLOB_SHA,
+        "source_v37_script_blob_sha": observed_v37_blob,
         "dependency_declared_in_project": False,
         "dependency_imported": False,
         "cryptographic_backend_present": False,
