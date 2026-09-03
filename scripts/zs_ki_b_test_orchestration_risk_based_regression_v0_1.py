@@ -20,11 +20,11 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-ORCHESTRATION_VERSION = "ZS-KI-B-TEST-ORCHESTRATION-RISK-BASED-REGRESSION-2026-001_v0.4"
+ORCHESTRATION_VERSION = "ZS-KI-B-TEST-ORCHESTRATION-RISK-BASED-REGRESSION-2026-001_v0.5"
 BASE_MAIN_COMMIT = "39d57ded8108b0c8f724db15d36dbce1c22bf212"
 
 # Deep baseline originated as an 18-module allowlist measured at 295 tests / 875.894 s.
-# V38 and V39 are added under the maintenance rule for new security-relevant blocks.
+# V38, V39 and V40 are added under the maintenance rule for new security-relevant blocks.
 SECURITY_CRITICAL_DEEP_MODULES: tuple[str, ...] = (
     "tests.synthetic.test_sem_v25_max_tokens_binding_prep_v0_1",
     "tests.synthetic.test_sem_v26_one_shot_authorization_prep_v0_1",
@@ -41,6 +41,7 @@ SECURITY_CRITICAL_DEEP_MODULES: tuple[str, ...] = (
     "tests.synthetic.test_sem_v37_external_signature_trust_verification_prep_v0_1",
     "tests.synthetic.test_sem_v38_crypto_backend_dependency_binding_prep_v0_1",
     "tests.synthetic.test_sem_v39_crypto_artifact_runtime_binding_prep_v0_1",
+    "tests.synthetic.test_sem_v40_cryptographic_signature_verification_prep_v0_1",
     "tests.synthetic.test_sem_runtime_guard_frozen_suite_sweep_v0_1",
     "tests.synthetic.test_semantic_runtime_guard_v0_1",
     "tests.synthetic.test_sem_canonical_binding_integrity_v0_1",
@@ -49,13 +50,14 @@ SECURITY_CRITICAL_DEEP_MODULES: tuple[str, ...] = (
 )
 
 # Fast iteration gate. The original eight modules were measured at 51.465 s.
-# V38/V39 are short, security-relevant binding tests and are included from v0.4.
+# V38/V39/V40 are short, security-relevant crypto/binding tests and are included from v0.5.
 SECURITY_CRITICAL_FAST_MODULES: tuple[str, ...] = (
     "tests.synthetic.test_sem_v35_external_attestation_global_single_use_prep_v0_1",
     "tests.synthetic.test_sem_v36_external_attestation_persistent_global_single_use_prep_v0_1",
     "tests.synthetic.test_sem_v37_external_signature_trust_verification_prep_v0_1",
     "tests.synthetic.test_sem_v38_crypto_backend_dependency_binding_prep_v0_1",
     "tests.synthetic.test_sem_v39_crypto_artifact_runtime_binding_prep_v0_1",
+    "tests.synthetic.test_sem_v40_cryptographic_signature_verification_prep_v0_1",
     "tests.synthetic.test_sem_runtime_guard_frozen_suite_sweep_v0_1",
     "tests.synthetic.test_semantic_runtime_guard_v0_1",
     "tests.synthetic.test_sem_canonical_binding_integrity_v0_1",
@@ -172,7 +174,7 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--module",
         action="append",
         default=[],
-        help="focused unittest module, e.g. tests.synthetic.test_sem_v39_crypto_artifact_runtime_binding_prep_v0_1",
+        help="focused unittest module, e.g. tests.synthetic.test_sem_v40_cryptographic_signature_verification_prep_v0_1",
     )
     parser.add_argument(
         "--critical-timings",
