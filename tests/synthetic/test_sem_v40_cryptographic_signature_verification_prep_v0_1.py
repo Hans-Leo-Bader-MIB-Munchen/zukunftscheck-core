@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import importlib.metadata
 import subprocess
 import sys
-import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -12,13 +12,20 @@ import scripts.zs_ki_b_sem_cryptographic_signature_verification_v4_0_prep as v40
 try:
     from cryptography.hazmat.primitives import hashes, serialization
     from cryptography.hazmat.primitives.asymmetric import ec, ed25519, padding, rsa
-except Exception:  # tested explicitly by V40 fail-closed dependency checks
+except Exception:
     hashes = serialization = ec = ed25519 = padding = rsa = None
 
 
-@unittest.skipIf(serialization is None, "cryptography dependency not installed")
 class TestSemV40CryptographicSignatureVerificationPrep(unittest.TestCase):
     MESSAGE = b"ZS-KI-B V40 synthetic signature verification vector"
+
+    @classmethod
+    def setUpClass(cls):
+        if serialization is None:
+            raise AssertionError("V40 requires installed cryptography==50.0.1; tests must not skip this dependency")
+        observed = importlib.metadata.version("cryptography")
+        if observed != "50.0.1":
+            raise AssertionError(f"V40 requires cryptography==50.0.1, observed {observed}")
 
     @staticmethod
     def der(public_key):
@@ -32,8 +39,12 @@ class TestSemV40CryptographicSignatureVerificationPrep(unittest.TestCase):
         self.assertEqual(v40.BACKEND_REQUIREMENT, "cryptography==50.0.1")
 
     def test_02_source_blob_bindings_exact(self):
+        self.assertEqual(v40.SOURCE_V37_SCRIPT_BLOB_SHA, "a7c2192983be9c580b3dd8b8e68ee3e80e7afb02")
         self.assertEqual(v40.SOURCE_V38_SCRIPT_BLOB_SHA, "5c6ccdeeb94e086dfea48361279461c0d5cad2f8")
         self.assertEqual(v40.SOURCE_V39_SCRIPT_BLOB_SHA, "071f4d5d8ee7fa91f28a38b8cd8804be2c53b584")
+        self.assertEqual(v40._PREIMPORT_V37_BLOB, v40.SOURCE_V37_SCRIPT_BLOB_SHA)
+        self.assertEqual(v40._PREIMPORT_V38_BLOB, v40.SOURCE_V38_SCRIPT_BLOB_SHA)
+        self.assertEqual(v40._PREIMPORT_V39_BLOB, v40.SOURCE_V39_SCRIPT_BLOB_SHA)
         self.assertEqual(v40._validate_source(v40.v38, v40.SOURCE_V38_SCRIPT_BLOB_SHA, "V38"), v40.SOURCE_V38_SCRIPT_BLOB_SHA)
         self.assertEqual(v40._validate_source(v40.v39, v40.SOURCE_V39_SCRIPT_BLOB_SHA, "V39"), v40.SOURCE_V39_SCRIPT_BLOB_SHA)
 
