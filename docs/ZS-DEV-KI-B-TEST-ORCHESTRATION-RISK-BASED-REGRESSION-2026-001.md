@@ -10,62 +10,89 @@ Base main commit:
 
 Dieser Block ändert ausschließlich die Test-Ausführungsstrategie. Er löscht keine Tests, ändert keine bestehenden Testassertions und senkt keine Governance-Anforderung.
 
-Ausgangspunkt ist eine Full Suite von 1024 Tests, deren wiederholte Ausführung zuletzt rund 16–17 Minuten benötigte. Die vollständige Suite bleibt das maßgebliche Regression-Gate; sie wird lediglich nicht mehr für jede Entwicklungsiteration verlangt.
+Ausgangspunkt ist eine Full Suite von 1024 Tests mit zuletzt rund 16–17 Minuten Laufzeit. Die vollständige Suite bleibt das maßgebliche Regression-Gate, wird aber nicht mehr für jede Entwicklungsiteration verlangt.
 
-## Gemessener Zwischenbefund
+## Gemessene Profilierung
 
-Die erste Critical-Allowlist umfasste 295 Tests. Nutzerseitig gemessener Lauf:
+Erste Critical-Fassung:
 
 `Ran 295 tests in 863.064s — OK`
 
-Damit ist diese erste Critical-Fassung **nicht** als schneller Iterations-Gate geeignet. Die Testzahl sank stark, die Laufzeit jedoch nur gering gegenüber der Full Suite. Daraus folgt: Die Laufzeit wird offenbar von wenigen teuren Modulen/Tests dominiert und darf nicht allein über die Anzahl ausgewählter Tests optimiert werden.
+Modulweise Profilierung derselben 18 Module:
 
-Deshalb ist die aktuelle `critical`-Allowlist zunächst als **deep critical baseline** zu behandeln. Ein späteres `critical-fast` darf erst nach gemessener Modulprofilierung definiert werden.
+`TOTAL_CRITICAL_TIMING 875.894s  modules=18  tests=295`
 
-## Drei Testprofile
+Die zehn teuersten Module summierten sich auf 824.429 s. Die verbleibenden acht Module benötigten zusammen nur 51.465 s.
+
+Besonders teuer waren:
+
+- V29: 300.717 s
+- V27: 148.314 s
+- V28: 133.179 s
+- V33: 48.726 s
+- V32: 46.810 s
+- V30: 36.207 s
+- V26: 32.483 s
+- V34: 30.612 s
+- V31: 23.826 s
+- V25: 23.555 s
+
+Daraus folgt: Testanzahl ist kein brauchbarer Proxy für Laufzeit. Der schnelle Iterations-Gate muss laufzeitbasiert und ausdrücklich versioniert sein.
+
+## Testprofile
 
 ### 1. Focused
 
-Für den gerade bearbeiteten Block.
-
-Beispiel:
+Für den gerade bearbeiteten Block:
 
 ```powershell
 python scripts/zs_ki_b_test_orchestration_risk_based_regression_v0_1.py --profile focused --module tests.synthetic.test_sem_v37_external_signature_trust_verification_prep_v0_1
 ```
 
-Focused akzeptiert nur existierende Module mit dem Muster:
+Focused akzeptiert nur existierende Module mit dem Muster `tests.synthetic.test_<name>` und lehnt Pfadtraversal, Shell-Fragmente und Module außerhalb `tests/synthetic` fail-closed ab.
 
-`tests.synthetic.test_<name>`
+### 2. Critical Fast
 
-Pfadtraversal, Shell-Fragmente, beliebige Imports und Module außerhalb `tests/synthetic` werden fail-closed abgelehnt.
+Für normale Entwicklungsiterationen:
 
-### 2. Security-Critical Regression — aktuelle Deep-Baseline
+```powershell
+python scripts/zs_ki_b_test_orchestration_risk_based_regression_v0_1.py --profile critical-fast
+```
+
+Explizite Allowlist mit acht Modulen:
+
+- V35 External Attestation / Global Single Use Prep
+- V36 Persistent Global Single Use Requirements
+- V37 External Signature / Trust Verification Prep
+- Runtime Guard Frozen Suite Sweep
+- Semantic Runtime Guard
+- Canonical Binding Integrity
+- System Qualification Execute Gate
+- System Qualification Freeze Final
+
+Diese acht Module waren im Profilierungslauf zusammen mit 51.465 s gemessen. Diese Laufzeit ist eine Messung, kein garantiertes Budget.
+
+`critical-fast` ist zwingend eine Teilmenge von `critical-deep` und wird technisch darauf geprüft.
+
+### 3. Critical Deep
+
+Die bisherige 18-Modul-Allowlist bleibt vollständig erhalten:
+
+```powershell
+python scripts/zs_ki_b_test_orchestration_risk_based_regression_v0_1.py --profile critical-deep
+```
+
+Aus Kompatibilitäts- und Fail-Closed-Gründen bleibt auch:
 
 ```powershell
 python scripts/zs_ki_b_test_orchestration_risk_based_regression_v0_1.py --profile critical
 ```
 
-Die Critical-Suite ist eine explizite, versionierte Allowlist. Sie enthält:
+identisch zu `critical-deep`. `critical` wird **nicht** still auf die schnellere Suite umgebogen.
 
-- die Governance-/Authorization-/Persistence-/Trust-Kette V25 bis V37;
-- Runtime-Guard-Frozen-Suite-Sweep;
-- Semantic Runtime Guard;
-- Canonical Binding Integrity;
-- System Qualification Execute Gate;
-- finalen Qualification Freeze Guard.
+Critical Deep enthält weiterhin die komplette Governance-/Authorization-/Persistence-/Trust-Kette V25 bis V37 plus die globalen Runtime-/Binding-/Qualification-Gates.
 
-Die Allowlist wird nicht dynamisch aus Dateinamen oder Git-Historie erzeugt. Eine Änderung der Allowlist ist selbst reviewpflichtig.
-
-Ein Critical-PASS bedeutet ausdrücklich **nicht**:
-
-- Full Suite PASS;
-- Modellqualifikation;
-- Modell-Run-Freigabe;
-- Modellkontaktfreigabe;
-- externe Authority-/Trust-Verifikation.
-
-### 3. Full
+### 4. Full
 
 Vollständige Repository-Regression:
 
@@ -73,54 +100,48 @@ Vollständige Repository-Regression:
 python scripts/zs_ki_b_test_orchestration_risk_based_regression_v0_1.py --profile full
 ```
 
-Technisch entspricht dies weiterhin der Discovery über alle vorhandenen `test*.py` unter `tests`.
+Technisch weiterhin Discovery aller `test*.py` unter `tests`.
 
-## Critical Timing Diagnostic
+## Timing Diagnostic
 
-Zur Ursachenanalyse existiert zusätzlich ein reiner Diagnosemodus:
+Der Diagnosemodus bleibt erhalten:
 
 ```powershell
 python scripts/zs_ki_b_test_orchestration_risk_based_regression_v0_1.py --critical-timings
 ```
 
-Dieser Modus:
+Er misst unverändert die komplette `critical-deep`-Allowlist Modul für Modul und ist kein eigener Gate-PASS.
 
-- verwendet exakt dieselbe Critical-Allowlist;
-- führt jedes Critical-Modul separat mit `unittest` aus;
-- misst pro Modul die Laufzeit mit `time.perf_counter()`;
-- gibt anschließend die zehn langsamsten Module sortiert aus;
-- stoppt fail-closed beim ersten fehlschlagenden Modul;
-- verändert keine Testauswahl, Assertions oder Governance-Semantik;
-- ist ausdrücklich **nur Diagnose**, kein eigener Gate-PASS.
-
-Erst auf Basis dieser Messung wird entschieden, welche Module in ein zukünftiges `critical-fast` gehören und welche in einer `critical-deep`-Stufe verbleiben.
-
-## Gate-Policy — vorläufig bis Abschluss der Profilierung
+## Gate-Policy
 
 ### Entwicklungsiteration
 
 Pflicht:
 
 1. Focused für den aktuellen Block.
-2. Bis zum Abschluss der Profilierung: Critical nur an bewusst gesetzten Zwischen-Gates, nicht nach jedem Kleinschritt.
+2. `critical-fast`.
 
-Ein `critical-fast` wird erst nach gemessener Laufzeitanalyse eingeführt.
+Wenn eine Änderung V25–V34 oder einen anderen nicht in `critical-fast` enthaltenen Sicherheitsblock direkt berührt, muss dessen fokussiertes Testmodul zusätzlich explizit ausgeführt werden. `critical-fast` darf einen direkt betroffenen älteren Sicherheitsblock nicht ersetzen.
+
+### Bewusster Deep-Security-Zwischengate
+
+`critical-deep` kann bei Änderungen an Authorization-, Atomic-Consume-, Persistence-, Concurrency-, Provenance- oder Trust-Grenzen zusätzlich ausgeführt werden. Da Full ohnehin alle Tests enthält, ist `critical-deep` kein zusätzlicher Pflichtlauf unmittelbar neben einem bereits erforderlichen Full-Lauf.
 
 ### Vor PR
 
 Pflicht auf exakt dem vorgesehenen PR-Head:
 
-1. Focused.
-2. Critical/deep.
+1. Focused für den aktuellen Block.
+2. `critical-fast`.
 3. Full einmal vollständig.
 
 Wird der Head danach verändert, verliert der vorherige Full-PASS seine Bindung an den aktuellen Head und Full muss vor PR-Reife erneut ausgeführt werden.
 
 ### Vor Merge
 
-Ein bereits dokumentierter Full-PASS auf exakt unverändertem PR-Head kann verwendet werden. Jede Änderung des Head nach dem Full-PASS erzwingt einen neuen Full-Lauf.
+Ein dokumentierter Full-PASS auf exakt unverändertem PR-Head kann verwendet werden. Jede Änderung des Head nach dem Full-PASS erzwingt einen neuen Full-Lauf.
 
-Merge bleibt unabhängig davon separat ausdrücklich durch den Nutzer freigabepflichtig.
+Merge bleibt separat ausdrücklich durch den Nutzer freigabepflichtig.
 
 ### Post-Merge
 
@@ -138,7 +159,9 @@ Der Orchestrator:
 - führt keinen Preflight oder Model-Request aus;
 - erzeugt oder konsumiert keine Autorisierung;
 - verändert keine bestehenden fachlichen Tests;
-- macht Critical niemals zum Ersatz für Full an den definierten Gates.
+- macht `critical-fast` niemals zum Ersatz für Full an PR-/Post-Merge-Gates.
+
+Ein PASS irgendeines Testprofils bedeutet ausdrücklich keine Modellfreigabe.
 
 Governance bleibt:
 
@@ -148,13 +171,11 @@ Governance bleibt:
 
 `MODEL_QUALIFIED=false`
 
-## Pflege der Critical-Suite
+## Pflege
 
-Neue sicherheitsrelevante Entwicklungsblöcke müssen bei ihrem Abschluss darauf geprüft werden, ob ihr fokussiertes Testmodul in die Critical-Allowlist aufgenommen werden muss.
+Neue sicherheitsrelevante Entwicklungsblöcke müssen bei ihrem Abschluss darauf geprüft werden, ob ihr fokussiertes Testmodul in `critical-deep` und gegebenenfalls zusätzlich in `critical-fast` aufgenommen werden muss.
 
-Insbesondere neue Blöcke zu Autorisierung, Atomic Consume, Provenienz, Runtime Gate, Persistence / Single Use, Trust Anchor / Kryptoverifikation und Modellkontakt-Grenzen sind standardmäßig Kandidaten für die Critical-Suite.
-
-Die Aufnahme in `critical-fast` ist davon getrennt: Sie darf nur erfolgen, wenn der Sicherheitsnutzen für den schnellen Gate hoch und die Laufzeit vertretbar ist. Teure adversariale/concurrency-/persistence-intensive Tests können stattdessen in `critical-deep` verbleiben.
+Aufnahme in `critical-fast` erfordert sowohl hohen Sicherheitsnutzen für den schnellen Gate als auch vertretbare gemessene Laufzeit. Teure adversariale, Concurrency-, Persistence- oder Race-Tests dürfen in `critical-deep` verbleiben, solange sie durch Focused/Full an den definierten Gates weiterhin vollständig erhalten bleiben.
 
 ## Abgrenzung
 
