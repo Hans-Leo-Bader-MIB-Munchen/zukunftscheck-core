@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import copy
+import tempfile
 import unittest
+from pathlib import Path
+from unittest.mock import patch
 
 import scripts.zs_ki_b_sem_crypto_backend_dependency_binding_v3_8_prep as v38
 
@@ -95,6 +98,7 @@ class TestSemV38CryptoBackendDependencyBindingPrep(unittest.TestCase):
         self.assertEqual(self.binding["source_v37_prep_version"], v38.v37.PREP_VERSION)
         self.assertEqual(self.binding["source_v37_request_version"], v38.v37.REQUEST_VERSION)
         self.assertEqual(self.binding["source_v37_script_blob_sha"], "a7c2192983be9c580b3dd8b8e68ee3e80e7afb02")
+        self.assertEqual(v38._validate_loaded_v37_blob(), "a7c2192983be9c580b3dd8b8e68ee3e80e7afb02")
 
     def test_16_no_crypto_backend_import_or_verifier_helper(self):
         names = set(vars(v38))
@@ -131,6 +135,14 @@ class TestSemV38CryptoBackendDependencyBindingPrep(unittest.TestCase):
         forged["backend_binding_sha256"] = v38._sha256_payload({k: val for k, val in forged.items() if k != "backend_binding_sha256"})
         with self.assertRaises(PermissionError):
             v38.validate_backend_binding_preview(forged)
+
+    def test_22_changed_loaded_v37_source_fails_closed(self):
+        with tempfile.TemporaryDirectory() as td:
+            fake = Path(td) / "v37.py"
+            fake.write_bytes(b"changed-v37-source")
+            with patch.object(v38.v37, "__file__", str(fake)):
+                with self.assertRaises(PermissionError):
+                    v38.build_backend_binding_preview()
 
 
 if __name__ == "__main__":
