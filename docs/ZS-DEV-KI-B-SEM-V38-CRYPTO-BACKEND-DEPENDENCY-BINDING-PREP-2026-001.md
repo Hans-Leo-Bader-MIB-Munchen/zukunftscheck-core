@@ -12,11 +12,11 @@ Exact base main commit:
 
 `71d5a70420b4c976c0e822ba34514a63c6b7ac87`
 
-V37 remains the source boundary for exact public-key, signature and signed-payload bytes. V38 binds and now also verifies the exact loaded V37 implementation blob:
+V37 remains the source boundary for exact public-key, signature and signed-payload bytes. V38 binds and verifies the exact loaded V37 implementation blob:
 
 `a7c2192983be9c580b3dd8b8e68ee3e80e7afb02`
 
-Before a V38 backend binding can be built, the loaded `v37.__file__` bytes are hashed using Git's blob-object rule `SHA1("blob <len>\0" + bytes)`. A mismatch fails closed. Reusing the same V37 version labels with different source bytes therefore cannot satisfy V38.
+Before a V38 backend binding can be built, the loaded `v37.__file__` bytes are converted only from CRLF to LF when necessary and then hashed using Git's blob-object rule `SHA1("blob <len>\0" + bytes)`. Bare CR bytes are rejected. This permits normal Git/Windows line-ending checkout conversion without weakening content provenance; any other source-byte change still fails closed.
 
 ## Backend selection
 
@@ -116,7 +116,7 @@ A backend selection or dependency version pin is not evidence of artifact authen
 
 ## Tests
 
-V38 adds model-free focused tests covering exact base/package/version/algorithm bindings, actual loaded V37 source-blob verification, changed-source rejection, unsupported algorithm rejection, rehash attacks, false backend/verification escalation, dependency artifact hash required-but-unverified semantics, unconditional live-use rejection and non-authorizing report semantics.
+V38 adds model-free focused tests covering exact base/package/version/algorithm bindings, actual loaded V37 source-blob verification, changed-source rejection, Windows CRLF normalization, bare-CR rejection, unsupported algorithm rejection, rehash attacks, false backend/verification escalation, dependency artifact hash required-but-unverified semantics, unconditional live-use rejection and non-authorizing report semantics.
 
 ## Required countercheck before merge
 
@@ -124,6 +124,7 @@ Independently falsify at least:
 
 - alternate dependency/version substitution;
 - V37 source-implementation substitution while retaining version labels;
+- CRLF checkout versus real source mutation;
 - package-name lookalikes or unpinned requirements;
 - false installation-artifact hash verification;
 - algorithm downgrade/fallback;
