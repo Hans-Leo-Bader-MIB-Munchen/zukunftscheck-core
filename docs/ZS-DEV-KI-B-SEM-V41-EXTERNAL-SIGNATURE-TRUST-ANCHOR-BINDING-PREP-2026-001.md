@@ -10,7 +10,7 @@ Base main commit:
 
 ## Zweck
 
-V41 verbindet die in V40 realisierte mathematische Signaturprüfung mit einer expliziten, direkt gepinnten Signer-/Trust-Anchor-Bindung.
+V41 verbindet die in V40 realisierte mathematische Signaturprüfung mit der bereits vorhandenen V34/V36 Authority-/Attestation-Vertragskette. Der Block verwendet bewusst einen direkten Public-Key-Pin und führt noch keine Zertifikatsketten- oder externe Authority-Attestation ein.
 
 Unterstützt werden ausschließlich die bereits in V38/V40 gebundenen Profile:
 
@@ -18,16 +18,38 @@ Unterstützt werden ausschließlich die bereits in V38/V40 gebundenen Profile:
 - ECDSA-P256-SHA256
 - RSA-PSS-SHA256
 
+## Gegencheck und Reparatur
+
+Die erste V41-Fassung erlaubte, Signer-ID, Trust-Anchor-ID und Public-Key-Pin lokal gemeinsam neu zu wählen. Trotz korrekter mathematischer Signatur hätte damit ein selbst gewählter Pin `external_signature_verified=true` erzeugen können, ohne an den bestehenden V34/V36-Vertrag gebunden zu sein.
+
+Dieser Befund wurde vor der Orchestrierungsintegration repariert.
+
+V41 v0.2 verlangt nun zwingend:
+
+1. vollständige Revalidierung des V34 `authority_binding` gegen seine Quellen;
+2. vollständige Revalidierung des V36 `attestation_contract` gegen die V35/V34-Quellen;
+3. exakte Gleichheit von V36 `verifier_key_fingerprint_sha256` und V34 `bound_trust_anchor_fingerprint_sha256` für den Direct-Pin-Modus;
+4. exakte Bindung von Authority-ID und Authority-Epoch zwischen V36 und V34;
+5. SHA-256 des tatsächlich gelieferten DER/SPKI-Schlüssels muss diesem gemeinsamen Fingerprint entsprechen;
+6. SHA-256 der tatsächlich verifizierten Nachricht muss exakt `signed_payload_sha256_required` aus V36 entsprechen;
+7. erst danach darf V40 die mathematische Signaturprüfung durchführen.
+
+Damit reicht weder ein selbst gewählter Key-Pin noch eine korrekt signierte, aber nicht vertraglich gebundene Nachricht aus.
+
 ## Sicherheitsgrenze
 
-V41 unterscheidet strikt zwischen vier Aussagen:
+Ein erfolgreicher V41-Verifikationslauf darf nun aussagen:
 
-1. Die Signatur ist mathematisch gültig gegen den gelieferten öffentlichen Schlüssel.
-2. Der gelieferte öffentliche Schlüssel stimmt bytegenau per SHA-256 mit einem direkt gepinnten DER/SPKI-Schlüssel überein.
-3. Signer-ID, Key-ID, Authority-ID, Authority-Epoch und Trust-Anchor-ID sind strukturell an genau diesen Pin gebunden.
-4. Die externe Herkunft und Autorität dieses Pins ist damit **nicht** bewiesen.
+- `v36_attestation_contract_revalidated=true`
+- `v34_authority_binding_revalidated=true`
+- `direct_trust_anchor_pin_match_verified=true`
+- `signed_payload_contract_match_verified=true`
+- `cryptographic_verification_performed=true`
+- `external_signature_verified=true`
 
-Deshalb kann ein erfolgreicher V41-Lauf `external_signature_verified=true`, `direct_trust_anchor_pin_match_verified=true` und `signer_identity_binding_verified=true` liefern, während gleichzeitig zwingend gilt:
+`external_signature_verified=true` bedeutet hier präzise: Die im bereits gebundenen V36-Evidenzvertrag verlangte Nachricht trägt eine mathematisch gültige Signatur des Schlüssels, dessen DER/SPKI-SHA-256 zugleich im V36-Verifier-Key und im V34-Direct-Trust-Anchor gebunden ist.
+
+Nicht bewiesen ist weiterhin, wer diesen V34-Trust-Anchor extern autoritativ gesetzt hat. Deshalb bleiben zwingend:
 
 - `pin_external_provenance_verified=false`
 - `external_verifier_identity_verified=false`
@@ -39,42 +61,41 @@ Deshalb kann ein erfolgreicher V41-Lauf `external_signature_verified=true`, `dir
 - `ready_for_model_contact=false`
 - `model_qualified=false`
 
-Diese Trennung verhindert, dass ein lokal gesetzter Schlüssel-Pin still als extern bestätigte Autorität interpretiert wird.
-
 ## Provenienz
 
-V41 bindet den V40-Implementierungsblob exakt:
+V41 prüft vor Import die sicherheitsrelevanten Vorgängerblobs:
 
-`20ac072ba529f92fc72590ef7852547f162250f1`
+- V34: `02fc1ffe52b05ee46d5a7933c5b5e7e308c92cfe`
+- V35: `4e40f078585ef67b28aa55e923f5d76c05d4e93b`
+- V36: `a794a179f0d83bd1cde9823cdee535ce4ba01ccb`
+- V40: `20ac072ba529f92fc72590ef7852547f162250f1`
 
-Der V40-Blob wird vor dessen Import geprüft. V40 selbst prüft vor Import seiner sicherheitsrelevanten V37-V39-Vorgänger deren gebundene Source-Blobs.
+V40 selbst prüft zusätzlich seine gebundene V37-V39-Source-Chain vor Import.
 
 ## Fail-closed-Verhalten
 
 V41 verwirft insbesondere:
 
-- unbekannte Algorithmen,
-- ungültige IDs,
-- ungültige SHA-256-Pins,
-- zusätzliche oder fehlende Binding-Felder,
-- Binding-Tampering trotz formal gültiger Daten,
-- einen anderen öffentlichen Schlüssel als den direkt gepinnten,
-- falsche Nachricht,
-- falsche Signatur,
-- Cross-Algorithm-Key-Missbrauch,
-- jede V40-Provenienzabweichung.
+- einen selbst gewählten V36-Verifier-Key, der nicht dem V34-Trust-Anchor entspricht;
+- Authority-/Epoch- oder Contract-Substitution;
+- unvollständige Source-Bundles;
+- zusätzliche oder fehlende Binding-Felder;
+- Self-consistent-Rehash-Tampering;
+- einen anderen öffentlichen Schlüssel als den gemeinsam in V34/V36 gepinnten;
+- eine mathematisch korrekt signierte, aber nicht im V36-Vertrag gebundene Nachricht;
+- falsche Signaturen;
+- Algorithmus-/Key-Type-Missbrauch;
+- jede gebundene Vorgänger-Provenienzabweichung.
 
-## Abgrenzung zu V34/V36/V37
+## Abgrenzung
 
-V34 bindet strukturell Authority-/Trust-Anchor-Metadaten, ohne externe Trust-Verifikation.
+V34 stellt die strukturelle Authority-/Trust-Anchor-Bindung bereit, ohne deren externe Provenienz zu beweisen.
 
-V36 verlangt eine spätere Signatur-, Signer-Identity- und Trust-Anchor-Kettenprüfung, enthält aber noch keine konkrete Zertifikats-/Kettenstruktur.
-
-V37 bindet die späteren Crypto-Verifikationsinputs, führt jedoch selbst keine Kryptographie aus.
+V36 bindet Authority, Verifier-ID, Verifier-Key, Algorithmus und den erforderlichen Signed-Payload-Hash.
 
 V40 liefert die reale mathematische Signaturprüfung.
 
-V41 schließt nun die Lücke zwischen V40 und einem direkt gepinnten Schlüssel, ohne die noch fehlende externe Herkunfts-/Authority-Prüfung zu fingieren. Eine echte externe Trust-Anchor-/Authority-Attestation bleibt ein separater späterer Block.
+V41 kreuzbindet diese drei Ebenen erstmals operativ. Eine echte externe Bestätigung der Herkunft und Autorität des Trust Anchors bleibt ein separater späterer Block.
 
 ## Tests
 
@@ -82,7 +103,7 @@ Focused-Modul:
 
 `tests.synthetic.test_sem_v41_external_signature_trust_anchor_binding_prep_v0_1`
 
-Der fokussierte Satz umfasst gültige Signaturen aller drei Algorithmen sowie adversariale Fälle für Key-Pin, Nachricht, Algorithmus, Binding-Tampering und Governance-Eskalation.
+Die gehärtete Fassung umfasst 18 Tests, darunter gültige Signaturen aller drei Algorithmen sowie adversariale Fälle für Self-chosen-Key, Contract-Substitution, Payload-Substitution, Public-Key-Substitution, Signaturfehler, Algorithmus-/Key-Type-Mismatch, Source-Bundle-Vollständigkeit und Governance-Eskalation.
 
 ## Governance
 
