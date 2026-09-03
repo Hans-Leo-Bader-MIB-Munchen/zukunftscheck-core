@@ -12,6 +12,16 @@ Dieser Block ändert ausschließlich die Test-Ausführungsstrategie. Er löscht 
 
 Ausgangspunkt ist eine Full Suite von 1024 Tests, deren wiederholte Ausführung zuletzt rund 16–17 Minuten benötigte. Die vollständige Suite bleibt das maßgebliche Regression-Gate; sie wird lediglich nicht mehr für jede Entwicklungsiteration verlangt.
 
+## Gemessener Zwischenbefund
+
+Die erste Critical-Allowlist umfasste 295 Tests. Nutzerseitig gemessener Lauf:
+
+`Ran 295 tests in 863.064s — OK`
+
+Damit ist diese erste Critical-Fassung **nicht** als schneller Iterations-Gate geeignet. Die Testzahl sank stark, die Laufzeit jedoch nur gering gegenüber der Full Suite. Daraus folgt: Die Laufzeit wird offenbar von wenigen teuren Modulen/Tests dominiert und darf nicht allein über die Anzahl ausgewählter Tests optimiert werden.
+
+Deshalb ist die aktuelle `critical`-Allowlist zunächst als **deep critical baseline** zu behandeln. Ein späteres `critical-fast` darf erst nach gemessener Modulprofilierung definiert werden.
+
 ## Drei Testprofile
 
 ### 1. Focused
@@ -30,9 +40,7 @@ Focused akzeptiert nur existierende Module mit dem Muster:
 
 Pfadtraversal, Shell-Fragmente, beliebige Imports und Module außerhalb `tests/synthetic` werden fail-closed abgelehnt.
 
-### 2. Security-Critical Regression
-
-Für normale Entwicklungsiterationen zusätzlich zu den fokussierten Tests:
+### 2. Security-Critical Regression — aktuelle Deep-Baseline
 
 ```powershell
 python scripts/zs_ki_b_test_orchestration_risk_based_regression_v0_1.py --profile critical
@@ -65,25 +73,45 @@ Vollständige Repository-Regression:
 python scripts/zs_ki_b_test_orchestration_risk_based_regression_v0_1.py --profile full
 ```
 
-Technisch entspricht dies weiterhin der Discovery über `tests/test*.py` bzw. alle vorhandenen `test*.py` unter `tests`.
+Technisch entspricht dies weiterhin der Discovery über alle vorhandenen `test*.py` unter `tests`.
 
-## Gate-Policy
+## Critical Timing Diagnostic
+
+Zur Ursachenanalyse existiert zusätzlich ein reiner Diagnosemodus:
+
+```powershell
+python scripts/zs_ki_b_test_orchestration_risk_based_regression_v0_1.py --critical-timings
+```
+
+Dieser Modus:
+
+- verwendet exakt dieselbe Critical-Allowlist;
+- führt jedes Critical-Modul separat mit `unittest` aus;
+- misst pro Modul die Laufzeit mit `time.perf_counter()`;
+- gibt anschließend die zehn langsamsten Module sortiert aus;
+- stoppt fail-closed beim ersten fehlschlagenden Modul;
+- verändert keine Testauswahl, Assertions oder Governance-Semantik;
+- ist ausdrücklich **nur Diagnose**, kein eigener Gate-PASS.
+
+Erst auf Basis dieser Messung wird entschieden, welche Module in ein zukünftiges `critical-fast` gehören und welche in einer `critical-deep`-Stufe verbleiben.
+
+## Gate-Policy — vorläufig bis Abschluss der Profilierung
 
 ### Entwicklungsiteration
 
 Pflicht:
 
 1. Focused für den aktuellen Block.
-2. Critical.
+2. Bis zum Abschluss der Profilierung: Critical nur an bewusst gesetzten Zwischen-Gates, nicht nach jedem Kleinschritt.
 
-Full ist hier nicht standardmäßig erforderlich.
+Ein `critical-fast` wird erst nach gemessener Laufzeitanalyse eingeführt.
 
 ### Vor PR
 
 Pflicht auf exakt dem vorgesehenen PR-Head:
 
 1. Focused.
-2. Critical.
+2. Critical/deep.
 3. Full einmal vollständig.
 
 Wird der Head danach verändert, verliert der vorherige Full-PASS seine Bindung an den aktuellen Head und Full muss vor PR-Reife erneut ausgeführt werden.
@@ -109,7 +137,7 @@ Der Orchestrator:
 - führt keinen Modelltransport aus;
 - führt keinen Preflight oder Model-Request aus;
 - erzeugt oder konsumiert keine Autorisierung;
-- verändert keine bestehenden Tests;
+- verändert keine bestehenden fachlichen Tests;
 - macht Critical niemals zum Ersatz für Full an den definierten Gates.
 
 Governance bleibt:
@@ -124,19 +152,9 @@ Governance bleibt:
 
 Neue sicherheitsrelevante Entwicklungsblöcke müssen bei ihrem Abschluss darauf geprüft werden, ob ihr fokussiertes Testmodul in die Critical-Allowlist aufgenommen werden muss.
 
-Insbesondere neue Blöcke zu:
+Insbesondere neue Blöcke zu Autorisierung, Atomic Consume, Provenienz, Runtime Gate, Persistence / Single Use, Trust Anchor / Kryptoverifikation und Modellkontakt-Grenzen sind standardmäßig Kandidaten für die Critical-Suite.
 
-- Autorisierung;
-- Atomic Consume;
-- Provenienz;
-- Runtime Gate;
-- Persistence / Single Use;
-- Trust Anchor / Kryptoverifikation;
-- Modellkontakt-Grenzen
-
-sind standardmäßig Kandidaten für die Critical-Suite.
-
-Diese Pflege ist Teil des jeweiligen künftigen Entwicklungsblocks und kein automatisches Globbing.
+Die Aufnahme in `critical-fast` ist davon getrennt: Sie darf nur erfolgen, wenn der Sicherheitsnutzen für den schnellen Gate hoch und die Laufzeit vertretbar ist. Teure adversariale/concurrency-/persistence-intensive Tests können stattdessen in `critical-deep` verbleiben.
 
 ## Abgrenzung
 
