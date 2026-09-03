@@ -12,11 +12,11 @@ Exact base main commit:
 
 `71d5a70420b4c976c0e822ba34514a63c6b7ac87`
 
-V37 remains the source boundary for exact public-key, signature and signed-payload bytes. V38 binds the exact V37 implementation blob used for this preparation:
+V37 remains the source boundary for exact public-key, signature and signed-payload bytes. V38 binds and now also verifies the exact loaded V37 implementation blob:
 
 `a7c2192983be9c580b3dd8b8e68ee3e80e7afb02`
 
-This prevents a different V37 implementation with reused version labels from silently becoming the source boundary for V38.
+Before a V38 backend binding can be built, the loaded `v37.__file__` bytes are hashed using Git's blob-object rule `SHA1("blob <len>\0" + bytes)`. A mismatch fails closed. Reusing the same V37 version labels with different source bytes therefore cannot satisfy V38.
 
 ## Backend selection
 
@@ -82,7 +82,7 @@ No PKCS#1 v1.5 signature mode, alternate curve, alternate hash, `PSS.MAX_LENGTH`
 The V38 backend-binding preview binds:
 
 - exact V38 base commit;
-- exact V37 prep/request versions and exact V37 script blob SHA;
+- exact V37 prep/request versions and exact verified loaded V37 script blob SHA;
 - package name, version and requirement string;
 - backend API family;
 - canonical public-key serialization;
@@ -116,7 +116,7 @@ A backend selection or dependency version pin is not evidence of artifact authen
 
 ## Tests
 
-V38 adds model-free focused tests covering exact base/package/version/algorithm bindings, V37 source-blob provenance, unsupported algorithm rejection, rehash attacks, false backend/verification escalation, dependency artifact hash required-but-unverified semantics, unconditional live-use rejection and non-authorizing report semantics.
+V38 adds model-free focused tests covering exact base/package/version/algorithm bindings, actual loaded V37 source-blob verification, changed-source rejection, unsupported algorithm rejection, rehash attacks, false backend/verification escalation, dependency artifact hash required-but-unverified semantics, unconditional live-use rejection and non-authorizing report semantics.
 
 ## Required countercheck before merge
 
