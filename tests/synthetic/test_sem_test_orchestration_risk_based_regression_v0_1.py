@@ -13,9 +13,9 @@ class TestSemTestOrchestrationRiskBasedRegression(unittest.TestCase):
     def test_02_deep_allowlist_has_no_duplicates(self):
         self.assertEqual(len(orch.SECURITY_CRITICAL_DEEP_MODULES), len(set(orch.SECURITY_CRITICAL_DEEP_MODULES)))
 
-    def test_03_deep_allowlist_covers_v25_through_v41(self):
+    def test_03_deep_allowlist_covers_v25_through_v42(self):
         joined = "\n".join(orch.SECURITY_CRITICAL_DEEP_MODULES)
-        for version in range(25, 42):
+        for version in range(25, 43):
             self.assertIn(f"test_sem_v{version}_", joined)
 
     def test_04_deep_allowlist_covers_global_runtime_and_freeze_guards(self):
@@ -30,9 +30,9 @@ class TestSemTestOrchestrationRiskBasedRegression(unittest.TestCase):
 
     def test_05_fast_is_exact_subset_of_deep(self):
         self.assertTrue(set(orch.SECURITY_CRITICAL_FAST_MODULES).issubset(set(orch.SECURITY_CRITICAL_DEEP_MODULES)))
-        self.assertEqual(len(orch.SECURITY_CRITICAL_FAST_MODULES), 12)
+        self.assertEqual(len(orch.SECURITY_CRITICAL_FAST_MODULES), 13)
 
-    def test_06_fast_contains_v35_through_v41_and_global_guards(self):
+    def test_06_fast_contains_v35_through_v42_and_global_guards(self):
         required = {
             "tests.synthetic.test_sem_v35_external_attestation_global_single_use_prep_v0_1",
             "tests.synthetic.test_sem_v36_external_attestation_persistent_global_single_use_prep_v0_1",
@@ -41,6 +41,7 @@ class TestSemTestOrchestrationRiskBasedRegression(unittest.TestCase):
             "tests.synthetic.test_sem_v39_crypto_artifact_runtime_binding_prep_v0_1",
             "tests.synthetic.test_sem_v40_cryptographic_signature_verification_prep_v0_1",
             "tests.synthetic.test_sem_v41_external_signature_trust_anchor_binding_prep_v0_1",
+            "tests.synthetic.test_sem_v42_external_trust_anchor_provenance_authority_attestation_prep_v0_1",
             "tests.synthetic.test_sem_runtime_guard_frozen_suite_sweep_v0_1",
             "tests.synthetic.test_semantic_runtime_guard_v0_1",
             "tests.synthetic.test_sem_canonical_binding_integrity_v0_1",
@@ -54,7 +55,7 @@ class TestSemTestOrchestrationRiskBasedRegression(unittest.TestCase):
         self.assertNotEqual(orch.SECURITY_CRITICAL_MODULES, orch.SECURITY_CRITICAL_FAST_MODULES)
 
     def test_08_focused_accepts_existing_synthetic_test_module(self):
-        name = "tests.synthetic.test_sem_v41_external_signature_trust_anchor_binding_prep_v0_1"
+        name = "tests.synthetic.test_sem_v42_external_trust_anchor_provenance_authority_attestation_prep_v0_1"
         self.assertEqual(orch._validate_focused_module(name), name)
 
     def test_09_focused_rejects_non_test_module(self):
@@ -76,7 +77,7 @@ class TestSemTestOrchestrationRiskBasedRegression(unittest.TestCase):
             orch.build_suite("focused", ())
 
     def test_12_focused_rejects_duplicate_modules(self):
-        name = "tests.synthetic.test_sem_v41_external_signature_trust_anchor_binding_prep_v0_1"
+        name = "tests.synthetic.test_sem_v42_external_trust_anchor_provenance_authority_attestation_prep_v0_1"
         with self.assertRaises(ValueError):
             orch.build_suite("focused", (name, name))
 
