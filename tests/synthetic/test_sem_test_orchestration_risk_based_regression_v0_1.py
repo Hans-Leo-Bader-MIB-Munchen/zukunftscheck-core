@@ -108,6 +108,47 @@ class TestSemTestOrchestrationRiskBasedRegression(unittest.TestCase):
         self.assertNotIn("MODEL_CONTACT_AUTHORIZED", names)
         self.assertNotIn("MODEL_QUALIFIED", names)
 
+    def test_17_critical_timing_diagnostic_uses_exact_same_allowlist(self):
+        class PassingResult:
+            @staticmethod
+            def wasSuccessful():
+                return True
+
+        calls = []
+
+        def fake_load(names):
+            calls.append(tuple(names))
+            return unittest.TestSuite()
+
+        with patch.object(orch, "_load_named_modules", side_effect=fake_load), patch.object(
+            orch.unittest, "TextTestRunner"
+        ) as runner_cls, patch.object(orch.time, "perf_counter", side_effect=range(1000)):
+            runner_cls.return_value.run.return_value = PassingResult()
+            self.assertEqual(orch.run_critical_module_timings(verbosity=0), 0)
+
+        self.assertEqual(calls, [(name,) for name in orch.SECURITY_CRITICAL_MODULES])
+
+    def test_18_critical_timing_diagnostic_stops_fail_closed_on_first_failure(self):
+        class FailingResult:
+            @staticmethod
+            def wasSuccessful():
+                return False
+
+        with patch.object(orch, "_load_named_modules", return_value=unittest.TestSuite()), patch.object(
+            orch.unittest, "TextTestRunner"
+        ) as runner_cls, patch.object(orch.time, "perf_counter", side_effect=range(1000)):
+            runner_cls.return_value.run.return_value = FailingResult()
+            self.assertEqual(orch.run_critical_module_timings(verbosity=0), 1)
+            self.assertEqual(runner_cls.return_value.run.call_count, 1)
+
+    def test_19_cli_rejects_profile_plus_critical_timings(self):
+        with self.assertRaises(SystemExit):
+            orch._parse_args(["--profile", "critical", "--critical-timings"])
+
+    def test_20_cli_requires_profile_or_timing_mode(self):
+        with self.assertRaises(SystemExit):
+            orch._parse_args([])
+
 
 if __name__ == "__main__":
     unittest.main()
