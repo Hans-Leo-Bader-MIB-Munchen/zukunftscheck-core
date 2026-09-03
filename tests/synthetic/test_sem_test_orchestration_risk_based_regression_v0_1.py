@@ -13,9 +13,9 @@ class TestSemTestOrchestrationRiskBasedRegression(unittest.TestCase):
     def test_02_deep_allowlist_has_no_duplicates(self):
         self.assertEqual(len(orch.SECURITY_CRITICAL_DEEP_MODULES), len(set(orch.SECURITY_CRITICAL_DEEP_MODULES)))
 
-    def test_03_deep_allowlist_covers_v25_through_v40(self):
+    def test_03_deep_allowlist_covers_v25_through_v41(self):
         joined = "\n".join(orch.SECURITY_CRITICAL_DEEP_MODULES)
-        for version in range(25, 41):
+        for version in range(25, 42):
             self.assertIn(f"test_sem_v{version}_", joined)
 
     def test_04_deep_allowlist_covers_global_runtime_and_freeze_guards(self):
@@ -30,9 +30,9 @@ class TestSemTestOrchestrationRiskBasedRegression(unittest.TestCase):
 
     def test_05_fast_is_exact_subset_of_deep(self):
         self.assertTrue(set(orch.SECURITY_CRITICAL_FAST_MODULES).issubset(set(orch.SECURITY_CRITICAL_DEEP_MODULES)))
-        self.assertEqual(len(orch.SECURITY_CRITICAL_FAST_MODULES), 11)
+        self.assertEqual(len(orch.SECURITY_CRITICAL_FAST_MODULES), 12)
 
-    def test_06_fast_contains_v35_through_v40_and_global_guards(self):
+    def test_06_fast_contains_v35_through_v41_and_global_guards(self):
         required = {
             "tests.synthetic.test_sem_v35_external_attestation_global_single_use_prep_v0_1",
             "tests.synthetic.test_sem_v36_external_attestation_persistent_global_single_use_prep_v0_1",
@@ -40,6 +40,7 @@ class TestSemTestOrchestrationRiskBasedRegression(unittest.TestCase):
             "tests.synthetic.test_sem_v38_crypto_backend_dependency_binding_prep_v0_1",
             "tests.synthetic.test_sem_v39_crypto_artifact_runtime_binding_prep_v0_1",
             "tests.synthetic.test_sem_v40_cryptographic_signature_verification_prep_v0_1",
+            "tests.synthetic.test_sem_v41_external_signature_trust_anchor_binding_prep_v0_1",
             "tests.synthetic.test_sem_runtime_guard_frozen_suite_sweep_v0_1",
             "tests.synthetic.test_semantic_runtime_guard_v0_1",
             "tests.synthetic.test_sem_canonical_binding_integrity_v0_1",
@@ -53,7 +54,7 @@ class TestSemTestOrchestrationRiskBasedRegression(unittest.TestCase):
         self.assertNotEqual(orch.SECURITY_CRITICAL_MODULES, orch.SECURITY_CRITICAL_FAST_MODULES)
 
     def test_08_focused_accepts_existing_synthetic_test_module(self):
-        name = "tests.synthetic.test_sem_v40_cryptographic_signature_verification_prep_v0_1"
+        name = "tests.synthetic.test_sem_v41_external_signature_trust_anchor_binding_prep_v0_1"
         self.assertEqual(orch._validate_focused_module(name), name)
 
     def test_09_focused_rejects_non_test_module(self):
@@ -75,7 +76,7 @@ class TestSemTestOrchestrationRiskBasedRegression(unittest.TestCase):
             orch.build_suite("focused", ())
 
     def test_12_focused_rejects_duplicate_modules(self):
-        name = "tests.synthetic.test_sem_v40_cryptographic_signature_verification_prep_v0_1"
+        name = "tests.synthetic.test_sem_v41_external_signature_trust_anchor_binding_prep_v0_1"
         with self.assertRaises(ValueError):
             orch.build_suite("focused", (name, name))
 
@@ -111,7 +112,6 @@ class TestSemTestOrchestrationRiskBasedRegression(unittest.TestCase):
         class Failing(unittest.TestCase):
             def runTest(self):
                 self.fail("expected")
-
         with patch.object(orch, "build_suite", return_value=unittest.TestSuite([Failing()])):
             self.assertEqual(orch.run_profile("critical-fast", verbosity=0), 1)
 
@@ -119,18 +119,11 @@ class TestSemTestOrchestrationRiskBasedRegression(unittest.TestCase):
         class Passing(unittest.TestCase):
             def runTest(self):
                 self.assertTrue(True)
-
         with patch.object(orch, "build_suite", return_value=unittest.TestSuite([Passing()])):
             self.assertEqual(orch.run_profile("critical-fast", verbosity=0), 0)
 
     def test_19_runner_has_no_model_or_transport_helpers(self):
-        forbidden = {
-            "execute_once",
-            "materialize_live_authorization",
-            "_default_transport",
-            "_default_preflight",
-            "model_contact",
-        }
+        forbidden = {"execute_once", "materialize_live_authorization", "_default_transport", "_default_preflight", "model_contact"}
         self.assertTrue(forbidden.isdisjoint(set(vars(orch))))
 
     def test_20_profiles_do_not_encode_authorization_state(self):
@@ -144,19 +137,15 @@ class TestSemTestOrchestrationRiskBasedRegression(unittest.TestCase):
             @staticmethod
             def wasSuccessful():
                 return True
-
         calls = []
-
         def fake_load(names):
             calls.append(tuple(names))
             return unittest.TestSuite()
-
         with patch.object(orch, "_load_named_modules", side_effect=fake_load), patch.object(
             orch.unittest, "TextTestRunner"
         ) as runner_cls, patch.object(orch.time, "perf_counter", side_effect=range(1000)):
             runner_cls.return_value.run.return_value = PassingResult()
             self.assertEqual(orch.run_critical_module_timings(verbosity=0), 0)
-
         self.assertEqual(calls, [(name,) for name in orch.SECURITY_CRITICAL_DEEP_MODULES])
 
     def test_22_critical_timing_diagnostic_stops_fail_closed_on_first_failure(self):
@@ -164,7 +153,6 @@ class TestSemTestOrchestrationRiskBasedRegression(unittest.TestCase):
             @staticmethod
             def wasSuccessful():
                 return False
-
         with patch.object(orch, "_load_named_modules", return_value=unittest.TestSuite()), patch.object(
             orch.unittest, "TextTestRunner"
         ) as runner_cls, patch.object(orch.time, "perf_counter", side_effect=range(1000)):
