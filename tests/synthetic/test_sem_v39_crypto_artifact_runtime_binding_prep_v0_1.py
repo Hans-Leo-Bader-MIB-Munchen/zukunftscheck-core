@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -187,6 +189,25 @@ class TestSemV39CryptoArtifactRuntimeBindingPrep(unittest.TestCase):
         self.assertFalse(report["dependency_artifact_hash_verified"])
         self.assertFalse(report["dependency_installed"])
         self.assertFalse(report["model_contact_authorized"])
+
+    def test_27_direct_script_execution_from_repo_root_works(self):
+        repo_root = Path(__file__).resolve().parents[2]
+        script = repo_root / "scripts" / "zs_ki_b_sem_crypto_artifact_runtime_binding_v3_9_prep.py"
+        completed = subprocess.run(
+            [sys.executable, str(script), "--report"],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertIn('"status": "PASS"', completed.stdout)
+
+    def test_28_verify_wheel_cli_alias_maps_to_artifact_verifier(self):
+        fake_report = {"status": "BOUND_DISTRIBUTION_ARTIFACT_SHA256_VERIFIED_NOT_INSTALLED"}
+        with patch.object(v39, "verify_distribution_artifact", return_value=fake_report) as verifier:
+            self.assertEqual(v39._main(["--verify-wheel", "wheel.whl"]), 0)
+        verifier.assert_called_once_with("wheel.whl")
 
 
 if __name__ == "__main__":
