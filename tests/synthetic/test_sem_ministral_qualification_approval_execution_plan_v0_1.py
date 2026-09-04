@@ -17,7 +17,7 @@ class TestSemMinistralQualificationApprovalExecutionPlan(unittest.TestCase):
     def test_01_exact_base_and_candidate_binding(self):
         self.assertEqual(prep.BASE_MAIN_COMMIT, "06e286caaf396e17dc1b8ec44378883f4a17ffb1")
         self.assertEqual(prep.CANDIDATE_BLOB_SHA, "edaad6ff363010af5da5103f314df9f336f9c045")
-        prep._validate_candidate_source_before_import()
+        prep._validate_all_sources_before_import()
 
     def test_02_plan_is_prepared_not_authorized(self):
         plan = prep.build_approval_execution_plan()
@@ -115,18 +115,30 @@ class TestSemMinistralQualificationApprovalExecutionPlan(unittest.TestCase):
             with self.assertRaises(PermissionError):
                 prep.build_approval_execution_plan()
 
-    def test_13_changed_candidate_boundary_fails_closed(self):
+    def test_13_direct_import_source_mismatch_fails_closed_before_use(self):
+        original = prep._text_blob_sha1
+
+        def fake(path):
+            if path.name == Path(prep.SOURCE_PATHS[2][1]).name:
+                return "f" * 40
+            return original(path)
+
+        with patch.object(prep, "_text_blob_sha1", side_effect=fake):
+            with self.assertRaises(PermissionError):
+                prep._validate_all_sources_before_import()
+
+    def test_14_changed_candidate_boundary_fails_closed(self):
         with patch.object(prep.candidate_prep, "EXPECTED_RUNTIME_MODEL_ID", "other-model"):
             with self.assertRaises(PermissionError):
                 prep.build_approval_execution_plan()
 
-    def test_14_plan_hash_is_deterministic(self):
+    def test_15_plan_hash_is_deterministic(self):
         first = prep.build_approval_execution_plan()
         second = prep.build_approval_execution_plan()
         self.assertEqual(first, second)
         self.assertEqual(first["approval_execution_plan_sha256"], second["approval_execution_plan_sha256"])
 
-    def test_15_tampered_plan_rejected_even_with_recomputed_hash(self):
+    def test_16_tampered_plan_rejected_even_with_recomputed_hash(self):
         plan = prep.build_approval_execution_plan()
         tampered = copy.deepcopy(plan)
         tampered["expected_model_request_count"] = 17
@@ -136,11 +148,12 @@ class TestSemMinistralQualificationApprovalExecutionPlan(unittest.TestCase):
         with self.assertRaises(PermissionError):
             prep.validate_approval_execution_plan(tampered)
 
-    def test_16_report_is_fully_model_free(self):
+    def test_17_report_is_fully_model_free(self):
         report = prep.build_report()
         self.assertEqual(report["mode"], "MODEL_FREE_MINISTRAL_QUALIFICATION_APPROVAL_EXECUTION_PREP")
         self.assertEqual(report["status"], "PASS")
         self.assertEqual(report["governance_status"], "PREPARED_NOT_AUTHORIZED")
+        self.assertTrue(report["all_direct_import_sources_verified_before_import"])
         for key in (
             "explicit_user_approval_recorded", "approval_secret_generated", "challenge_persisted",
             "approval_proof_materialized", "gate_claim_persisted", "authorization_consumed",
@@ -149,7 +162,7 @@ class TestSemMinistralQualificationApprovalExecutionPlan(unittest.TestCase):
         ):
             self.assertIs(report[key], False, key)
 
-    def test_17_module_has_no_execution_or_materialization_entrypoint(self):
+    def test_18_module_has_no_execution_or_materialization_entrypoint(self):
         names = set(vars(prep))
         for forbidden in (
             "execute_once", "_default_transport", "_default_preflight",
