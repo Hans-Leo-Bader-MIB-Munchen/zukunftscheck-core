@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import ast
 import inspect
+import subprocess
+import sys
 import unittest
+from pathlib import Path
 
 import scripts.zs_ki_b_sem_ministral_human_gold_offline_evaluator_v0_1 as evaluator
 
@@ -79,6 +82,19 @@ class MinistralHumanGoldOfflineEvaluatorV01Tests(unittest.TestCase):
         source = inspect.getsource(evaluator.evaluate_result)
         self.assertIn("deliberately never stops at first case FAIL", source)
         self.assertNotIn("break", source)
+
+    def test_direct_script_invocation_resolves_repo_imports(self) -> None:
+        root = Path(__file__).resolve().parents[2]
+        script = root / "scripts" / "zs_ki_b_sem_ministral_human_gold_offline_evaluator_v0_1.py"
+        completed = subprocess.run(
+            [sys.executable, str(script), "--help"],
+            cwd=root,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertIn("Offline-only evaluator", completed.stdout)
 
 
 if __name__ == "__main__":
