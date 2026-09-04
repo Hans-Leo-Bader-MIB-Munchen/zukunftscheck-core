@@ -1,0 +1,28 @@
+{
+  "binding_version": "ZS-KI-B-SEM-AI-ASSISTED-DEVELOPMENT-PREP-FREEZE-BINDING-2026-001_v0.1",
+  "status": "STATIC_PREP_BINDING_ONLY",
+  "execution_authorized": false,
+  "model_contact_authorized": false,
+  "preflight_authorized": false,
+  "qualification_claim_allowed": false,
+  "ordered_case_ids_sha256": "b02bc870f83c322cd000f47e2000a1e17617f465293afb990ff949f534c6b2e8",
+  "bindings": {
+    "manifest_candidate": {
+      "path": "tests/fixtures/zs_ki_b_sem_ai_assisted_development_manifest_candidate_v0_1.json",
+      "git_blob_sha": "b2f15027db33be8763831b2d1276bc1a90258bf7"
+    },
+    "runner_candidate": {
+      "path": "scripts/zs_ki_b_sem_ai_assisted_development_runner_candidate_v0_1.py",
+      "git_blob_sha": "b7e8691506faea29955be255a46aa8040e94c36c"
+    },
+    "manifest_static_test": {
+      "path": "tests/synthetic/test_sem_ai_assisted_development_manifest_candidate_v0_1.py",
+      "git_blob_sha": "c94f2f58e005e3f5ccbaf6443345e87c085e3479"
+    },
+    "runner_static_test": {
+      "path": "tests/synthetic/test_sem_ai_assisted_development_runner_candidate_v0_1.py",
+      "git_blob_sha": "ec566269c811a19f8b9d269ff10faad8bded2bdf"
+    }
+  },
+  "hard_stop": "NO_MODEL_CONTACT_WITHOUT_SEPARATE_EXPLICIT_USER_AUTHORIZATION"
+}
