@@ -47,7 +47,7 @@ Die Security-Quellen werden als Git-Blob-OIDs am gebundenen `main`-Commit eingef
 
 ## Laufgrenzen
 
-- synthetisch בלבד / `SYNTHETIC_ONLY`;
+- ausschließlich synthetische Daten (`SYNTHETIC_ONLY`);
 - exakt 16 Requests;
 - Loopback `http://127.0.0.1:1234/v1`;
 - `max_tokens=2048`;
