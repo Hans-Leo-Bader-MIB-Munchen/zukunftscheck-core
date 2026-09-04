@@ -41,10 +41,18 @@ def _git_blob_at(commit: str, path: str) -> str:
 
 
 def _git_text_blob_sha1(path: Path) -> str:
-    data = path.read_bytes().replace(b"\r\n", b"\n")
+    try:
+        data = path.read_bytes().replace(b"\r\n", b"\n")
+    except (OSError, TypeError, ValueError) as exc:
+        raise PermissionError(f"cannot read re-entry source: {path}") from exc
     if b"\r" in data:
         raise PermissionError("re-entry source contains bare CR bytes")
     return hashlib.sha1(f"blob {len(data)}\0".encode("ascii") + data).hexdigest()
+
+
+def _require_worktree_blob(path: str, expected: str, label: str) -> None:
+    if _git_text_blob_sha1(ROOT / path) != expected:
+        raise PermissionError(f"{label} worktree blob mismatch")
 
 
 def _validate_sources_before_import() -> None:
@@ -71,12 +79,16 @@ def _stable_sha256(value: Any) -> str:
 
 
 def _validate_frozen_supplements() -> dict[str, Any]:
-    if _git_blob_at(BASE_MAIN_COMMIT, FREEZE_PATH) != V07_FREEZE_MANIFEST_BLOB_SHA:
-        raise PermissionError("qualification freeze manifest changed")
-    if _git_blob_at(BASE_MAIN_COMMIT, HUMAN_GOLD_PATH) != EXPECTED_HUMAN_GOLD_BLOB_SHA:
-        raise PermissionError("human gold changed")
-    if _git_blob_at(BASE_MAIN_COMMIT, QUALIFICATION_POLICY_PATH) != EXPECTED_POLICY_BLOB_SHA:
-        raise PermissionError("qualification policy changed")
+    expected_git = {
+        FREEZE_PATH: V07_FREEZE_MANIFEST_BLOB_SHA,
+        HUMAN_GOLD_PATH: EXPECTED_HUMAN_GOLD_BLOB_SHA,
+        QUALIFICATION_POLICY_PATH: EXPECTED_POLICY_BLOB_SHA,
+    }
+    for path, expected in expected_git.items():
+        if _git_blob_at(BASE_MAIN_COMMIT, path) != expected:
+            raise PermissionError(f"bound main artifact changed: {path}")
+        _require_worktree_blob(path, expected, path)
+
     freeze = json.loads((ROOT / FREEZE_PATH).read_text(encoding="utf-8"))
     if freeze.get("status") != "HUMAN_APPROVED_FROZEN":
         raise PermissionError("human-approved qualification freeze missing")
@@ -87,6 +99,8 @@ def _validate_frozen_supplements() -> dict[str, Any]:
         raise PermissionError("freeze human-gold binding mismatch")
     if artifacts.get("human_gold", {}).get("model_visible") is not False:
         raise PermissionError("human gold must remain model-invisible")
+    if artifacts.get("qualification_policy", {}).get("git_blob_sha") != EXPECTED_POLICY_BLOB_SHA:
+        raise PermissionError("freeze qualification-policy binding mismatch")
     return freeze
 
 
@@ -97,6 +111,8 @@ def build_reentry_manifest() -> dict[str, Any]:
     checks = integrity.validate_current_worktree_binding()
     if not checks or not all(checks.values()):
         raise PermissionError("canonical qualification binding is not exact")
+    if tuple(snapshot["ordered_case_ids"]) != integrity.EXPECTED_ORDERED_CASE_IDS:
+        raise PermissionError("re-entry ordered case IDs changed")
     if len(snapshot["ordered_case_ids"]) != 16:
         raise PermissionError("re-entry requires exact 16-case suite")
     if v25.EXPECTED_MODEL_REQUEST_COUNT != 16 or v25.MAX_TOKENS != 2048:
