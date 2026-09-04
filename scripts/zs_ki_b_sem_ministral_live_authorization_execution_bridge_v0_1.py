@@ -25,7 +25,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 BRIDGE_BASE_MAIN_COMMIT = "4cad196736fabd0a7baee85ba3930cec3d15a8c4"
-BRIDGE_VERSION = "ZS-KI-B-SEM-MINISTRAL-LIVE-AUTHORIZATION-EXECUTION-BRIDGE-2026-001_v0.1"
+BRIDGE_VERSION = "ZS-KI-B-SEM-MINISTRAL-LIVE-AUTHORIZATION-EXECUTION-BRIDGE-2026-001_v0.2"
 BRIDGE_TYPE = "ZS-DEV-KI-B-SEM-MINISTRAL-LIVE-AUTHORIZATION-EXECUTION-BRIDGE-2026-001"
 PLAN_PATH = "scripts/zs_ki_b_sem_ministral_qualification_approval_execution_plan_v0_1.py"
 PLAN_BLOB_SHA = "6ee75efa9949c0678b25aaa1b19fbd60d36f7493"
@@ -107,7 +107,6 @@ def _is_external_path(path: Path) -> bool:
         resolved = path.resolve(strict=False)
         return resolved != resolved_root and resolved_root not in resolved.parents
     except (OSError, RuntimeError, ValueError):
-        # Windows paths can be evaluated syntactically when tests run elsewhere.
         try:
             win_root = PureWindowsPath(str(ROOT))
             win_path = PureWindowsPath(str(path))
@@ -151,6 +150,9 @@ def _validate_runtime_boundary(*, approval_text: str, consumption_path: Path, re
 
 
 def _validate_frozen_plan() -> dict[str, Any]:
+    # Revalidate exact source bytes on every report/materialization/execution path,
+    # not only once at module import. This closes post-import worktree drift.
+    _validate_bound_sources_before_import()
     plan = plan_prep.build_approval_execution_plan()
     plan_prep.validate_approval_execution_plan(plan)
     if plan["status"] != "PREPARED_NOT_AUTHORIZED":
@@ -169,12 +171,6 @@ def _validate_frozen_plan() -> dict[str, Any]:
 
 
 def materialize_live_authorization(*, approval_text: str, consumption_path: Path, result_path: Path) -> dict[str, Any]:
-    """Materialize one exact V25 authorization in memory after all runtime gates pass.
-
-    The returned object is not persisted by this function. The only intended
-    positive use is immediate handoff to execute_approved_once(), which calls
-    V25 execute_once(); V25 atomically consumes it before preflight/contact.
-    """
     head = _validate_runtime_boundary(
         approval_text=approval_text,
         consumption_path=consumption_path,
@@ -207,12 +203,6 @@ def materialize_live_authorization(*, approval_text: str, consumption_path: Path
 
 
 def execute_approved_once(*, approval_text: str, consumption_path: Path, result_path: Path) -> dict[str, Any]:
-    """Execute exactly once through V25 after exact current-main approval.
-
-    No preflight or transport occurs in this bridge before V25 execute_once().
-    V25 performs atomic authorization consumption before its preflight and before
-    the first possible model contact.
-    """
     authorization = materialize_live_authorization(
         approval_text=approval_text,
         consumption_path=consumption_path,
@@ -245,6 +235,7 @@ def build_bridge_report() -> dict[str, Any]:
         "bound_v25_blob_sha": V25_BLOB_SHA,
         "positive_live_materializer_present": callable(materialize_live_authorization),
         "positive_execute_bridge_present": callable(execute_approved_once),
+        "source_bytes_revalidated_on_each_gate_path": True,
         "new_exact_current_main_user_approval_required": True,
         "authorization_materialized_by_report": False,
         "authorization_consumed_by_report": False,
@@ -264,7 +255,6 @@ def _read_approval_file(path: Path) -> str:
         raw = path.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError) as exc:
         raise PermissionError("cannot read approval file") from exc
-    # One optional terminal newline is tolerated; internal/other whitespace is exact.
     if raw.endswith("\r\n"):
         raw = raw[:-2]
     elif raw.endswith("\n"):
