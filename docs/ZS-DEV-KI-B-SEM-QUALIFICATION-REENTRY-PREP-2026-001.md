@@ -39,6 +39,47 @@ Dessen wesentliche bereits implementierte Grenzen sind:
 - erfolgreicher Lauf endet bei `AWAITING_HUMAN_REVIEW`;
 - `model_qualified=false`, bis eine getrennte Human-Gold-Auswertung erfolgt.
 
+## Re-entry-Manifest v0.1
+
+Implementiert als:
+
+`scripts/zs_ki_b_sem_qualification_reentry_manifest_v0_1.py`
+
+Das Manifest komponiert die bereits vorhandenen Bindungen und erzeugt keine neuen fachlichen Kopien.
+
+Es bindet insbesondere:
+
+- gesicherten V42-`main`-Stand `a3bdf89d4aab82e346a1bdec37285743efc993d8`;
+- Canonical-Binding-Integrity-Implementierung Git-Blob `1b7d5f81995036561718885555fe793bd05c15c6`;
+- V25-Runner Git-Blob `9ac29c25b47cbd7762a3d8ee30de7f72e20ae866`;
+- den kanonischen 16-Fall-Snapshot und dessen Reihenfolge;
+- Meaning Layer v0.7 über den bestehenden Canonical-Binding-Snapshot;
+- den dort gebundenen Prompt- und Response-Schema-Stand;
+- Human Gold Git-Blob `704adbd930c042b132a34bb9ddc95b4531f336b2`, weiterhin `model_visible=false`;
+- Qualification Policy Git-Blob `9bc06b2648b05f9bb1d464e019e23f8afd82570b`;
+- Human-approved Freeze Manifest Git-Blob `e79be6a40bc2bfd7498bc32399301b03a62c2275`;
+- Modell-ID `qwen3-14b`;
+- Loopback `http://127.0.0.1:1234/v1`;
+- `expected_model_request_count=16`;
+- `max_tokens=2048`;
+- `retry_count=0`;
+- `output_repair=false`;
+- Residual-Risk-Register Issue #130.
+
+Die Frozen-Supplements werden sowohl gegen den gebundenen Base-Commit als auch gegen die aktuelle Worktree-Datei geprüft. Damit darf ein lokal veränderter Freeze-/Human-Gold-/Policy-Worktree nicht still in das Re-entry-Paket gelangen.
+
+Der Manifeststatus lautet ausschließlich:
+
+`PREPARED_NOT_AUTHORIZED`
+
+Das Authorization Gate bleibt:
+
+`CLOSED`
+
+und enthält ausdrücklich:
+
+`no_execution_from_manifest=true`
+
 ## Re-entry-Prüfung vor jeder späteren Lauf-Freigabe
 
 Vor einer neuen expliziten Einzellauf-Freigabe müssen mindestens geprüft und eingefroren werden:
@@ -57,6 +98,20 @@ Vor einer neuen expliziten Einzellauf-Freigabe müssen mindestens geprüft und e
 12. aktueller Authorization-/Consumption-/Gate-Pfad einschließlich der nach V25 aufgebauten Security-Kette;
 13. offene Architekturpunkte aus Issue #130 bleiben registriert und werden durch eine synthetische Qualifikation nicht geschlossen.
 
+## Fokussierte Tests
+
+Testmodul:
+
+`tests.synthetic.test_sem_qualification_reentry_manifest_v0_1`
+
+Es prüft insbesondere Source-/Freeze-Bindungen, 16-Fall-Reihenfolge, V25-Requestgrenzen, Human-Gold-Modellunsichtbarkeit, geschlossenes Authorization Gate, deterministischen Manifest-Hash, Fail-closed bei Manipulation und das Fehlen eines Execution-/Transport-Entrypoints im Re-entry-Modul.
+
+Ausführung:
+
+```powershell
+python -m unittest tests.synthetic.test_sem_qualification_reentry_manifest_v0_1 -v
+```
+
 ## Governance
 
 Bis zu einer späteren ausdrücklich formulierten, exakt gebundenen Einzellauf-Freigabe gilt unverändert:
@@ -69,6 +124,6 @@ Bis zu einer späteren ausdrücklich formulierten, exakt gebundenen Einzellauf-F
 
 Der Abschluss dieses Prep-Blocks ist keine Modellfreigabe.
 
-## Nächste technische Aufgabe
+## Nächster Gate-Schritt
 
-Als nächstes wird ein model-free Re-entry-Manifest/Pre-Run-Paket erzeugt, das den aktuellen `main`-Stand mit den bestehenden fachlichen Qualifikationsartefakten und dem führenden Runner verknüpft. Dieses Paket muss vor jeder späteren Autorisierung vollständig prüfbar sein und darf selbst keine Autorisierungsbits auf `true` setzen.
+Nach GREEN der fokussierten Re-entry-Tests folgt der Gegencheck des erzeugten Manifests. Erst danach wird entschieden, ob für diesen kleinen Prep-Block `critical-fast`/Full erforderlich ist und ob ein PR vorbereitet wird. Eine spätere Einzellauf-Freigabe bleibt davon strikt getrennt.
