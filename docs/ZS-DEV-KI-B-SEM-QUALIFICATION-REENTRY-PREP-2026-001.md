@@ -31,7 +31,7 @@ Beim ersten fokussierten Re-entry-Test wurde eine wichtige Inkonsistenz sichtbar
 - Runtime Model ID: `ministral-3-14b-instruct-2512`
 - Model Repository: `mistralai/Ministral-3-14B-Instruct-2512-GGUF`
 
-Diese bestehende Repository-Bindung wird im Re-entry-Manifest nun exakt wiedergegeben. Daraus wird ausdrücklich **nicht** abgeleitet, dass Ministral automatisch das neu zu qualifizierende Zielmodell sein soll. Die Modellziel-Entscheidung muss vor jeder späteren Einzellauf-Freigabe separat und ausdrücklich getroffen werden.
+Diese Bindung ist nicht neu im Re-entry entschieden worden, sondern bereits Bestandteil des bestehenden V19→V25-Qualifikationspfads. Für diesen Re-entry gilt Ministral deshalb als bereits gebundenes Zielmodell. Ein späterer Wechsel auf ein anderes Modell wäre ein eigener, ausdrücklich versionierter Modellwechsel und keine stillschweigende Re-entry-Änderung.
 
 Die weiteren bereits implementierten Grenzen des V25-Pfads sind:
 
@@ -46,7 +46,7 @@ Die weiteren bereits implementierten Grenzen des V25-Pfads sind:
 - erfolgreicher Lauf endet bei `AWAITING_HUMAN_REVIEW`;
 - `model_qualified=false`, bis eine getrennte Human-Gold-Auswertung erfolgt.
 
-## Re-entry-Manifest v0.2
+## Re-entry-Manifest v0.3
 
 Implementiert als:
 
@@ -67,6 +67,7 @@ Es bindet insbesondere:
 - Human-approved Freeze Manifest Git-Blob `e79be6a40bc2bfd7498bc32399301b03a62c2275`;
 - aktuelle V25-Runtime-Modellbindung `ministral-3-14b-instruct-2512`;
 - Repository-Bindung `mistralai/Ministral-3-14B-Instruct-2512-GGUF`;
+- Zielmodell-Bindungsquelle `EXISTING_V19_V25_RUNNER_BINDING`;
 - Loopback `http://127.0.0.1:1234/v1`;
 - `expected_model_request_count=16`;
 - `max_tokens=2048`;
@@ -78,7 +79,7 @@ Die Frozen-Supplements werden sowohl gegen den gebundenen Base-Commit als auch g
 
 Der Manifeststatus lautet:
 
-`PREPARED_NOT_AUTHORIZED_MODEL_TARGET_DECISION_REQUIRED`
+`PREPARED_NOT_AUTHORIZED`
 
 Das Authorization Gate bleibt:
 
@@ -86,8 +87,13 @@ Das Authorization Gate bleibt:
 
 und enthält ausdrücklich:
 
-- `no_execution_from_manifest=true`
-- `model_target_must_be_explicitly_resolved_before_approval=true`
+`no_execution_from_manifest=true`
+
+Die Zielmodellfrage ist im Re-entry **nicht offen**:
+
+`qualification_target_decision_required=false`
+
+weil die Bindung aus dem bestehenden V19→V25-Runnerpfad übernommen wird.
 
 ## Re-entry-Prüfung vor jeder späteren Lauf-Freigabe
 
@@ -100,8 +106,8 @@ Vor einer neuen expliziten Einzellauf-Freigabe müssen mindestens geprüft und e
 5. exakter Meaning-Layer-Stand;
 6. exakter Semantikvertrag;
 7. exakter Prompt;
-8. **explizite Entscheidung über das tatsächlich zu qualifizierende Modell**;
-9. exakte Runtime-Modell-ID und Repository-Bindung passend zu dieser Entscheidung;
+8. exakte bestehende Runtime-Modell-ID `ministral-3-14b-instruct-2512`;
+9. exakte Repository-Bindung `mistralai/Ministral-3-14B-Instruct-2512-GGUF`;
 10. Loopback-Endpunkt;
 11. Kontext-/Request-Grenzen einschließlich `max_tokens=2048`;
 12. keine Retry-/Repair-/Rerun-Freigabe;
@@ -114,7 +120,7 @@ Testmodul:
 
 `tests.synthetic.test_sem_qualification_reentry_manifest_v0_1`
 
-Es prüft insbesondere Source-/Freeze-Bindungen, 16-Fall-Reihenfolge, tatsächliche V25-Modell-/Requestgrenzen, Human-Gold-Modellunsichtbarkeit, geschlossenes Authorization Gate, die verpflichtende Modellziel-Entscheidung, deterministischen Manifest-Hash, Fail-closed bei Manipulation und das Fehlen eines Execution-/Transport-Entrypoints im Re-entry-Modul.
+Es prüft insbesondere Source-/Freeze-Bindungen, 16-Fall-Reihenfolge, tatsächliche V25-Modell-/Requestgrenzen, Human-Gold-Modellunsichtbarkeit, geschlossenes Authorization Gate, die bestehende Ministral-Zielbindung, deterministischen Manifest-Hash, Fail-closed bei Manipulation und das Fehlen eines Execution-/Transport-Entrypoints im Re-entry-Modul.
 
 Ausführung:
 
@@ -136,4 +142,4 @@ Der Abschluss dieses Prep-Blocks ist keine Modellfreigabe.
 
 ## Nächster Gate-Schritt
 
-Nach GREEN der fokussierten Re-entry-Tests folgt der Gegencheck des erzeugten Manifests. Danach muss zuerst die Modellziel-Frage explizit entschieden werden. Erst anschließend kann ein passendes, exakt gebundenes Pre-Run-Paket für dieses Zielmodell vorbereitet werden. Eine spätere Einzellauf-Freigabe bleibt davon strikt getrennt.
+Nach GREEN der fokussierten Re-entry-Tests folgt der Gegencheck des erzeugten Manifests. Erst danach wird entschieden, ob für diesen Prep-Block `critical-fast` und Full erforderlich sind und ob ein PR vorbereitet wird. Eine spätere Einzellauf-Freigabe bleibt davon strikt getrennt.
