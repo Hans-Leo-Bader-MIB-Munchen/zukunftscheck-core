@@ -43,15 +43,14 @@ class TestSemQualificationReentryManifest(unittest.TestCase):
         self.assertEqual(manifest["retry_count"], 0)
         self.assertIs(manifest["output_repair"], False)
 
-    def test_05_manifest_keeps_authorization_gate_closed_and_requires_target_decision(self):
+    def test_05_manifest_keeps_authorization_gate_closed_and_target_resolved(self):
         manifest = prep.build_reentry_manifest()
-        self.assertEqual(manifest["status"], "PREPARED_NOT_AUTHORIZED_MODEL_TARGET_DECISION_REQUIRED")
+        self.assertEqual(manifest["status"], "PREPARED_NOT_AUTHORIZED")
         self.assertEqual(manifest["authorization_gate"]["state"], "CLOSED")
         self.assertIs(manifest["authorization_gate"]["explicit_user_single_run_approval_required"], True)
-        self.assertIs(manifest["authorization_gate"]["model_target_must_be_explicitly_resolved_before_approval"], True)
         self.assertIs(manifest["authorization_gate"]["no_execution_from_manifest"], True)
-        self.assertIs(manifest["qualification_target_decision_required"], True)
-        self.assertIs(manifest["qualification_target_not_inferred_from_prior_chat"], True)
+        self.assertIs(manifest["qualification_target_decision_required"], False)
+        self.assertEqual(manifest["qualification_target_binding_source"], "EXISTING_V19_V25_RUNNER_BINDING")
         for key in (
             "execution_authorized", "model_run_authorized", "model_contact_authorized",
             "model_contact_performed", "model_qualified", "benchmark_approved",
@@ -96,11 +95,12 @@ class TestSemQualificationReentryManifest(unittest.TestCase):
             with self.assertRaises(PermissionError):
                 prep.build_reentry_manifest()
 
-    def test_12_report_is_model_free_not_authorized_and_target_unresolved(self):
+    def test_12_report_is_model_free_not_authorized_and_target_resolved(self):
         report = prep.build_report()
         self.assertEqual(report["mode"], "MODEL_FREE_QUALIFICATION_REENTRY_PREP")
-        self.assertEqual(report["status"], "PASS_TARGET_DECISION_REQUIRED")
-        self.assertIs(report["qualification_target_decision_required"], True)
+        self.assertEqual(report["status"], "PASS")
+        self.assertIs(report["qualification_target_decision_required"], False)
+        self.assertEqual(report["qualification_target_binding_source"], "EXISTING_V19_V25_RUNNER_BINDING")
         for key in (
             "execution_authorized", "model_run_authorized", "model_contact_authorized",
             "model_contact_performed", "model_qualified",
