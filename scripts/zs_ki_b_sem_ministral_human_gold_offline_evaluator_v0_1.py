@@ -10,13 +10,17 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from core.validation.semantic_boundary_v0_2 import validate_semantic_response_v0_2
 
-ROOT = Path(__file__).resolve().parents[1]
 EVALUATOR_VERSION = "ZS-KI-B-SEM-MINISTRAL-HUMAN-GOLD-OFFLINE-EVALUATOR-2026-001_v0.1"
 WORK_BLOCK = "ZS-DEV-KI-B-SEM-MINISTRAL-HUMAN-GOLD-OFFLINE-EVALUATION-2026-001"
 EXPECTED_V25_RUNNER_VERSION = "v2.5-max-tokens-binding-prep"
@@ -91,7 +95,6 @@ def _gold_set(case_gold: dict[str, Any], key: str) -> set[tuple[str, str]]:
 
 
 def evaluate_gold(case_gold: dict[str, Any], response: dict[str, Any]) -> dict[str, Any]:
-    """Exact semantic interpretation carried forward from runner v0.8."""
     actual = _assignment_set(response)
     required = _gold_set(case_gold, "expected_assignments")
     optional = _gold_set(case_gold, "optional_assignments")
@@ -99,10 +102,8 @@ def evaluate_gold(case_gold: dict[str, Any], response: dict[str, Any]) -> dict[s
     missing = required - actual
     forbidden_present = forbidden & actual
     spurious = actual - required - optional
-    conflict_actual = any(
-        isinstance(p, dict) and bool(p.get("conflict_candidate_refs"))
-        for p in response.get("proposals", [])
-    )
+    proposals = response.get("proposals", [])
+    conflict_actual = any(isinstance(p, dict) and bool(p.get("conflict_candidate_refs")) for p in proposals if isinstance(proposals, list))
     conflict_expected = case_gold.get("expected_conflict_candidate")
     conflict_match = True if conflict_expected is None else conflict_actual is bool(conflict_expected)
     return {
@@ -123,16 +124,9 @@ def evaluate_gold(case_gold: dict[str, Any], response: dict[str, Any]) -> dict[s
 def evaluate_boundary(case: dict[str, Any], response: dict[str, Any]) -> dict[str, Any]:
     allowed = {row["source_location_id"] for row in case["source_locations"]}
     target = case["target_source_location_id"]
-    issues = validate_semantic_response_v0_2(
-        response,
-        allowed_source_location_ids=allowed,
-        target_source_location_id=target,
-    )
+    issues = validate_semantic_response_v0_2(response, allowed_source_location_ids=allowed, target_source_location_id=target)
     rendered = [issue.to_dict() for issue in issues]
-    return {
-        "passed": not rendered and response.get("source_location_id") == target,
-        "issues": rendered,
-    }
+    return {"passed": not rendered and response.get("source_location_id") == target, "issues": rendered}
 
 
 def _parse_preserved_response(case_row: dict[str, Any]) -> dict[str, Any]:
@@ -148,12 +142,7 @@ def _parse_preserved_response(case_row: dict[str, Any]) -> dict[str, Any]:
 
 
 def _count_issue_code(case_reports: list[dict[str, Any]], code: str) -> int:
-    return sum(
-        1
-        for row in case_reports
-        for issue in row.get("boundary_evaluation", {}).get("issues", [])
-        if issue.get("code") == code
-    )
+    return sum(1 for row in case_reports for issue in row.get("boundary_evaluation", {}).get("issues", []) if issue.get("code") == code)
 
 
 def evaluate_result(result: dict[str, Any]) -> dict[str, Any]:
@@ -210,10 +199,7 @@ def evaluate_result(result: dict[str, Any]) -> dict[str, Any]:
     missing_required_total = sum(len(row["gold_evaluation"].get("missing_required", [])) for row in case_reports)
     spurious_total = sum(len(row["gold_evaluation"].get("spurious_assignments", [])) for row in case_reports)
     forbidden_total = sum(len(row["gold_evaluation"].get("forbidden_present", [])) for row in case_reports)
-    conflict_mismatches = sum(
-        1 for row in case_reports
-        if row["gold_evaluation"].get("conflict_candidate_match") is False
-    )
+    conflict_mismatches = sum(1 for row in case_reports if row["gold_evaluation"].get("conflict_candidate_match") is False)
     challenge_ids = list(policy.get("challenge_semantics", {}).keys())
     challenge_pass_count = sum(1 for row in case_reports if row["case_id"] in challenge_ids and row["case_passed"])
     boundary_pass_count = sum(1 for row in case_reports if row["boundary_evaluation"]["passed"])
@@ -256,11 +242,7 @@ def evaluate_result(result: dict[str, Any]) -> dict[str, Any]:
             "retry_count": result.get("retry_count"),
             "output_repair": result.get("output_repair"),
         },
-        "frozen_bindings": {
-            "human_gold_blob": EXPECTED_GOLD_BLOB,
-            "qualification_policy_blob": EXPECTED_POLICY_BLOB,
-            "v25_runner_blob": EXPECTED_V25_RUNNER_BLOB,
-        },
+        "frozen_bindings": {"human_gold_blob": EXPECTED_GOLD_BLOB, "qualification_policy_blob": EXPECTED_POLICY_BLOB, "v25_runner_blob": EXPECTED_V25_RUNNER_BLOB},
         "policy_version": policy.get("policy_version"),
         "gold_version": gold.get("gold_version"),
         "summary": {
