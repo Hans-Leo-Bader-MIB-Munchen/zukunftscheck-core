@@ -44,7 +44,7 @@ class TestSemAiAssistedDevelopmentRunnerCandidateV01(unittest.TestCase):
 
     def test_no_network_or_model_runtime_imports(self):
         tree = ast.parse(RUNNER_PATH.read_text(encoding="utf-8"))
-        forbidden_roots = {"requests", "httpx", "urllib", "socket", "openai"}
+        forbidden_roots = {"requests", "httpx", "urllib", "socket", "openai", "subprocess", "os"}
         imported = set()
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
@@ -53,11 +53,21 @@ class TestSemAiAssistedDevelopmentRunnerCandidateV01(unittest.TestCase):
                 imported.add(node.module.split(".")[0])
         self.assertTrue(imported.isdisjoint(forbidden_roots), f"forbidden runtime import(s): {sorted(imported & forbidden_roots)}")
 
-    def test_no_execution_function_names(self):
+    def test_no_execution_function_names_or_dynamic_calls(self):
         tree = ast.parse(RUNNER_PATH.read_text(encoding="utf-8"))
         forbidden_names = {"run_model", "execute_model", "call_model", "preflight_model", "send_request"}
         function_names = {node.name for node in ast.walk(tree) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))}
         self.assertTrue(function_names.isdisjoint(forbidden_names), f"forbidden execution function(s): {sorted(function_names & forbidden_names)}")
+        forbidden_calls = {"eval", "exec", "__import__", "system", "popen", "run", "call", "check_call", "check_output"}
+        call_names = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call):
+                func = node.func
+                if isinstance(func, ast.Name):
+                    call_names.add(func.id)
+                elif isinstance(func, ast.Attribute):
+                    call_names.add(func.attr)
+        self.assertTrue(call_names.isdisjoint(forbidden_calls), f"forbidden dynamic/shell call(s): {sorted(call_names & forbidden_calls)}")
 
 
 if __name__ == "__main__":
