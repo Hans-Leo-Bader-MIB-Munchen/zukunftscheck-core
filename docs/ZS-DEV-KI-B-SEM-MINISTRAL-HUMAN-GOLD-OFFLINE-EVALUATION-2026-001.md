@@ -23,10 +23,15 @@ Der Arbeitsblock autorisiert keinen Modellkontakt und keine Wiederholung des Lau
 - keine Modellqualifikation allein aufgrund technischer Ausführung
 - kein Merge ohne separate ausdrückliche Freigabe
 
-## Gebundene Artefakte
+## Gebundene Artefakte und Run-Identität
 
 - V2.5 Runner: `scripts/zs_ki_b_sem_qualifikation_runner_v2_5_max_tokens_binding_prep.py`
+  - Runner-Version: `v2.5-max-tokens-binding-prep`
+  - Run-Type: `ZS-KI-B-SEM-QUALIFIKATION-SYNTHETIC-V2-5-MAX-TOKENS-BINDING-PREP-2026-026`
   - Blob: `9ac29c25b47cbd7762a3d8ee30de7f72e20ae866`
+  - autorisierter Git-Commit: `8e78775a95e3ddf3d90890e546d5cd70f26caeb3`
+  - `max_tokens = 2048`
+  - exakte `ordered_case_ids` müssen der eingefrorenen 16er-Suite entsprechen
 - Frozen Human Gold: `tests/fixtures/zs_ki_b_sem_v07_human_gold_frozen_v0_1.json`
   - Blob: `704adbd930c042b132a34bb9ddc95b4531f336b2`
 - Frozen Qualification Policy: `tests/fixtures/zs_ki_b_sem_v07_qualification_policy_frozen_v0_1.json`
@@ -34,6 +39,8 @@ Der Arbeitsblock autorisiert keinen Modellkontakt und keine Wiederholung des Lau
 - Bound Candidate Contract: `domains/zukunftscheck/schema/b_semantic_contract_v0_3_candidate.schema.json`
   - Contract: `ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.3-candidate`
   - Blob: `bc3dd4832db51677bdaf6f16028ade1b02214673`
+
+Der Offline-Evaluator akzeptiert nur eine Result-Datei, die diese Run-Identität fail-closed erfüllt. Eine andere V2.5-Ausführung desselben Runner-Typs darf nicht still als dieser eingefrorene Einmallauf behandelt werden.
 
 ## Fachlich führende Gold-Semantik
 
@@ -49,12 +56,15 @@ Die Auswertung läuft über alle 16 Fälle. Ein einzelner FAIL beendet die Falla
 
 ## Evaluator-Korrekturen während des Arbeitsblocks
 
-Zwei technische Fehler des neu erstellten Offline-Evaluators wurden vor Abschluss identifiziert und repariert:
+Drei technische Schwächen des neu erstellten Offline-Evaluators wurden vor Abschluss identifiziert und repariert:
 
 1. Direkter Script-Aufruf konnte `core` nicht importieren, weil das Repo-Root nicht früh genug in `sys.path` lag.
 2. Der erste Boundary-Pfad wandte den v0.2-Validator direkt auf `v0.3-candidate` an und erzeugte dadurch künstlich 16 `SEMANTIC_CONTRACT_VERSION_MISMATCH`-Befunde.
+3. Der erste finale Stand band zwar Runner-Version und Runner-Blob, aber noch nicht die konkrete ausgeführte V2.5-Run-Identität vollständig genug. Der Gegencheck verlangte daher zusätzlich fail-closed Bindung von Run-Type, autorisiertem Commit, `max_tokens = 2048` und exakter 16er-Reihenfolge.
 
-Der korrigierte Evaluator verlangt jetzt den tatsächlich gebundenen Vertrag `v0.3-candidate` und nutzt eine interne Kopie mit normalisierter Contract-Version ausschließlich zur Wiederverwendung der geerbten v0.2-Boundary-Semantik. Die zusätzlichen v0.3-Candidate-Grenzen bleiben separat gebunden und geprüft.
+Der korrigierte Evaluator verlangt den tatsächlich gebundenen Vertrag `v0.3-candidate` und nutzt eine interne Kopie mit normalisierter Contract-Version ausschließlich zur Wiederverwendung der geerbten v0.2-Boundary-Semantik. Die zusätzlichen v0.3-Candidate-Grenzen bleiben separat gebunden und geprüft.
+
+Der Evaluator trägt intern die Version `..._v0.3`; der neu erzeugte Audit-Report erhält deshalb den Suffix `_human_gold_offline_report_v0_3.json`. Die historische Script-Datei bleibt aus Kompatibilitätsgründen unter ihrem ursprünglichen Pfad `..._v0_1.py` bestehen.
 
 ## Verifiziertes Gesamtergebnis
 
@@ -132,6 +142,15 @@ Nicht zulässig sind daraus weitergehende Schlüsse über allgemeine Modellquali
 
 Insbesondere folgen daraus keine Freigaben für Benchmark, Generalisierung, Realdaten, Pilot, Produktion oder Phase F.
 
+## Testnachweise
+
+Vor dem Gegencheck waren bereits lokal bestätigt:
+
+- fokussierter Offline-Evaluator-Test: GREEN
+- Gesamtsuite: `Ran 1253 tests in 1591.685s` — `OK`
+
+Nach der Gegencheck-Reparatur müssen die fokussierten Tests erneut lokal ausgeführt werden. Da die Reparatur den Evaluator und seine Tests verändert hat, gilt der frühere 1253/1253-Lauf nicht als Testnachweis für den neuen Head.
+
 ## Dateien des Arbeitsblocks
 
 - `scripts/zs_ki_b_sem_ministral_human_gold_offline_evaluator_v0_1.py`
@@ -140,13 +159,13 @@ Insbesondere folgen daraus keine Freigaben für Benchmark, Generalisierung, Real
 
 ## Abschlussstatus des Arbeitsblocks
 
-Die Offline-Auswertung ist fachlich abgeschlossen.
+Die fachliche Offline-Auswertung ist abgeschlossen und bleibt `FAIL / model_qualified=false`.
 
-Offen vor einem möglichen Merge:
+Vor einem möglichen Merge offen:
 
-1. fokussierte Tests des final korrigierten Evaluators lokal GREEN bestätigen,
-2. optional Gesamtsuite ausführen,
-3. Änderungen reviewen,
-4. erst danach separaten Merge-/PR-Schritt vorbereiten.
+1. fokussierte Tests des gegencheck-korrigierten Evaluators lokal GREEN bestätigen,
+2. neuen Audit-Report mit Evaluator v0.3 aus derselben unveränderten Original-V2.5-Result-Datei erzeugen und Resultat gegen den bisherigen Fachbefund vergleichen,
+3. danach finalen Gegencheck des PR durchführen,
+4. erst anschließend kann eine separate Mergefreigabe erteilt werden.
 
-Kein Modellkontakt und kein weiterer Qualifikationslauf sind für den Abschluss dieses Arbeitsblocks erforderlich oder autorisiert.
+Kein Modellkontakt und kein weiterer Qualifikationslauf sind für diese Schritte erforderlich oder autorisiert.
