@@ -23,6 +23,10 @@ Implementierung:
 
 `scripts/zs_ki_b_sem_ministral_qualification_prerun_package_v0_1.py`
 
+Aktuelle Paketversion:
+
+`ZS-KI-B-SEM-MINISTRAL-QUALIFICATION-PRERUN-PACKAGE-2026-001_v0.2`
+
 Das Paket bindet:
 
 - den gesicherten aktuellen `main`-Commit;
@@ -43,7 +47,9 @@ Das Paket bindet:
 - V42 Authority-Root-Attestation als aktuellen Trust-Architektur-Endpunkt;
 - Issue #130 als offenes Residual-Risk-Register.
 
-Die Security-Quellen werden als Git-Blob-OIDs am gebundenen `main`-Commit eingefroren. Das Pre-Run-Modul importiert nur das zuvor bytegenau geprüfte Re-entry-Modul und enthält selbst keinen Transport-, Execution- oder Approval-Materialization-Entrypoint.
+Die Security-Quellen werden als Git-Blob-OIDs am gebundenen `main`-Commit eingefroren. Seit v0.2 muss zusätzlich für **jede** dieser zehn Security-Quellen der aktuelle Worktree-Blob exakt mit dem gebundenen `main`-Blob übereinstimmen. Jede Abweichung führt fail-closed zu `PermissionError`. Damit kann kein lokal veränderter Security-Quellstand still in die spätere Authorization-Vorbereitung gelangen.
+
+Das Pre-Run-Modul importiert nur das zuvor bytegenau geprüfte Re-entry-Modul und enthält selbst keinen Transport-, Execution- oder Approval-Materialization-Entrypoint.
 
 ## Laufgrenzen
 
@@ -89,7 +95,7 @@ Fokussiertes Testmodul:
 
 `tests.synthetic.test_sem_ministral_qualification_prerun_package_v0_1`
 
-Es prüft Base-/Re-entry-Bindung, exaktes Zielmodell, 16-Fall-Snapshot, Requestgrenzen, Human-Gold-Unsichtbarkeit, vollständige Security-Source-Bindung, geschlossenes Authorization Gate, deterministischen Paket-Hash, Fail-closed bei Manipulation und das Fehlen eines Execution-/Transport-/Approval-Entrypoints.
+Es prüft Base-/Re-entry-Bindung, exaktes Zielmodell, 16-Fall-Snapshot, Requestgrenzen, Human-Gold-Unsichtbarkeit, vollständige Security-Source-Bindung einschließlich **Base-Blob = Worktree-Blob**, geschlossenes Authorization Gate, deterministischen Paket-Hash, Fail-closed bei Paketmanipulation und bei Security-Worktree-Abweichung sowie das Fehlen eines Execution-/Transport-/Approval-Entrypoints.
 
 Ausführung:
 
@@ -97,6 +103,8 @@ Ausführung:
 python -m unittest tests.synthetic.test_sem_ministral_qualification_prerun_package_v0_1 -v
 ```
 
+Erwarteter Umfang nach v0.2: **15 Tests**.
+
 ## Nächster Gate-Schritt
 
-Nach GREEN erfolgt ein inhaltlich-technischer Gegencheck. Erst wenn dieser Block gesichert ist, darf separat ein **Authorization Candidate** vorbereitet werden. Auch dieser Kandidat darf noch keinen Modellkontakt erlauben. Eine tatsächliche Einzellauf-Freigabe muss danach vom Nutzer ausdrücklich und exakt gebunden erteilt werden.
+Nach GREEN erfolgt der abschließende inhaltlich-technische Gegencheck. Erst wenn dieser Block gesichert ist, darf separat ein **Authorization Candidate** vorbereitet werden. Auch dieser Kandidat darf noch keinen Modellkontakt erlauben. Eine tatsächliche Einzellauf-Freigabe muss danach vom Nutzer ausdrücklich und exakt gebunden erteilt werden.
