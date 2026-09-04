@@ -1,16 +1,12 @@
 #!/usr/bin/env python3
-"""Model-free offline Human-Gold evaluator for the preserved V2.5 Ministral result.
-
-This module MUST NOT contact LM Studio, localhost, an API, or any model. It reads
-one already-existing V2.5 result JSON, evaluates all 16 frozen cases against the
-frozen Human Gold and qualification policy, and emits one audit report.
-"""
+"""Model-free offline Human-Gold evaluator for the preserved V2.5 Ministral result."""
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
 import sys
+from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -21,17 +17,21 @@ if str(ROOT) not in sys.path:
 
 from core.validation.semantic_boundary_v0_2 import validate_semantic_response_v0_2
 
-EVALUATOR_VERSION = "ZS-KI-B-SEM-MINISTRAL-HUMAN-GOLD-OFFLINE-EVALUATOR-2026-001_v0.1"
+EVALUATOR_VERSION = "ZS-KI-B-SEM-MINISTRAL-HUMAN-GOLD-OFFLINE-EVALUATOR-2026-001_v0.2"
 WORK_BLOCK = "ZS-DEV-KI-B-SEM-MINISTRAL-HUMAN-GOLD-OFFLINE-EVALUATION-2026-001"
 EXPECTED_V25_RUNNER_VERSION = "v2.5-max-tokens-binding-prep"
 EXPECTED_V25_RUNNER_BLOB = "9ac29c25b47cbd7762a3d8ee30de7f72e20ae866"
 EXPECTED_CASE_COUNT = 16
+EXPECTED_CANDIDATE_CONTRACT = "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.3-candidate"
+BASE_BOUNDARY_CONTRACT = "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.2"
 
 SUITE_PATH = ROOT / "tests/fixtures/zs_ki_b_sem_v07_qualification_suite_frozen_v0_1.json"
 GOLD_PATH = ROOT / "tests/fixtures/zs_ki_b_sem_v07_human_gold_frozen_v0_1.json"
 POLICY_PATH = ROOT / "tests/fixtures/zs_ki_b_sem_v07_qualification_policy_frozen_v0_1.json"
+CANDIDATE_SCHEMA_PATH = ROOT / "domains/zukunftscheck/schema/b_semantic_contract_v0_3_candidate.schema.json"
 EXPECTED_GOLD_BLOB = "704adbd930c042b132a34bb9ddc95b4531f336b2"
 EXPECTED_POLICY_BLOB = "9bc06b2648b05f9bb1d464e019e23f8afd82570b"
+EXPECTED_CANDIDATE_SCHEMA_BLOB = "bc3dd4832db51677bdaf6f16028ade1b02214673"
 
 
 def _load(path: Path) -> dict[str, Any]:
@@ -44,12 +44,13 @@ def _load(path: Path) -> dict[str, Any]:
 def _git_blob_sha1(path: Path) -> str:
     data = path.read_bytes().replace(b"\r\n", b"\n")
     if b"\r" in data:
-        raise ValueError(f"bare CR rejected for frozen artifact: {path}")
+        raise ValueError(f"bare CR rejected for frozen/bound artifact: {path}")
     return hashlib.sha1(f"blob {len(data)}\0".encode("ascii") + data).hexdigest()
 
 
 def validate_frozen_inputs() -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     suite, gold, policy = map(_load, (SUITE_PATH, GOLD_PATH, POLICY_PATH))
+    schema = _load(CANDIDATE_SCHEMA_PATH)
     if gold.get("status") != "HUMAN_APPROVED_FROZEN" or gold.get("model_visible") is not False:
         raise ValueError("Human Gold is not the frozen model-invisible artifact")
     if policy.get("status") != "HUMAN_APPROVED_FROZEN":
@@ -58,6 +59,10 @@ def validate_frozen_inputs() -> tuple[dict[str, Any], dict[str, Any], dict[str, 
         raise ValueError("Frozen Human Gold blob mismatch")
     if _git_blob_sha1(POLICY_PATH) != EXPECTED_POLICY_BLOB:
         raise ValueError("Frozen qualification policy blob mismatch")
+    if _git_blob_sha1(CANDIDATE_SCHEMA_PATH) != EXPECTED_CANDIDATE_SCHEMA_BLOB:
+        raise ValueError("bound v0.3-candidate schema blob mismatch")
+    if schema.get("$id") != EXPECTED_CANDIDATE_CONTRACT:
+        raise ValueError("bound candidate schema identity mismatch")
     if len(suite.get("cases", [])) != EXPECTED_CASE_COUNT or len(gold.get("cases", [])) != EXPECTED_CASE_COUNT:
         raise ValueError("frozen suite/gold must contain exactly 16 cases")
     suite_ids = [row.get("case_id") for row in suite["cases"]]
@@ -103,7 +108,10 @@ def evaluate_gold(case_gold: dict[str, Any], response: dict[str, Any]) -> dict[s
     forbidden_present = forbidden & actual
     spurious = actual - required - optional
     proposals = response.get("proposals", [])
-    conflict_actual = any(isinstance(p, dict) and bool(p.get("conflict_candidate_refs")) for p in proposals if isinstance(proposals, list))
+    conflict_actual = any(
+        isinstance(p, dict) and bool(p.get("conflict_candidate_refs"))
+        for p in proposals if isinstance(proposals, list)
+    )
     conflict_expected = case_gold.get("expected_conflict_candidate")
     conflict_match = True if conflict_expected is None else conflict_actual is bool(conflict_expected)
     return {
@@ -121,11 +129,68 @@ def evaluate_gold(case_gold: dict[str, Any], response: dict[str, Any]) -> dict[s
     }
 
 
+def _candidate_bound_issues(response: dict[str, Any]) -> list[dict[str, Any]]:
+    issues: list[dict[str, Any]] = []
+    def add(code: str, message: str) -> None:
+        issues.append({"code": code, "rule": "V03-CANDIDATE-BOUND", "object_type": "SemanticResponse", "object_id": None, "message": message})
+
+    if response.get("contract_version") != EXPECTED_CANDIDATE_CONTRACT:
+        add("SEMANTIC_CANDIDATE_CONTRACT_VERSION_MISMATCH", f"contract_version must be {EXPECTED_CANDIDATE_CONTRACT}")
+        return issues
+    proposals = response.get("proposals")
+    if not isinstance(proposals, list):
+        return issues
+    if len(proposals) > 8:
+        add("CANDIDATE_PROPOSAL_CARDINALITY_EXCEEDED", "proposals exceeds maxItems=8")
+    for proposal in proposals:
+        if not isinstance(proposal, dict):
+            continue
+        statement = proposal.get("normalized_statement")
+        if isinstance(statement, str) and len(statement) > 512:
+            add("CANDIDATE_NORMALIZED_STATEMENT_TOO_LONG", "normalized_statement exceeds maxLength=512")
+        derivation = proposal.get("derivation_note")
+        if isinstance(derivation, str) and len(derivation) > 384:
+            add("CANDIDATE_DERIVATION_NOTE_TOO_LONG", "derivation_note exceeds maxLength=384")
+        assignments = proposal.get("assignment_candidates")
+        if isinstance(assignments, list) and len(assignments) > 8:
+            add("CANDIDATE_ASSIGNMENT_CARDINALITY_EXCEEDED", "assignment_candidates exceeds maxItems=8")
+        conflict_refs = proposal.get("conflict_candidate_refs")
+        if isinstance(conflict_refs, list):
+            if len(conflict_refs) > 8:
+                add("CANDIDATE_CONFLICT_CARDINALITY_EXCEEDED", "conflict_candidate_refs exceeds maxItems=8")
+            if len(conflict_refs) != len(set(x for x in conflict_refs if isinstance(x, str))):
+                add("CANDIDATE_CONFLICT_REFS_NOT_UNIQUE", "conflict_candidate_refs violates uniqueItems=true")
+        for field in ("gap_notes", "uncertainty_notes"):
+            notes = proposal.get(field)
+            if isinstance(notes, list):
+                if len(notes) > 8:
+                    add("CANDIDATE_NOTE_CARDINALITY_EXCEEDED", f"{field} exceeds maxItems=8")
+                if any(isinstance(note, str) and len(note) > 256 for note in notes):
+                    add("CANDIDATE_NOTE_TOO_LONG", f"{field} contains item exceeding maxLength=256")
+    return issues
+
+
 def evaluate_boundary(case: dict[str, Any], response: dict[str, Any]) -> dict[str, Any]:
+    """Validate the bound v0.3-candidate contract plus inherited v0.2 boundary semantics.
+
+    v0.3-candidate is derived from v0.2 and adds finite cardinality/text bounds only.
+    Therefore the original response must identify v0.3-candidate exactly; a deep copy is
+    normalized to v0.2 solely for reuse of the established v0.2 semantic boundary validator.
+    """
     allowed = {row["source_location_id"] for row in case["source_locations"]}
     target = case["target_source_location_id"]
-    issues = validate_semantic_response_v0_2(response, allowed_source_location_ids=allowed, target_source_location_id=target)
-    rendered = [issue.to_dict() for issue in issues]
+    rendered = _candidate_bound_issues(response)
+    if response.get("contract_version") == EXPECTED_CANDIDATE_CONTRACT:
+        compatibility = deepcopy(response)
+        compatibility["contract_version"] = BASE_BOUNDARY_CONTRACT
+        rendered.extend(
+            issue.to_dict()
+            for issue in validate_semantic_response_v0_2(
+                compatibility,
+                allowed_source_location_ids=allowed,
+                target_source_location_id=target,
+            )
+        )
     return {"passed": not rendered and response.get("source_location_id") == target, "issues": rendered}
 
 
@@ -142,7 +207,11 @@ def _parse_preserved_response(case_row: dict[str, Any]) -> dict[str, Any]:
 
 
 def _count_issue_code(case_reports: list[dict[str, Any]], code: str) -> int:
-    return sum(1 for row in case_reports for issue in row.get("boundary_evaluation", {}).get("issues", []) if issue.get("code") == code)
+    return sum(
+        1 for row in case_reports
+        for issue in row.get("boundary_evaluation", {}).get("issues", [])
+        if issue.get("code") == code
+    )
 
 
 def evaluate_result(result: dict[str, Any]) -> dict[str, Any]:
@@ -242,7 +311,13 @@ def evaluate_result(result: dict[str, Any]) -> dict[str, Any]:
             "retry_count": result.get("retry_count"),
             "output_repair": result.get("output_repair"),
         },
-        "frozen_bindings": {"human_gold_blob": EXPECTED_GOLD_BLOB, "qualification_policy_blob": EXPECTED_POLICY_BLOB, "v25_runner_blob": EXPECTED_V25_RUNNER_BLOB},
+        "frozen_bindings": {
+            "human_gold_blob": EXPECTED_GOLD_BLOB,
+            "qualification_policy_blob": EXPECTED_POLICY_BLOB,
+            "v25_runner_blob": EXPECTED_V25_RUNNER_BLOB,
+            "candidate_contract": EXPECTED_CANDIDATE_CONTRACT,
+            "candidate_schema_blob": EXPECTED_CANDIDATE_SCHEMA_BLOB,
+        },
         "policy_version": policy.get("policy_version"),
         "gold_version": gold.get("gold_version"),
         "summary": {
