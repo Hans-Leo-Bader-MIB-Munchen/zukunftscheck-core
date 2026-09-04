@@ -10,107 +10,85 @@ Residual architecture register: GitHub issue #130 remains OPEN.
 
 ## Zweck
 
-Dieser Block schließt die konkrete technische Lücke zwischen dem gesicherten model-free Approval-/Execution-Plan und dem bereits vorhandenen V25-Runner.
+Dieser Block schließt die konkrete positive Execution-Lücke zwischen dem gesicherten Approval-/Execution-Plan und dem vorhandenen V25-Runner. Entwicklung und Report bleiben model-free. Ein späterer positiver Lauf benötigt eine neue, exakt an den dann aktuellen `main`-Commit gebundene Nutzerfreigabe.
 
-Der Bridge führt während Entwicklung und Report-Aufruf keinen Modellkontakt durch. Er enthält aber bewusst erstmals einen **positiven Live-Pfad**, der nach einem späteren Merge nur bei einer **neuen, exakt zum dann aktuellen `main`-Commit passenden Nutzerfreigabe** eine V25-kompatible Einzellauf-Autorisierung in-memory materialisieren und unmittelbar an `V25.execute_once()` übergeben darf.
+Die frühere Freigabe für `main` `4cad196736fabd0a7baee85ba3930cec3d15a8c4` wird nicht übernommen.
 
-Die frühere Freigabe für `main` `4cad196736fabd0a7baee85ba3930cec3d15a8c4` ist für den späteren neuen Commit nicht gültig und wird nicht übernommen.
+## Harte Grenzen
 
-## Harte Laufgrenzen
-
-- Datenklasse: `SYNTHETIC_ONLY`
-- Modell: `ministral-3-14b-instruct-2512`
-- Repository: `mistralai/Ministral-3-14B-Instruct-2512-GGUF`
-- exakt 16 eingefrorene Qualifikationsfälle
+- `SYNTHETIC_ONLY`
+- Modell `ministral-3-14b-instruct-2512`
+- Repository `mistralai/Ministral-3-14B-Instruct-2512-GGUF`
+- exakt 16 eingefrorene Fälle
 - `max_tokens=2048`
 - `retry_count=0`
 - `output_repair=false`
-- kein automatischer Retry
-- kein automatischer Rerun
-- kein Real-Daten-, Pilot- oder Produktivpfad
-- `MODEL_QUALIFIED=false` bis zum späteren Human-Gold-Review und einer separaten Qualifikationsentscheidung
+- kein automatischer Retry oder Rerun
+- keine Real-Daten-, Pilot-, Produktiv- oder Benchmarkfreigabe
+- `MODEL_QUALIFIED=false` bis Human-Gold-Review und separater Entscheidung
 
 ## Gebundene Quellen
 
-Der Bridge bindet vor Import bytegenau an den gesicherten Base-Stand:
+Vor Import und bei jedem Report-/Runtime-Gate werden bytegenau gegen den gesicherten Base-Commit geprüft:
 
-- `scripts/zs_ki_b_sem_ministral_qualification_approval_execution_plan_v0_1.py`
-  - Git blob: `6ee75efa9949c0678b25aaa1b19fbd60d36f7493`
-- `scripts/zs_ki_b_sem_qualifikation_runner_v2_5_max_tokens_binding_prep.py`
-  - Git blob: `9ac29c25b47cbd7762a3d8ee30de7f72e20ae866`
+- Approval-/Execution-Plan, Blob `6ee75efa9949c0678b25aaa1b19fbd60d36f7493`
+- V25 Live Runner, Blob `9ac29c25b47cbd7762a3d8ee30de7f72e20ae866`
+- V27 Approval Ceremony
+- V28 Execution Gate
+- V29 Run Authorization Transform
+- V30 Proof-Enforcing Live Gate
 
-Der Approval-/Execution-Plan selbst bindet weiterhin Candidate, V25, V27–V33 und V42 gegen den gesicherten Stand und den aktuellen Worktree.
+Der bestehende Approval-/Execution-Plan bindet zusätzlich V31–V33 und V42. Der positive Bridge behauptet daraus keine externe reale Autorität; Issue #130 bleibt offen.
 
-## Neuer positiver Pfad
+## Positiver Laufpfad v0.3
 
-### `materialize_live_authorization(...)`
+Ein positiver Pfad ist nur möglich bei `main`, sauberem Worktree, exakter neuer Nutzerfreigabe für den aktuellen HEAD, unverändertem Frozen Plan und kanonischem externem Run-State-Verzeichnis.
 
-Die Funktion darf nur erfolgreich sein, wenn gleichzeitig gilt:
+Vor jeder V25-Live-Autorisierung wird tatsächlich die Proof-Kette ausgeführt:
 
-1. aktueller Branch ist exakt `main`;
-2. Worktree ist sauber;
-3. Nutzerfreigabe entspricht **zeichengetreu** der für den aktuellen `HEAD` erzeugten Freigabeformulierung;
-4. Approval-/Execution-Plan ist unverändert `PREPARED_NOT_AUTHORIZED` und synthetik-exklusiv;
-5. Modell, 16 Requests, 2048 Tokens, Retry 0 und Output-Repair false sind unverändert;
-6. V25-Runner-Blob ist exakt gebunden;
-7. Consumption- und Result-Pfad liegen absolut außerhalb des Repositories;
-8. Consumption- und Result-Dateinamen sind kanonisch an den exakten aktuellen `main`-Commit gebunden;
-9. weder Consumption-Receipt noch Ergebnisdatei existieren bereits.
+1. aus dem exakten Approval-Text und HEAD wird ein run-spezifisches Secret deterministisch abgeleitet;
+2. V28 erzeugt eine nonce-gebundene Challenge;
+3. Challenge wird einmalig mit `O_EXCL` persistiert und wieder eingelesen;
+4. V28 baut und validiert den Approval-Proof;
+5. V28 persistiert den Proof-Claim atomar genau einmal;
+6. V29 baut und validiert den Run-Authorization-Transform-Preview;
+7. V30 baut und validiert den vollständigen Proof-Gate-Envelope;
+8. dessen `proposed_v25_binding` muss exakt dem aktuellen V25-Template entsprechen;
+9. erst danach wird in-memory die exakte V25-Autorisierung materialisiert;
+10. `execute_approved_once()` übergibt sie unmittelbar an `V25.execute_once()`;
+11. V25 konsumiert die Autorisierung atomar `BEFORE_FIRST_MODEL_CONTACT`, erst danach folgen Preflight und mögliche Modellrequests.
 
-Erst dann wird in-memory eine **exakte V25-Keyset-Autorisierung** erzeugt:
+Damit bestehen zwei getrennte Single-Use-Grenzen: atomarer Proof-Claim vor Live-Materialisierung und atomare V25-Consumption vor erstem möglichen Modellkontakt.
 
-- `status = EXPLICIT_USER_APPROVED`
-- `authorization_consumed = false`
-- `execution_authorized = true`
-- `model_run_authorized = true`
-- `model_contact_authorized = true`
+## Kanonische externe Run-State-Dateien
 
-Die Autorisierung wird durch `materialize_live_authorization()` **nicht persistiert**.
+Für den exakten HEAD werden im selben externen Verzeichnis ausschließlich folgende Dateinamen zugelassen:
 
-### `execute_approved_once(...)`
+- `zs_ki_b_sem_ministral_<HEAD>_gate_challenge.json`
+- `zs_ki_b_sem_ministral_<HEAD>_proof_claim.json`
+- `zs_ki_b_sem_ministral_<HEAD>_consumed.json`
+- `zs_ki_b_sem_ministral_qualification_<HEAD>_result.json`
 
-Diese Funktion ruft unmittelbar nach erfolgreicher Materialisierung `V25.execute_once()` auf. Es gibt im Bridge selbst **keinen Preflight und keinen Transport vor diesem Handoff**.
+Existiert eine dieser Dateien bereits, wird Replay/Rerun fail-closed verworfen.
 
-V25 führt dann vor seinem Preflight und vor dem ersten möglichen Modellkontakt die atomare Consumption aus. Damit bleibt die bestehende Consumption-Grenze:
+## Governance
 
-`BEFORE_FIRST_MODEL_CONTACT`
+Der Report selbst materialisiert oder konsumiert nichts und kontaktiert kein Modell. Der Bridge setzt im Report weiterhin:
 
-erhalten.
+- `MODEL_RUN_AUTHORIZED=false`
+- `MODEL_CONTACT_AUTHORIZED=false`
+- `MODEL_QUALIFIED=false`
+- `external_authority_claimed=false`
 
-## Neue spätere Nutzerfreigabe
-
-Nach Merge und Post-Merge-GREEN muss für den dann aktuellen `main`-Commit eine neue Freigabe erteilt werden. Die exakte Form wird vom Bridge als Funktion `expected_approval_text(<main-commit>)` definiert.
-
-Eine Freigabe für einen älteren Commit wird fail-closed verworfen.
-
-## Issue #130 / Grenzen des Bridges
-
-Der Bridge schließt **nicht** die externen Restfragen aus Issue #130. Insbesondere bleiben externe Root-Key-Provenienz, Dependency-/Supply-Chain-Provenienz und frühere Plattform-/TOCTOU-Restpunkte vor Real-Daten, Pilot oder Produktivbetrieb gesondert zu behandeln.
-
-Für den bereits abgegrenzten **lokalen synthetischen Qualifikationslauf** wird der Bridge bewusst als synthetik-exklusive Execution-Kante verwendet; er behauptet keine externe Autorität oder Produktfreigabe.
+Erst eine spätere exakte Nutzerfreigabe für den final gemergten `main`-Commit kann den positiven Laufpfad öffnen.
 
 ## Tests
 
-Fokussiertes Testmodul:
+Fokussiertes Modul:
 
 `tests.synthetic.test_sem_ministral_live_authorization_execution_bridge_v0_1`
 
-Es prüft 20 Punkte, darunter:
-
-- exakte Base-/Plan-/V25-Bindung;
-- model-free Report;
-- exaktes Modell und Request-Limit;
-- commitgebundene Approval-Formulierung;
-- Ablehnung alter Approval-Commits;
-- Main-only und Clean-Worktree;
-- kanonische externe Consumption-/Result-Pfade;
-- Replay-/Rerun-Abwehr bei vorhandenen Dateien;
-- exaktes V25-Keyset der in-memory Autorisierung;
-- keine Persistierung durch reine Materialisierung;
-- V25-Validierbarkeit der Autorisierung;
-- unmittelbares Handoff an `V25.execute_once()` ohne echten Test-Modellkontakt;
-- fail-closed bei Source-/Plan-Abweichungen;
-- Issue #130 und Nicht-Produktgrenzen bleiben erhalten.
+Es prüft jetzt 22 Punkte, insbesondere Commit-/Source-Bindung, Main-only/Clean-Worktree, alte Approval-Ablehnung, kanonische Pfade, Replay-Abwehr für alle vier Run-State-Dateien, persistierte V28-Challenge und Proof-Claim, zwingende V30-Validierung vor Materialisierung, exaktes V25-Keyset, unmittelbares Handoff an V25, fail-closed bei Source-/Plan-/Proof-Abweichungen sowie die fortbestehenden Nicht-Produktgrenzen.
 
 Ausführung:
 
@@ -118,8 +96,4 @@ Ausführung:
 python -m unittest tests.synthetic.test_sem_ministral_live_authorization_execution_bridge_v0_1 -v
 ```
 
-## Gate nach Entwicklung
-
-Nach fokussiertem GREEN folgt technischer Gegencheck und `critical-fast`, danach separater PR und separate Merge-Freigabe.
-
-Erst nach Merge + Post-Merge-GREEN wird die neue exakte Einzellauf-Freigabe für den dann finalen `main`-Commit angefordert. Ohne diese neue Freigabe darf `execute_approved_once()` nicht verwendet werden.
+Nach fokussiertem GREEN folgt erneut der technische Gegencheck und danach `critical-fast`, separater PR und separate Merge-Freigabe. Erst nach Merge + Post-Merge-GREEN wird die neue exakte Einzellauf-Freigabe für den finalen `main`-Commit angefordert.
