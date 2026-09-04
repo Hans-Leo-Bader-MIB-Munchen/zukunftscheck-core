@@ -17,7 +17,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE_MAIN_COMMIT = "06e286caaf396e17dc1b8ec44378883f4a17ffb1"
-PLAN_VERSION = "ZS-KI-B-SEM-MINISTRAL-QUALIFICATION-APPROVAL-EXECUTION-PLAN-2026-001_v0.1"
+PLAN_VERSION = "ZS-KI-B-SEM-MINISTRAL-QUALIFICATION-APPROVAL-EXECUTION-PLAN-2026-001_v0.2"
 PLAN_TYPE = "ZS-DEV-KI-B-SEM-MINISTRAL-QUALIFICATION-APPROVAL-EXECUTION-PREP-2026-001"
 CANDIDATE_PATH = "scripts/zs_ki_b_sem_ministral_qualification_authorization_candidate_v0_1.py"
 CANDIDATE_BLOB_SHA = "edaad6ff363010af5da5103f314df9f336f9c045"
@@ -61,14 +61,20 @@ def _stable_sha256(value: Any) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
-def _validate_candidate_source_before_import() -> None:
+def _validate_all_sources_before_import() -> None:
     if _blob_at(BASE_MAIN_COMMIT, CANDIDATE_PATH) != CANDIDATE_BLOB_SHA:
         raise PermissionError("bound main candidate blob changed")
     if _text_blob_sha1(ROOT / CANDIDATE_PATH) != CANDIDATE_BLOB_SHA:
         raise PermissionError("worktree candidate blob changed")
+    for role, path in SOURCE_PATHS:
+        oid = _blob_at(BASE_MAIN_COMMIT, path)
+        if not oid or len(oid) != 40:
+            raise PermissionError(f"invalid Git blob for {role}")
+        if _text_blob_sha1(ROOT / path) != oid:
+            raise PermissionError(f"approval/execution source worktree mismatch before import: {role}")
 
 
-_validate_candidate_source_before_import()
+_validate_all_sources_before_import()
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
@@ -90,7 +96,7 @@ def _source_bindings() -> list[dict[str, str]]:
 
 
 def build_approval_execution_plan() -> dict[str, Any]:
-    _validate_candidate_source_before_import()
+    _validate_all_sources_before_import()
     candidate = candidate_prep.build_authorization_candidate()
     candidate_prep.validate_authorization_candidate(candidate)
 
@@ -138,6 +144,7 @@ def build_approval_execution_plan() -> dict[str, Any]:
             "ordered_case_ids_sha256": candidate["bound_prerun_package"]["ordered_case_ids_sha256"],
         },
         "source_bindings": _source_bindings(),
+        "all_direct_import_sources_verified_before_import": True,
         "required_sequence": [
             "EXPLICIT_USER_SINGLE_RUN_APPROVAL",
             "GENERATE_EXTERNAL_APPROVAL_SECRET",
@@ -201,6 +208,7 @@ def build_report() -> dict[str, Any]:
         "authorization_candidate_sha256": plan["bound_candidate"]["candidate_sha256"],
         "runtime_model_id": plan["runtime_model_id"],
         "expected_model_request_count": plan["expected_model_request_count"],
+        "all_direct_import_sources_verified_before_import": plan["all_direct_import_sources_verified_before_import"],
         "explicit_user_approval_recorded": False,
         "approval_secret_generated": False,
         "challenge_persisted": False,
