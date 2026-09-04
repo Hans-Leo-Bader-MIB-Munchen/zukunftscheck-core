@@ -58,6 +58,27 @@ class MinistralHumanGoldOfflineEvaluatorV01Tests(unittest.TestCase):
             "source_locations": [{"source_location_id": "SRC-1"}],
         }
 
+    def _ordered_ids(self) -> list[str]:
+        suite, _gold, _policy = evaluator.validate_frozen_inputs()
+        return [row["case_id"] for row in suite["cases"]]
+
+    def _exact_run_identity(self) -> dict:
+        return {
+            "status": "AWAITING_HUMAN_REVIEW",
+            "runner_version": evaluator.EXPECTED_V25_RUNNER_VERSION,
+            "run_type": evaluator.EXPECTED_V25_RUN_TYPE,
+            "authorized_git_commit": evaluator.EXPECTED_AUTHORIZED_GIT_COMMIT,
+            "authorized_runner_blob_oid": evaluator.EXPECTED_V25_RUNNER_BLOB,
+            "max_tokens": evaluator.EXPECTED_MAX_TOKENS,
+            "ordered_case_ids": self._ordered_ids(),
+            "expected_model_request_count": evaluator.EXPECTED_CASE_COUNT,
+            "observed_model_request_count": evaluator.EXPECTED_CASE_COUNT,
+            "retry_count": 0,
+            "output_repair": False,
+            "automatic_retry_authorized": False,
+            "automatic_rerun_authorized": False,
+        }
+
     def test_required_assignment_is_required(self) -> None:
         gold = {"expected_assignments": [{"question_id": "5.5", "pf_id": "PF5"}]}
         result = evaluator.evaluate_gold(gold, self._response([]))
@@ -126,6 +147,39 @@ class MinistralHumanGoldOfflineEvaluatorV01Tests(unittest.TestCase):
         self.assertFalse(result["passed"])
         self.assertIn("MISSING_PROPOSAL_REVIEW_FLAG", [row["code"] for row in result["issues"]])
         self.assertNotIn("SEMANTIC_CONTRACT_VERSION_MISMATCH", [row["code"] for row in result["issues"]])
+
+    def test_exact_preserved_v25_run_identity_is_accepted(self) -> None:
+        evaluator._validate_preserved_run_identity(self._exact_run_identity(), self._ordered_ids())
+
+    def test_preserved_v25_run_identity_drift_fails_closed(self) -> None:
+        drifts = {
+            "run_type": "OTHER-RUN",
+            "authorized_git_commit": "0" * 40,
+            "authorized_runner_blob_oid": "1" * 40,
+            "max_tokens": 4096,
+            "expected_model_request_count": 15,
+            "observed_model_request_count": 15,
+            "retry_count": 1,
+            "output_repair": True,
+            "automatic_retry_authorized": True,
+            "automatic_rerun_authorized": True,
+        }
+        ordered_ids = self._ordered_ids()
+        for key, value in drifts.items():
+            with self.subTest(key=key):
+                probe = self._exact_run_identity()
+                probe[key] = value
+                with self.assertRaises(ValueError):
+                    evaluator._validate_preserved_run_identity(probe, ordered_ids)
+
+        reordered = self._exact_run_identity()
+        reordered["ordered_case_ids"] = list(reversed(ordered_ids))
+        with self.assertRaises(ValueError):
+            evaluator._validate_preserved_run_identity(reordered, ordered_ids)
+
+    def test_report_filename_tracks_evaluator_v03(self) -> None:
+        source = inspect.getsource(evaluator.main)
+        self.assertIn("_human_gold_offline_report_v0_3.json", source)
 
     def test_module_imports_no_network_or_model_runtime_library(self) -> None:
         tree = ast.parse(inspect.getsource(evaluator))
