@@ -16,7 +16,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE_MAIN_COMMIT = "28c582ab3b075298c5ca029f74005e1a8928fa9d"
-PACKAGE_VERSION = "ZS-KI-B-SEM-MINISTRAL-QUALIFICATION-PRERUN-PACKAGE-2026-001_v0.1"
+PACKAGE_VERSION = "ZS-KI-B-SEM-MINISTRAL-QUALIFICATION-PRERUN-PACKAGE-2026-001_v0.2"
 RUN_TYPE = "ZS-KI-B-SEM-MINISTRAL-QUALIFICATION-SYNTHETIC-ONE-RUN-2026-001"
 REENTRY_PATH = "scripts/zs_ki_b_sem_qualification_reentry_manifest_v0_1.py"
 REENTRY_BLOB_SHA = "1f11af89eb75349d2c3cf098800c397ad4f0d9a6"
@@ -47,7 +47,10 @@ def _blob_at(commit: str, path: str) -> str:
 
 
 def _text_blob_sha1(path: Path) -> str:
-    data = path.read_bytes().replace(b"\r\n", b"\n")
+    try:
+        data = path.read_bytes().replace(b"\r\n", b"\n")
+    except (OSError, TypeError, ValueError) as exc:
+        raise PermissionError(f"cannot read source for pre-run binding: {path}") from exc
     if b"\r" in data:
         raise PermissionError(f"bare CR in source: {path}")
     return hashlib.sha1(f"blob {len(data)}\0".encode("ascii") + data).hexdigest()
@@ -77,6 +80,9 @@ def _security_bindings() -> list[dict[str, str]]:
         oid = _blob_at(BASE_MAIN_COMMIT, path)
         if not oid or len(oid) != 40:
             raise PermissionError(f"invalid Git blob for {role}")
+        worktree_oid = _text_blob_sha1(ROOT / path)
+        if worktree_oid != oid:
+            raise PermissionError(f"security source worktree blob mismatch: {role}")
         bindings.append({"role": role, "path": path, "git_blob_sha": oid})
     return bindings
 
@@ -126,6 +132,7 @@ def build_prerun_package() -> dict[str, Any]:
         "qualification_policy": reentry_manifest["qualification_policy"],
         "canonical_artifacts": reentry_manifest["canonical_artifacts"],
         "security_source_bindings": _security_bindings(),
+        "security_sources_worktree_exact": True,
         "residual_architecture_issue": RESIDUAL_ARCHITECTURE_ISSUE,
         "authorization_gate": {
             "state": "CLOSED",
@@ -166,6 +173,7 @@ def build_report() -> dict[str, Any]:
         "runtime_model_id": package["runtime_model_id"],
         "qualification_case_count": len(package["ordered_case_ids"]),
         "security_binding_count": len(package["security_source_bindings"]),
+        "security_sources_worktree_exact": package["security_sources_worktree_exact"],
         "execution_authorized": False,
         "model_run_authorized": False,
         "model_contact_authorized": False,
