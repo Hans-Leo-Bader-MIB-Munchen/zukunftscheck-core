@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -9,22 +10,22 @@ import scripts.zs_ki_b_sem_ministral_live_authorization_execution_bridge_v0_1 as
 
 
 class TestSemMinistralLiveAuthorizationExecutionBridge(unittest.TestCase):
-    def _paths(self, root: Path, head: str) -> tuple[Path, Path]:
-        consume = root / f"zs_ki_b_sem_ministral_{head}_consumed.json"
-        result = root / f"zs_ki_b_sem_ministral_qualification_{head}_result.json"
-        return consume, result
+    def _paths(self, root: Path, head: str) -> dict[str, Path]:
+        return bridge._canonical_paths(root, head)
 
     def _materialize(self, root: Path):
         head = bridge.current_git_commit()
-        consume, result = self._paths(root, head)
+        paths = self._paths(root, head)
         approval = bridge.expected_approval_text(head)
         with patch.object(bridge, "current_branch", return_value="main"), patch.object(
             bridge, "working_tree_clean", return_value=True
         ):
             auth = bridge.materialize_live_authorization(
-                approval_text=approval, consumption_path=consume, result_path=result
+                approval_text=approval,
+                consumption_path=paths["consumption"],
+                result_path=paths["result"],
             )
-        return auth, consume, result
+        return auth, paths
 
     def test_01_exact_base_plan_and_v25_bindings(self):
         self.assertEqual(bridge.BRIDGE_BASE_MAIN_COMMIT, "4cad196736fabd0a7baee85ba3930cec3d15a8c4")
@@ -66,106 +67,87 @@ class TestSemMinistralLiveAuthorizationExecutionBridge(unittest.TestCase):
         head = bridge.current_git_commit()
         old = bridge.expected_approval_text(bridge.BRIDGE_BASE_MAIN_COMMIT)
         with tempfile.TemporaryDirectory() as td:
-            consume, result = self._paths(Path(td), head)
+            paths = self._paths(Path(td), head)
             with patch.object(bridge, "current_branch", return_value="main"), patch.object(
                 bridge, "working_tree_clean", return_value=True
             ):
                 with self.assertRaises(PermissionError):
                     bridge.materialize_live_authorization(
-                        approval_text=old, consumption_path=consume, result_path=result
+                        approval_text=old,
+                        consumption_path=paths["consumption"],
+                        result_path=paths["result"],
                     )
 
     def test_07_non_main_branch_rejected(self):
         head = bridge.current_git_commit()
         with tempfile.TemporaryDirectory() as td:
-            consume, result = self._paths(Path(td), head)
+            paths = self._paths(Path(td), head)
             with patch.object(bridge, "current_branch", return_value="feature"):
                 with self.assertRaises(PermissionError):
                     bridge.materialize_live_authorization(
                         approval_text=bridge.expected_approval_text(head),
-                        consumption_path=consume,
-                        result_path=result,
+                        consumption_path=paths["consumption"], result_path=paths["result"]
                     )
 
     def test_08_dirty_worktree_rejected(self):
         head = bridge.current_git_commit()
         with tempfile.TemporaryDirectory() as td:
-            consume, result = self._paths(Path(td), head)
+            paths = self._paths(Path(td), head)
             with patch.object(bridge, "current_branch", return_value="main"), patch.object(
                 bridge, "working_tree_clean", return_value=False
             ):
                 with self.assertRaises(PermissionError):
                     bridge.materialize_live_authorization(
                         approval_text=bridge.expected_approval_text(head),
-                        consumption_path=consume,
-                        result_path=result,
+                        consumption_path=paths["consumption"], result_path=paths["result"]
                     )
 
     def test_09_noncanonical_consumption_filename_rejected(self):
         head = bridge.current_git_commit()
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
-            _, result = self._paths(root, head)
+            paths = self._paths(root, head)
             with patch.object(bridge, "current_branch", return_value="main"), patch.object(
                 bridge, "working_tree_clean", return_value=True
             ):
                 with self.assertRaises(PermissionError):
                     bridge.materialize_live_authorization(
                         approval_text=bridge.expected_approval_text(head),
-                        consumption_path=root / "other.json",
-                        result_path=result,
+                        consumption_path=root / "other.json", result_path=paths["result"]
                     )
 
     def test_10_noncanonical_result_filename_rejected(self):
         head = bridge.current_git_commit()
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
-            consume, _ = self._paths(root, head)
+            paths = self._paths(root, head)
             with patch.object(bridge, "current_branch", return_value="main"), patch.object(
                 bridge, "working_tree_clean", return_value=True
             ):
                 with self.assertRaises(PermissionError):
                     bridge.materialize_live_authorization(
                         approval_text=bridge.expected_approval_text(head),
-                        consumption_path=consume,
-                        result_path=root / "other.json",
+                        consumption_path=paths["consumption"], result_path=root / "other.json"
                     )
 
-    def test_11_existing_consumption_receipt_rejects_replay(self):
+    def test_11_existing_any_canonical_state_rejects_replay(self):
         head = bridge.current_git_commit()
-        with tempfile.TemporaryDirectory() as td:
-            root = Path(td)
-            consume, result = self._paths(root, head)
-            consume.write_text("claimed", encoding="utf-8")
-            with patch.object(bridge, "current_branch", return_value="main"), patch.object(
-                bridge, "working_tree_clean", return_value=True
-            ):
-                with self.assertRaises(PermissionError):
-                    bridge.materialize_live_authorization(
-                        approval_text=bridge.expected_approval_text(head),
-                        consumption_path=consume,
-                        result_path=result,
-                    )
+        for state_key in ("challenge", "proof_claim", "consumption", "result"):
+            with self.subTest(state_key=state_key), tempfile.TemporaryDirectory() as td:
+                paths = self._paths(Path(td), head)
+                paths[state_key].write_text("existing", encoding="utf-8")
+                with patch.object(bridge, "current_branch", return_value="main"), patch.object(
+                    bridge, "working_tree_clean", return_value=True
+                ):
+                    with self.assertRaises(PermissionError):
+                        bridge.materialize_live_authorization(
+                            approval_text=bridge.expected_approval_text(head),
+                            consumption_path=paths["consumption"], result_path=paths["result"]
+                        )
 
-    def test_12_existing_result_rejects_rerun(self):
-        head = bridge.current_git_commit()
+    def test_12_materialized_authorization_is_exact_v25_shape(self):
         with tempfile.TemporaryDirectory() as td:
-            root = Path(td)
-            consume, result = self._paths(root, head)
-            result.write_text("existing", encoding="utf-8")
-            with patch.object(bridge, "current_branch", return_value="main"), patch.object(
-                bridge, "working_tree_clean", return_value=True
-            ):
-                with self.assertRaises(PermissionError):
-                    bridge.materialize_live_authorization(
-                        approval_text=bridge.expected_approval_text(head),
-                        consumption_path=consume,
-                        result_path=result,
-                    )
-
-    def test_13_materialized_authorization_is_exact_v25_shape(self):
-        with tempfile.TemporaryDirectory() as td:
-            auth, _, _ = self._materialize(Path(td))
+            auth, _ = self._materialize(Path(td))
             template = bridge.v25.build_live_authorization_template()
             self.assertEqual(set(auth), set(template))
             self.assertEqual(auth["status"], "EXPLICIT_USER_APPROVED")
@@ -174,64 +156,115 @@ class TestSemMinistralLiveAuthorizationExecutionBridge(unittest.TestCase):
             self.assertTrue(auth["model_contact_authorized"])
             self.assertFalse(auth["authorization_consumed"])
 
-    def test_14_materialization_does_not_persist_or_contact(self):
+    def test_13_materialization_persists_proof_chain_but_not_v25_consume_or_result(self):
         with tempfile.TemporaryDirectory() as td:
-            _, consume, result = self._materialize(Path(td))
-            self.assertFalse(consume.exists())
-            self.assertFalse(result.exists())
+            _, paths = self._materialize(Path(td))
+            self.assertTrue(paths["challenge"].is_file())
+            self.assertTrue(paths["proof_claim"].is_file())
+            self.assertFalse(paths["consumption"].exists())
+            self.assertFalse(paths["result"].exists())
+            challenge = json.loads(paths["challenge"].read_text(encoding="utf-8"))
+            claim = json.loads(paths["proof_claim"].read_text(encoding="utf-8"))
+            self.assertEqual(challenge["status"], "PERSIST_BEFORE_APPROVAL_NOT_AUTHORIZED")
+            self.assertEqual(claim["status"], "CLAIMED_ONCE_MODEL_CONTACT_STILL_NOT_AUTHORIZED")
 
-    def test_15_v25_accepts_materialized_authorization(self):
+    def test_14_v25_accepts_materialized_authorization(self):
         with tempfile.TemporaryDirectory() as td:
-            auth, _, _ = self._materialize(Path(td))
+            auth, _ = self._materialize(Path(td))
             validated = bridge.v25.validate_live_execution_authorization(auth)
             self.assertEqual(validated, auth)
+
+    def test_15_v30_validation_is_required_before_materialization(self):
+        with tempfile.TemporaryDirectory() as td:
+            head = bridge.current_git_commit()
+            paths = self._paths(Path(td), head)
+            approval = bridge.expected_approval_text(head)
+            with patch.object(bridge, "current_branch", return_value="main"), patch.object(
+                bridge, "working_tree_clean", return_value=True
+            ), patch.object(
+                bridge.v30, "validate_proof_gate_envelope_preview", wraps=bridge.v30.validate_proof_gate_envelope_preview
+            ) as validate_v30:
+                bridge.materialize_live_authorization(
+                    approval_text=approval,
+                    consumption_path=paths["consumption"], result_path=paths["result"]
+                )
+            self.assertGreaterEqual(validate_v30.call_count, 1)
 
     def test_16_execute_bridge_hands_immediately_to_v25_execute_once(self):
         head = bridge.current_git_commit()
         with tempfile.TemporaryDirectory() as td:
-            root = Path(td)
-            consume, result = self._paths(root, head)
+            paths = self._paths(Path(td), head)
             approval = bridge.expected_approval_text(head)
             sentinel = {"status": "FAKE_EXECUTED"}
             with patch.object(bridge, "current_branch", return_value="main"), patch.object(
                 bridge, "working_tree_clean", return_value=True
             ), patch.object(bridge.v25, "execute_once", return_value=sentinel) as execute:
                 observed = bridge.execute_approved_once(
-                    approval_text=approval, consumption_path=consume, result_path=result
+                    approval_text=approval,
+                    consumption_path=paths["consumption"], result_path=paths["result"]
                 )
             self.assertIs(observed, sentinel)
             execute.assert_called_once()
             kwargs = execute.call_args.kwargs
-            self.assertEqual(kwargs["consumption_path"], consume)
-            self.assertEqual(kwargs["result_path"], result)
+            self.assertEqual(kwargs["consumption_path"], paths["consumption"])
+            self.assertEqual(kwargs["result_path"], paths["result"])
             self.assertEqual(kwargs["authorization"]["status"], "EXPLICIT_USER_APPROVED")
+            self.assertTrue(paths["proof_claim"].exists())
 
     def test_17_source_worktree_mismatch_fails_closed(self):
         original = bridge._text_blob_sha1
-
         def fake(path: Path):
             if path.name == Path(bridge.V25_PATH).name:
                 return "0" * 40
             return original(path)
-
         with patch.object(bridge, "_text_blob_sha1", side_effect=fake):
             with self.assertRaises(PermissionError):
                 bridge.build_bridge_report()
 
-    def test_18_changed_frozen_plan_fails_closed(self):
+    def test_18_provenance_source_worktree_mismatch_fails_closed(self):
+        original = bridge._text_blob_sha1
+        target = Path(bridge.PROVENANCE_SOURCE_PATHS[2]).name
+        def fake(path: Path):
+            if path.name == target:
+                return "0" * 40
+            return original(path)
+        with patch.object(bridge, "_text_blob_sha1", side_effect=fake):
+            with self.assertRaises(PermissionError):
+                bridge.build_bridge_report()
+
+    def test_19_changed_frozen_plan_fails_closed(self):
         with patch.object(bridge.plan_prep, "EXPECTED_RUNTIME_MODEL_ID", "other-model"):
             with self.assertRaises(PermissionError):
                 bridge.build_bridge_report()
 
-    def test_19_old_user_approval_is_not_recorded_or_consumed_by_development(self):
+    def test_20_proof_chain_failure_blocks_v25_materialization(self):
+        head = bridge.current_git_commit()
+        with tempfile.TemporaryDirectory() as td:
+            paths = self._paths(Path(td), head)
+            with patch.object(bridge, "current_branch", return_value="main"), patch.object(
+                bridge, "working_tree_clean", return_value=True
+            ), patch.object(bridge.v30, "build_proof_gate_envelope_preview", side_effect=PermissionError("blocked")):
+                with self.assertRaises(PermissionError):
+                    bridge.materialize_live_authorization(
+                        approval_text=bridge.expected_approval_text(head),
+                        consumption_path=paths["consumption"], result_path=paths["result"]
+                    )
+            self.assertFalse(paths["consumption"].exists())
+            self.assertFalse(paths["result"].exists())
+
+    def test_21_old_user_approval_is_not_recorded_or_consumed_by_development(self):
         report = bridge.build_bridge_report()
         self.assertTrue(report["new_exact_current_main_user_approval_required"])
         self.assertFalse(report["authorization_consumed_by_report"])
         self.assertFalse(report["model_contact_performed_by_report"])
+        self.assertTrue(report["v28_v29_v30_provenance_required_before_materialization"])
+        self.assertTrue(report["proof_claim_required_before_materialization"])
+        self.assertTrue(report["v25_atomic_consume_required_before_model_contact"])
 
-    def test_20_residual_issue_and_nonproduct_boundaries_remain(self):
+    def test_22_residual_issue_and_nonproduct_boundaries_remain(self):
         report = bridge.build_bridge_report()
         self.assertEqual(report["residual_architecture_issue"], 130)
+        self.assertFalse(report["external_authority_claimed"])
         self.assertFalse(report["real_data"])
         self.assertFalse(report["pilot_approved"])
         self.assertFalse(report["production_approved"])
