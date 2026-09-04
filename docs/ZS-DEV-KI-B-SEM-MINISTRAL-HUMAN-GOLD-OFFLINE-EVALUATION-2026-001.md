@@ -1,6 +1,6 @@
 # ZS-DEV-KI-B-SEM-MINISTRAL-HUMAN-GOLD-OFFLINE-EVALUATION-2026-001
 
-Status: DEVELOPMENT — OFFLINE ONLY — MODEL CONTACT FORBIDDEN
+Status: OFFLINE EVALUATION COMPLETED — QUALIFICATION FAIL — MODEL NOT QUALIFIED — MODEL CONTACT FORBIDDEN
 
 Base `main`:
 
@@ -31,6 +31,9 @@ Der Arbeitsblock autorisiert keinen Modellkontakt und keine Wiederholung des Lau
   - Blob: `704adbd930c042b132a34bb9ddc95b4531f336b2`
 - Frozen Qualification Policy: `tests/fixtures/zs_ki_b_sem_v07_qualification_policy_frozen_v0_1.json`
   - Blob: `9bc06b2648b05f9bb1d464e019e23f8afd82570b`
+- Bound Candidate Contract: `domains/zukunftscheck/schema/b_semantic_contract_v0_3_candidate.schema.json`
+  - Contract: `ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.3-candidate`
+  - Blob: `bc3dd4832db51677bdaf6f16028ade1b02214673`
 
 ## Fachlich führende Gold-Semantik
 
@@ -44,27 +47,106 @@ Die Auswertung übernimmt die Semantik aus `scripts/zs_ki_b_sem_qualifikation_ru
 
 Die Auswertung läuft über alle 16 Fälle. Ein einzelner FAIL beendet die Fallauswertung nicht.
 
-## Gesamtergebnis
+## Evaluator-Korrekturen während des Arbeitsblocks
 
-Nur wenn sämtliche Kriterien der Frozen Qualification Policy erfüllt sind, darf `qualification_result = PASS` gesetzt werden. Andernfalls gilt zwingend:
+Zwei technische Fehler des neu erstellten Offline-Evaluators wurden vor Abschluss identifiziert und repariert:
+
+1. Direkter Script-Aufruf konnte `core` nicht importieren, weil das Repo-Root nicht früh genug in `sys.path` lag.
+2. Der erste Boundary-Pfad wandte den v0.2-Validator direkt auf `v0.3-candidate` an und erzeugte dadurch künstlich 16 `SEMANTIC_CONTRACT_VERSION_MISMATCH`-Befunde.
+
+Der korrigierte Evaluator verlangt jetzt den tatsächlich gebundenen Vertrag `v0.3-candidate` und nutzt eine interne Kopie mit normalisierter Contract-Version ausschließlich zur Wiederverwendung der geerbten v0.2-Boundary-Semantik. Die zusätzlichen v0.3-Candidate-Grenzen bleiben separat gebunden und geprüft.
+
+## Verifiziertes Gesamtergebnis
+
+Die korrigierte Offline-Auswertung der bereits vorhandenen V2.5-Result-Datei ergab:
+
+- `cases_evaluated = 16`
+- `parse_success_count = 16`
+- `boundary_pass_count = 13`
+- `case_pass_count = 3`
+- `case_fail_count = 13`
+- `required_assignment_count = 24`
+- `missing_required_count = 3`
+- `spurious_assignment_count = 17`
+- `forbidden_assignment_count = 0`
+- `conflict_candidate_mismatch_count = 1`
+- `challenge_pass_count = 1`
+- `challenge_case_count = 4`
+
+Zwingendes Resultat:
 
 - `qualification_result = FAIL`
 - `model_qualified = false`
 
-Auch bei PASS bleiben Benchmark-, Generalisierungs-, Realdaten-, Pilot-, Produktions- und Phase-F-Freigaben `false`.
+Die Frozen Qualification Policy ist damit eindeutig nicht erfüllt.
 
-## Neue Dateien
+## Boundary-Befund
+
+Nach Korrektur der Candidate-Contract-Bindung verbleiben drei echte Boundary-FAIL-Fälle:
+
+- `ZS-KI-B-SEM-V07-Q-PF4-SYN-001`
+  - `MISSING_PROPOSAL_REVIEW_FLAG`
+- `ZS-KI-B-SEM-V07-Q-PF6-SYN-001`
+  - `MISSING_PROPOSAL_REVIEW_FLAG`
+- `ZS-KI-B-SEM-V07-Q-CHALLENGE-TIME-SYN-001`
+  - `MISSING_PROPOSAL_REVIEW_FLAG`
+  - `MISSING_PROPOSAL_REVIEW_FLAG`
+
+Damit bestehen 13/16 Fälle die Contract-/Boundary-Prüfung; die Policy verlangt 16/16.
+
+## Human-Gold-/Fallbefund
+
+Nur drei Fälle bestehen sowohl Boundary als auch Human Gold vollständig. Der dominante Fehler ist Over-Assignment / semantische Überinklusion.
+
+### Einzelne FAIL-Fälle
+
+- `PF2`: spurious `6.1/PF6`
+- `PF4`: spurious `11.3/PF11`, `4.1/PF4`; zusätzlich Boundary-FAIL
+- `PF5`: missing `5.5/PF5`; spurious `5.1/PF5`, `8.1/PF8`
+- `PF6`: Gold-PASS, aber Boundary-FAIL
+- `PF7`: spurious `7.1/PF7`
+- `PF8`: spurious `11.6/PF11`, `8.2/PF8`
+- `PF9`: missing `9.2/PF9`
+- `PF10`: spurious `10.4/PF10`
+- `PF11`: spurious `4.3/PF4`
+- `PF12`: spurious `4.6/PF4`, `5.1/PF5`
+- `CHALLENGE-UNSUPPORTED`: spurious `4.3/PF4`
+- `CHALLENGE-TIME`: missing `4.2/PF4`; spurious `3.4/PF3`, `6.1/PF6`; Conflict-Candidate-Mismatch; zusätzlich Boundary-FAIL
+- `CHALLENGE-POSSIBLE-DATE`: spurious `11.2/PF11`, `11.6/PF11`
+
+`CHALLENGE-DOC` ist der einzige Challenge-Fall, der vollständig besteht.
+
+## Fachliche Einordnung
+
+Der Hauptbefund ist kein Parsing- oder Structured-Output-Problem. Alle 16 Modellantworten sind parsebar. Der dominante Qualifikationsfehler ist vielmehr semantische Überinklusion: Das Modell weist Inhalte zusätzlichen, durch Human Gold weder erforderlichen noch optional erlaubten Fragen zu.
+
+Zusätzlich zeigt `CHALLENGE-TIME` einen besonders relevanten Fehlertyp: Das erforderliche Assignment `4.2/PF4` fehlt, zwei sachfremde Assignments werden zusätzlich gesetzt, und ein Konflikt wird markiert, obwohl die eingefrorene Challenge-Semantik ausdrücklich keinen Konflikt allein aufgrund unterschiedlich datierter progressiver Zustände erwartet.
+
+Die drei `MISSING_PROPOSAL_REVIEW_FLAG`-Fälle zeigen daneben eine echte Boundary-Disziplinlücke bei der Kennzeichnung reviewpflichtiger Vorschläge.
+
+## Zulässige Schlussfolgerung
+
+Das Modell `ministral-3-14b-instruct-2512` hat diesen eingefrorenen synthetischen Qualifikationslauf unter der gebundenen Frozen Qualification Policy nicht bestanden.
+
+Nicht zulässig sind daraus weitergehende Schlüsse über allgemeine Modellqualität, andere Prompts, andere Verträge, andere Datensätze oder andere Modellversionen.
+
+Insbesondere folgen daraus keine Freigaben für Benchmark, Generalisierung, Realdaten, Pilot, Produktion oder Phase F.
+
+## Dateien des Arbeitsblocks
 
 - `scripts/zs_ki_b_sem_ministral_human_gold_offline_evaluator_v0_1.py`
 - `tests/synthetic/test_sem_ministral_human_gold_offline_evaluator_v0_1.py`
 - `docs/ZS-DEV-KI-B-SEM-MINISTRAL-HUMAN-GOLD-OFFLINE-EVALUATION-2026-001.md`
 
-## Nächster technischer Schritt
+## Abschlussstatus des Arbeitsblocks
 
-Fokussierte Tests lokal ausführen:
+Die Offline-Auswertung ist fachlich abgeschlossen.
 
-```powershell
-python -m unittest tests.synthetic.test_sem_ministral_human_gold_offline_evaluator_v0_1 -v
-```
+Offen vor einem möglichen Merge:
 
-Danach die bereits vorhandene V2.5-Result-Datei offline durch den Evaluator laufen lassen und den vollständigen Audit-Report gegen die Frozen Policy prüfen. Kein Modellkontakt ist dafür erforderlich oder zulässig.
+1. fokussierte Tests des final korrigierten Evaluators lokal GREEN bestätigen,
+2. optional Gesamtsuite ausführen,
+3. Änderungen reviewen,
+4. erst danach separaten Merge-/PR-Schritt vorbereiten.
+
+Kein Modellkontakt und kein weiterer Qualifikationslauf sind für den Abschluss dieses Arbeitsblocks erforderlich oder autorisiert.
