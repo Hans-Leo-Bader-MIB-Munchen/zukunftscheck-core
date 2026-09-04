@@ -16,12 +16,14 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE_MAIN_COMMIT = "a3bdf89d4aab82e346a1bdec37285743efc993d8"
-MANIFEST_VERSION = "ZS-KI-B-SEM-QUALIFICATION-REENTRY-MANIFEST-2026-001_v0.1"
+MANIFEST_VERSION = "ZS-KI-B-SEM-QUALIFICATION-REENTRY-MANIFEST-2026-001_v0.2"
 RUN_TYPE = "ZS-KI-B-SEM-QUALIFICATION-REENTRY-PREP-2026-001"
 SOURCE_INTEGRITY_BLOB_SHA = "1b7d5f81995036561718885555fe793bd05c15c6"
 SOURCE_V25_RUNNER_BLOB_SHA = "9ac29c25b47cbd7762a3d8ee30de7f72e20ae866"
 V07_FREEZE_MANIFEST_BLOB_SHA = "e79be6a40bc2bfd7498bc32399301b03a62c2275"
 RESIDUAL_ARCHITECTURE_ISSUE = 130
+EXPECTED_RUNTIME_MODEL_ID = "ministral-3-14b-instruct-2512"
+EXPECTED_MODEL_REPOSITORY = "mistralai/Ministral-3-14B-Instruct-2512-GGUF"
 
 INTEGRITY_PATH = "scripts/zs_ki_b_sem_canonical_binding_integrity_v0_1.py"
 V25_RUNNER_PATH = "scripts/zs_ki_b_sem_qualifikation_runner_v2_5_max_tokens_binding_prep.py"
@@ -119,16 +121,20 @@ def build_reentry_manifest() -> dict[str, Any]:
         raise PermissionError("V25 request bounds changed")
     if v25.RETRY_COUNT != 0 or v25.OUTPUT_REPAIR is not False:
         raise PermissionError("V25 retry/repair boundary changed")
+
     model_id = v25.v24.v23.v19.EXPECTED_MODEL_ID
-    if model_id != "qwen3-14b":
-        raise PermissionError("model binding changed")
+    model_repository = v25.v24.v23.v19.EXPECTED_MODEL_REPOSITORY
+    if model_id != EXPECTED_RUNTIME_MODEL_ID:
+        raise PermissionError("V25 runtime model binding changed")
+    if model_repository != EXPECTED_MODEL_REPOSITORY:
+        raise PermissionError("V25 model repository binding changed")
     if v25.BASE_URL != "http://127.0.0.1:1234/v1":
         raise PermissionError("loopback binding changed")
 
     manifest = {
         "manifest_version": MANIFEST_VERSION,
         "run_type": RUN_TYPE,
-        "status": "PREPARED_NOT_AUTHORIZED",
+        "status": "PREPARED_NOT_AUTHORIZED_MODEL_TARGET_DECISION_REQUIRED",
         "base_main_commit": BASE_MAIN_COMMIT,
         "residual_architecture_issue": RESIDUAL_ARCHITECTURE_ISSUE,
         "source_integrity_blob_sha": SOURCE_INTEGRITY_BLOB_SHA,
@@ -148,7 +154,10 @@ def build_reentry_manifest() -> dict[str, Any]:
             "git_blob_sha": EXPECTED_POLICY_BLOB_SHA,
         },
         "canonical_artifacts": snapshot["artifacts"],
-        "model": model_id,
+        "runtime_model_id": model_id,
+        "model_repository": model_repository,
+        "qualification_target_decision_required": True,
+        "qualification_target_not_inferred_from_prior_chat": True,
         "runner_path": V25_RUNNER_PATH,
         "runner_version": v25.RUNNER_VERSION,
         "required_base_url": v25.BASE_URL,
@@ -163,6 +172,7 @@ def build_reentry_manifest() -> dict[str, Any]:
         "authorization_gate": {
             "state": "CLOSED",
             "explicit_user_single_run_approval_required": True,
+            "model_target_must_be_explicitly_resolved_before_approval": True,
             "no_execution_from_manifest": True,
         },
         "execution_authorized": False,
@@ -189,10 +199,12 @@ def build_report() -> dict[str, Any]:
     manifest = build_reentry_manifest()
     return {
         "mode": "MODEL_FREE_QUALIFICATION_REENTRY_PREP",
-        "status": "PASS",
+        "status": "PASS_TARGET_DECISION_REQUIRED",
         "manifest_sha256": manifest["manifest_sha256"],
         "qualification_case_count": manifest["qualification_case_count"],
-        "model": manifest["model"],
+        "runtime_model_id": manifest["runtime_model_id"],
+        "model_repository": manifest["model_repository"],
+        "qualification_target_decision_required": True,
         "max_tokens": manifest["max_tokens"],
         "retry_count": manifest["retry_count"],
         "output_repair": manifest["output_repair"],
