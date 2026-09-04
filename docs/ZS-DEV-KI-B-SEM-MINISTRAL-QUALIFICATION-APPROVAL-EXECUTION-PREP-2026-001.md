@@ -67,6 +67,8 @@ Der Plan bindet auf dem gesicherten Base-Commit und im aktuellen Worktree bytege
 - V33 Canonical-Store TOCTOU Hardening;
 - V42 Authority-Root-Attestation als aktuellen Trust-Architektur-Endpunkt.
 
+**Härtung v0.2:** Candidate und sämtliche direkt oder transitiv für diesen Plan gebundenen Approval-/Execution-Quellen werden gegen den festen Base-Commit und den aktuellen Worktree geprüft. Insbesondere werden die unmittelbar importierten V28-/V29-Quellen jetzt **vor dem Import** verifiziert; bei jeder Abweichung erfolgt fail-closed, bevor deren Modulcode geladen wird.
+
 Jede Worktree-Abweichung führt fail-closed zum Abbruch des Planaufbaus.
 
 ## Nicht ausgeführte Aktionen
@@ -106,6 +108,7 @@ Es prüft insbesondere:
 - atomare Consumption-Grenze vor erstem Modellkontakt;
 - direkte Candidate-Eskalation weiterhin fail-closed;
 - exakte Security-Source-Worktree-Bindung;
+- fail-closed Pre-Import-Provenienzprüfung für unmittelbar importierte Gate-/Transform-Quellen;
 - deterministischen Plan-Hash;
 - Manipulationsabwehr;
 - Fehlen eigener Ausführungs-/Materialisierungs-Entrypoints.
