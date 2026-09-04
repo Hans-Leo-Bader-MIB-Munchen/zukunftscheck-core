@@ -1,3 +1,4 @@
+import ast
 import hashlib
 import json
 import unittest
@@ -78,11 +79,16 @@ class TestSemAiAssistedDevelopmentManifestCandidateV01(unittest.TestCase):
         self.assertEqual(self.manifest["mode"], "DEVELOPMENT_PREP_ONLY")
         self.assertEqual(self.manifest["data_class"], "SYNTHETIC_ONLY")
 
-    def test_no_network_or_model_runtime_code_in_test(self):
-        text = Path(__file__).read_text(encoding="utf-8").lower()
-        forbidden = ["requests.", "httpx", "urllib.request", "socket.", "lm studio", "localhost:", "openai("]
-        for token in forbidden:
-            self.assertNotIn(token, text)
+    def test_no_network_or_model_runtime_imports(self):
+        tree = ast.parse(Path(__file__).read_text(encoding="utf-8"))
+        forbidden_roots = {"requests", "httpx", "urllib", "socket", "openai"}
+        imported = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                imported.update(alias.name.split(".")[0] for alias in node.names)
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                imported.add(node.module.split(".")[0])
+        self.assertTrue(imported.isdisjoint(forbidden_roots), f"forbidden runtime import(s): {sorted(imported & forbidden_roots)}")
 
 
 if __name__ == "__main__":
