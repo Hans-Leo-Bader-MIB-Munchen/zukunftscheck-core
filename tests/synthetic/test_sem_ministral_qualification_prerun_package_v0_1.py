@@ -53,10 +53,11 @@ class TestSemMinistralQualificationPrerunPackage(unittest.TestCase):
         self.assertFalse(package["human_gold"]["model_visible"])
         self.assertEqual(package["human_gold"]["freeze_status"], "HUMAN_APPROVED_FROZEN")
 
-    def test_07_security_chain_is_bound(self):
+    def test_07_security_chain_is_bound_and_worktree_exact(self):
         package = prep.build_prerun_package()
         bindings = {item["role"]: item for item in package["security_source_bindings"]}
         self.assertEqual(len(bindings), 10)
+        self.assertTrue(package["security_sources_worktree_exact"])
         for role in (
             "v25_live_runner", "v26_one_shot_authorization", "v27_approval_ceremony",
             "v28_execution_gate", "v29_run_authorization_transform", "v30_proof_enforcing_live_gate",
@@ -65,6 +66,10 @@ class TestSemMinistralQualificationPrerunPackage(unittest.TestCase):
         ):
             self.assertIn(role, bindings)
             self.assertEqual(len(bindings[role]["git_blob_sha"]), 40)
+            self.assertEqual(
+                prep._text_blob_sha1(ROOT / bindings[role]["path"]),
+                bindings[role]["git_blob_sha"],
+            )
 
     def test_08_all_authority_and_product_flags_remain_false(self):
         package = prep.build_prerun_package()
@@ -101,17 +106,30 @@ class TestSemMinistralQualificationPrerunPackage(unittest.TestCase):
             with self.assertRaises(PermissionError):
                 prep.build_prerun_package()
 
-    def test_13_report_is_model_free_and_not_authorized(self):
+    def test_13_security_worktree_mismatch_fails_closed(self):
+        original = prep._text_blob_sha1
+
+        def mismatching(path: Path) -> str:
+            if path.as_posix().endswith("zs_ki_b_sem_execution_gate_v2_8_integration_prep.py"):
+                return "0" * 40
+            return original(path)
+
+        with patch.object(prep, "_text_blob_sha1", side_effect=mismatching):
+            with self.assertRaises(PermissionError):
+                prep.build_prerun_package()
+
+    def test_14_report_is_model_free_and_not_authorized(self):
         report = prep.build_report()
         self.assertEqual(report["mode"], "MODEL_FREE_MINISTRAL_QUALIFICATION_PRERUN_PREP")
         self.assertEqual(report["status"], "PASS")
+        self.assertTrue(report["security_sources_worktree_exact"])
         for key in (
             "execution_authorized", "model_run_authorized", "model_contact_authorized",
             "model_contact_performed", "model_qualified",
         ):
             self.assertIs(report[key], False, key)
 
-    def test_14_module_has_no_execution_transport_or_approval_materialization_entrypoint(self):
+    def test_15_module_has_no_execution_transport_or_approval_materialization_entrypoint(self):
         names = set(vars(prep))
         for forbidden in (
             "execute_once", "_default_transport", "_default_preflight",
