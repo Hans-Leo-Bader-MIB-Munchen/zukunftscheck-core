@@ -33,6 +33,7 @@ EXPECTED_CASE_IDS = [
     "ZS-KI-B-SEM-DEVCHAL-2026-BOUNDARY-001",
     "ZS-KI-B-SEM-DEVCHAL-2026-BOUNDARY-002",
 ]
+EXPECTED_CASE_IDS_SHA256 = "b02bc870f83c322cd000f47e2000a1e17617f465293afb990ff949f534c6b2e8"
 
 
 def canonical_bytes(path: Path) -> bytes:
@@ -45,6 +46,11 @@ def canonical_bytes(path: Path) -> bytes:
 def git_blob_sha1(path: Path) -> str:
     data = canonical_bytes(path)
     return hashlib.sha1(f"blob {len(data)}\0".encode("ascii") + data).hexdigest()
+
+
+def ordered_case_ids_sha256(case_ids: list[str]) -> str:
+    data = json.dumps(case_ids, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(data).hexdigest()
 
 
 class TestSemAiAssistedDevelopmentManifestCandidateV01(unittest.TestCase):
@@ -63,13 +69,20 @@ class TestSemAiAssistedDevelopmentManifestCandidateV01(unittest.TestCase):
         self.assertFalse(m["output_repair_authorized"])
         self.assertEqual(m["hard_stop"], "NO_MODEL_CONTACT_WITHOUT_SEPARATE_EXPLICIT_USER_AUTHORIZATION")
 
-    def test_case_order_exact(self):
+    def test_case_order_exact_and_hash_bound(self):
         self.assertEqual(self.manifest["expected_case_count"], 24)
         self.assertEqual(self.manifest["expected_model_request_count"], 24)
         self.assertEqual(self.manifest["ordered_case_ids"], EXPECTED_CASE_IDS)
         self.assertEqual(len(set(EXPECTED_CASE_IDS)), 24)
+        self.assertEqual(self.manifest["ordered_case_ids_sha256"], EXPECTED_CASE_IDS_SHA256)
+        self.assertEqual(ordered_case_ids_sha256(self.manifest["ordered_case_ids"]), EXPECTED_CASE_IDS_SHA256)
+        self.assertEqual(
+            self.manifest["ordered_case_ids_hash_canonicalization"],
+            "json_utf8_ensure_ascii_false_separators_comma_colon",
+        )
 
     def test_bound_blobs_exact(self):
+        self.assertIn("runner_candidate", self.manifest["bindings"])
         for name, binding in self.manifest["bindings"].items():
             path = ROOT / binding["path"]
             self.assertTrue(path.is_file(), f"missing bound artifact {name}: {path}")
@@ -81,7 +94,7 @@ class TestSemAiAssistedDevelopmentManifestCandidateV01(unittest.TestCase):
 
     def test_no_network_or_model_runtime_imports(self):
         tree = ast.parse(Path(__file__).read_text(encoding="utf-8"))
-        forbidden_roots = {"requests", "httpx", "urllib", "socket", "openai"}
+        forbidden_roots = {"requests", "httpx", "urllib", "socket", "openai", "subprocess", "os"}
         imported = set()
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
