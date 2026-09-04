@@ -11,6 +11,8 @@
   "output_repair_authorized": false,
   "expected_case_count": 24,
   "expected_model_request_count": 24,
+  "ordered_case_ids_sha256": "b02bc870f83c322cd000f47e2000a1e17617f465293afb990ff949f534c6b2e8",
+  "ordered_case_ids_hash_canonicalization": "json_utf8_ensure_ascii_false_separators_comma_colon",
   "ordered_case_ids": [
     "ZS-KI-B-SEM-DEVCHAL-2026-PF1-001",
     "ZS-KI-B-SEM-DEVCHAL-2026-PF2-001",
@@ -38,6 +40,10 @@
     "ZS-KI-B-SEM-DEVCHAL-2026-BOUNDARY-002"
   ],
   "bindings": {
+    "runner_candidate": {
+      "path": "scripts/zs_ki_b_sem_ai_assisted_development_runner_candidate_v0_1.py",
+      "git_blob_sha": "b7e8691506faea29955be255a46aa8040e94c36c"
+    },
     "challenge_catalog": {
       "path": "docs/ZS-DEV-KI-B-SEM-AI-ASSISTED-DEVELOPMENT-CHALLENGE-CATALOG-2026-001_v0.1.md",
       "git_blob_sha": "eb7c7b090564f7a27d0ba2ec555e696b55402709"
