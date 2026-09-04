@@ -1,0 +1,71 @@
+{
+  "manifest_version": "ZS-KI-B-SEM-AI-ASSISTED-DEVELOPMENT-MANIFEST-2026-001_v0.1",
+  "mode": "DEVELOPMENT_PREP_ONLY",
+  "data_class": "SYNTHETIC_ONLY",
+  "qualification_claim_allowed": false,
+  "execution_authorized": false,
+  "model_contact_authorized": false,
+  "preflight_authorized": false,
+  "automatic_retry_authorized": false,
+  "automatic_rerun_authorized": false,
+  "output_repair_authorized": false,
+  "expected_case_count": 24,
+  "expected_model_request_count": 24,
+  "ordered_case_ids": [
+    "ZS-KI-B-SEM-DEVCHAL-2026-PF1-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-PF2-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-PF3-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-PF4-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-PF5-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-PF6-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-PF7-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-PF8-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-PF9-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-PF10-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-PF11-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-PF12-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-CROSS-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-CROSS-002",
+    "ZS-KI-B-SEM-DEVCHAL-2026-CROSS-003",
+    "ZS-KI-B-SEM-DEVCHAL-2026-CROSS-004",
+    "ZS-KI-B-SEM-DEVCHAL-2026-EVIDENCE-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-EVIDENCE-002",
+    "ZS-KI-B-SEM-DEVCHAL-2026-TIME-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-TIME-002",
+    "ZS-KI-B-SEM-DEVCHAL-2026-SPECIFICITY-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-SPECIFICITY-002",
+    "ZS-KI-B-SEM-DEVCHAL-2026-BOUNDARY-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-BOUNDARY-002"
+  ],
+  "bindings": {
+    "challenge_catalog": {
+      "path": "docs/ZS-DEV-KI-B-SEM-AI-ASSISTED-DEVELOPMENT-CHALLENGE-CATALOG-2026-001_v0.1.md",
+      "git_blob_sha": "eb7c7b090564f7a27d0ba2ec555e696b55402709"
+    },
+    "development_gold": {
+      "path": "docs/ZS-DEV-KI-B-SEM-AI-ASSISTED-DEVELOPMENT-GOLD-2026-001_v0.2.md",
+      "git_blob_sha": "7cb29dfbcd8da66ec39106dd76c63d7364d39756"
+    },
+    "gold_countercheck": {
+      "path": "docs/ZS-DEV-KI-B-SEM-AI-ASSISTED-DEVELOPMENT-GOLD-COUNTERCHECK-2026-001_v0.1.md",
+      "git_blob_sha": "b586bca4fb8e15d58b5fe64d5e4c28062e52dfda"
+    },
+    "system_prompt": {
+      "path": "llm/prompts/zs_ki_b_sem_qualifikation_system_v0_8_specificity_candidate.txt",
+      "git_blob_sha": "20bb484a22e37ff12e1c2c5976e8baf85fbe7d24"
+    },
+    "reference_questions": {
+      "path": "domains/zukunftscheck/rules/reference_questions_v0_1.json",
+      "git_blob_sha": "d9ab893d6614a5fd98738d24e9541feb83e4ecb5"
+    },
+    "meaning_layer": {
+      "path": "domains/zukunftscheck/rules/reference_question_meanings_v0_7.json",
+      "git_blob_sha": "a3fcb71782fb2097f45e7cbea325b09181972664"
+    },
+    "structured_output_contract": {
+      "path": "domains/zukunftscheck/schema/b_semantic_contract_v0_3_candidate.schema.json",
+      "git_blob_sha": "bc3dd4832db51677bdaf6f16028ade1b02214673"
+    }
+  },
+  "hard_stop": "NO_MODEL_CONTACT_WITHOUT_SEPARATE_EXPLICIT_USER_AUTHORIZATION"
+}
