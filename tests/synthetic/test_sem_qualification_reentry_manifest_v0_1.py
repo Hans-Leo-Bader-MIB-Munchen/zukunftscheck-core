@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import copy
-import json
-import subprocess
 import sys
 import unittest
 from pathlib import Path
@@ -35,21 +33,25 @@ class TestSemQualificationReentryManifest(unittest.TestCase):
         self.assertEqual(len(manifest["qualification_snapshot_sha256"]), 64)
         self.assertEqual(len(manifest["ordered_case_ids_sha256"]), 64)
 
-    def test_04_manifest_binds_v25_request_boundaries(self):
+    def test_04_manifest_binds_actual_v25_request_boundaries(self):
         manifest = prep.build_reentry_manifest()
-        self.assertEqual(manifest["model"], "qwen3-14b")
+        self.assertEqual(manifest["runtime_model_id"], "ministral-3-14b-instruct-2512")
+        self.assertEqual(manifest["model_repository"], "mistralai/Ministral-3-14B-Instruct-2512-GGUF")
         self.assertEqual(manifest["required_base_url"], "http://127.0.0.1:1234/v1")
         self.assertEqual(manifest["expected_model_request_count"], 16)
         self.assertEqual(manifest["max_tokens"], 2048)
         self.assertEqual(manifest["retry_count"], 0)
         self.assertIs(manifest["output_repair"], False)
 
-    def test_05_manifest_keeps_authorization_gate_closed(self):
+    def test_05_manifest_keeps_authorization_gate_closed_and_requires_target_decision(self):
         manifest = prep.build_reentry_manifest()
-        self.assertEqual(manifest["status"], "PREPARED_NOT_AUTHORIZED")
+        self.assertEqual(manifest["status"], "PREPARED_NOT_AUTHORIZED_MODEL_TARGET_DECISION_REQUIRED")
         self.assertEqual(manifest["authorization_gate"]["state"], "CLOSED")
         self.assertIs(manifest["authorization_gate"]["explicit_user_single_run_approval_required"], True)
+        self.assertIs(manifest["authorization_gate"]["model_target_must_be_explicitly_resolved_before_approval"], True)
         self.assertIs(manifest["authorization_gate"]["no_execution_from_manifest"], True)
+        self.assertIs(manifest["qualification_target_decision_required"], True)
+        self.assertIs(manifest["qualification_target_not_inferred_from_prior_chat"], True)
         for key in (
             "execution_authorized", "model_run_authorized", "model_contact_authorized",
             "model_contact_performed", "model_qualified", "benchmark_approved",
@@ -77,7 +79,7 @@ class TestSemQualificationReentryManifest(unittest.TestCase):
     def test_09_tampered_manifest_rejected_even_with_recomputed_hash(self):
         manifest = prep.build_reentry_manifest()
         tampered = copy.deepcopy(manifest)
-        tampered["model"] = "attacker-model"
+        tampered["runtime_model_id"] = "attacker-model"
         unsigned = dict(tampered)
         unsigned.pop("manifest_sha256")
         tampered["manifest_sha256"] = prep._stable_sha256(unsigned)
@@ -94,10 +96,11 @@ class TestSemQualificationReentryManifest(unittest.TestCase):
             with self.assertRaises(PermissionError):
                 prep.build_reentry_manifest()
 
-    def test_12_report_is_model_free_and_not_authorized(self):
+    def test_12_report_is_model_free_not_authorized_and_target_unresolved(self):
         report = prep.build_report()
         self.assertEqual(report["mode"], "MODEL_FREE_QUALIFICATION_REENTRY_PREP")
-        self.assertEqual(report["status"], "PASS")
+        self.assertEqual(report["status"], "PASS_TARGET_DECISION_REQUIRED")
+        self.assertIs(report["qualification_target_decision_required"], True)
         for key in (
             "execution_authorized", "model_run_authorized", "model_contact_authorized",
             "model_contact_performed", "model_qualified",
