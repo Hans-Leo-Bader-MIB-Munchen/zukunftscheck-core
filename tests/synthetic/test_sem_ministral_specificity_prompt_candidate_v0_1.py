@@ -17,12 +17,19 @@ GOLD_GIT_BLOB = "704adbd930c042b132a34bb9ddc95b4531f336b2"
 POLICY_GIT_BLOB = "9bc06b2648b05f9bb1d464e019e23f8afd82570b"
 
 
+def canonical_bytes(path: Path) -> bytes:
+    data = path.read_bytes().replace(b"\r\n", b"\n")
+    if b"\r" in data:
+        raise ValueError(f"bare CR rejected for bound text artifact: {path}")
+    return data
+
+
 def sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    return hashlib.sha256(canonical_bytes(path)).hexdigest()
 
 
 def git_blob_sha1(path: Path) -> str:
-    data = path.read_bytes().replace(b"\r\n", b"\n")
+    data = canonical_bytes(path)
     return hashlib.sha1(f"blob {len(data)}\0".encode("ascii") + data).hexdigest()
 
 
