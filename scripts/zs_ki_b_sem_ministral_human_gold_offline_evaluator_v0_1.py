@@ -17,10 +17,13 @@ if str(ROOT) not in sys.path:
 
 from core.validation.semantic_boundary_v0_2 import validate_semantic_response_v0_2
 
-EVALUATOR_VERSION = "ZS-KI-B-SEM-MINISTRAL-HUMAN-GOLD-OFFLINE-EVALUATOR-2026-001_v0.2"
+EVALUATOR_VERSION = "ZS-KI-B-SEM-MINISTRAL-HUMAN-GOLD-OFFLINE-EVALUATOR-2026-001_v0.3"
 WORK_BLOCK = "ZS-DEV-KI-B-SEM-MINISTRAL-HUMAN-GOLD-OFFLINE-EVALUATION-2026-001"
 EXPECTED_V25_RUNNER_VERSION = "v2.5-max-tokens-binding-prep"
+EXPECTED_V25_RUN_TYPE = "ZS-KI-B-SEM-QUALIFIKATION-SYNTHETIC-V2-5-MAX-TOKENS-BINDING-PREP-2026-026"
 EXPECTED_V25_RUNNER_BLOB = "9ac29c25b47cbd7762a3d8ee30de7f72e20ae866"
+EXPECTED_AUTHORIZED_GIT_COMMIT = "8e78775a95e3ddf3d90890e546d5cd70f26caeb3"
+EXPECTED_MAX_TOKENS = 2048
 EXPECTED_CASE_COUNT = 16
 EXPECTED_CANDIDATE_CONTRACT = "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.3-candidate"
 BASE_BOUNDARY_CONTRACT = "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.2"
@@ -131,6 +134,7 @@ def evaluate_gold(case_gold: dict[str, Any], response: dict[str, Any]) -> dict[s
 
 def _candidate_bound_issues(response: dict[str, Any]) -> list[dict[str, Any]]:
     issues: list[dict[str, Any]] = []
+
     def add(code: str, message: str) -> None:
         issues.append({"code": code, "rule": "V03-CANDIDATE-BOUND", "object_type": "SemanticResponse", "object_id": None, "message": message})
 
@@ -171,12 +175,6 @@ def _candidate_bound_issues(response: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def evaluate_boundary(case: dict[str, Any], response: dict[str, Any]) -> dict[str, Any]:
-    """Validate the bound v0.3-candidate contract plus inherited v0.2 boundary semantics.
-
-    v0.3-candidate is derived from v0.2 and adds finite cardinality/text bounds only.
-    Therefore the original response must identify v0.3-candidate exactly; a deep copy is
-    normalized to v0.2 solely for reuse of the established v0.2 semantic boundary validator.
-    """
     allowed = {row["source_location_id"] for row in case["source_locations"]}
     target = case["target_source_location_id"]
     rendered = _candidate_bound_issues(response)
@@ -214,20 +212,32 @@ def _count_issue_code(case_reports: list[dict[str, Any]], code: str) -> int:
     )
 
 
+def _validate_preserved_run_identity(result: dict[str, Any], ordered_ids: list[str]) -> None:
+    exact = {
+        "status": "AWAITING_HUMAN_REVIEW",
+        "runner_version": EXPECTED_V25_RUNNER_VERSION,
+        "run_type": EXPECTED_V25_RUN_TYPE,
+        "authorized_git_commit": EXPECTED_AUTHORIZED_GIT_COMMIT,
+        "authorized_runner_blob_oid": EXPECTED_V25_RUNNER_BLOB,
+        "max_tokens": EXPECTED_MAX_TOKENS,
+        "expected_model_request_count": EXPECTED_CASE_COUNT,
+        "observed_model_request_count": EXPECTED_CASE_COUNT,
+        "retry_count": 0,
+        "output_repair": False,
+        "automatic_retry_authorized": False,
+        "automatic_rerun_authorized": False,
+    }
+    for key, expected in exact.items():
+        if result.get(key) != expected:
+            raise ValueError(f"preserved V2.5 run identity mismatch: {key}")
+    if result.get("ordered_case_ids") != ordered_ids:
+        raise ValueError("preserved V2.5 ordered_case_ids do not match frozen suite order")
+
+
 def evaluate_result(result: dict[str, Any]) -> dict[str, Any]:
     suite, gold, policy = validate_frozen_inputs()
-    if result.get("status") != "AWAITING_HUMAN_REVIEW":
-        raise ValueError("input is not a preserved V2.5 AWAITING_HUMAN_REVIEW result")
-    if result.get("runner_version") != EXPECTED_V25_RUNNER_VERSION:
-        raise ValueError("input runner_version is not the frozen V2.5 runner")
-    if result.get("authorized_runner_blob_oid") != EXPECTED_V25_RUNNER_BLOB:
-        raise ValueError("input authorized_runner_blob_oid does not match frozen V2.5 runner")
-    if result.get("expected_model_request_count") != EXPECTED_CASE_COUNT or result.get("observed_model_request_count") != EXPECTED_CASE_COUNT:
-        raise ValueError("input does not record exactly 16/16 model requests")
-    if result.get("retry_count") != 0 or result.get("output_repair") is not False:
-        raise ValueError("input violates no-retry/no-repair qualification bounds")
-    if result.get("automatic_retry_authorized") is not False or result.get("automatic_rerun_authorized") is not False:
-        raise ValueError("input permits automatic retry/rerun")
+    ordered_ids = [row["case_id"] for row in suite["cases"]]
+    _validate_preserved_run_identity(result, ordered_ids)
 
     input_cases = result.get("cases")
     if not isinstance(input_cases, list) or len(input_cases) != EXPECTED_CASE_COUNT:
@@ -242,7 +252,6 @@ def evaluate_result(result: dict[str, Any]) -> dict[str, Any]:
 
     suite_index = {row["case_id"]: row for row in suite["cases"]}
     gold_index = {row["case_id"]: row for row in gold["cases"]}
-    ordered_ids = [row["case_id"] for row in suite["cases"]]
     if set(input_index) != set(ordered_ids):
         raise ValueError("preserved result case IDs differ from frozen 16-case suite")
 
@@ -303,9 +312,12 @@ def evaluate_result(result: dict[str, Any]) -> dict[str, Any]:
         "source_result": {
             "status": result.get("status"),
             "runner_version": result.get("runner_version"),
+            "run_type": result.get("run_type"),
             "authorized_git_commit": result.get("authorized_git_commit"),
             "authorized_runner_blob_oid": result.get("authorized_runner_blob_oid"),
             "qualification_snapshot_sha256": result.get("qualification_snapshot_sha256"),
+            "max_tokens": result.get("max_tokens"),
+            "ordered_case_ids": result.get("ordered_case_ids"),
             "expected_model_request_count": result.get("expected_model_request_count"),
             "observed_model_request_count": result.get("observed_model_request_count"),
             "retry_count": result.get("retry_count"),
@@ -314,7 +326,11 @@ def evaluate_result(result: dict[str, Any]) -> dict[str, Any]:
         "frozen_bindings": {
             "human_gold_blob": EXPECTED_GOLD_BLOB,
             "qualification_policy_blob": EXPECTED_POLICY_BLOB,
+            "v25_runner_version": EXPECTED_V25_RUNNER_VERSION,
+            "v25_run_type": EXPECTED_V25_RUN_TYPE,
+            "v25_authorized_git_commit": EXPECTED_AUTHORIZED_GIT_COMMIT,
             "v25_runner_blob": EXPECTED_V25_RUNNER_BLOB,
+            "v25_max_tokens": EXPECTED_MAX_TOKENS,
             "candidate_contract": EXPECTED_CANDIDATE_CONTRACT,
             "candidate_schema_blob": EXPECTED_CANDIDATE_SCHEMA_BLOB,
         },
@@ -357,7 +373,7 @@ def main() -> int:
     args = parser.parse_args()
     result = _load(args.result)
     report = evaluate_result(result)
-    output = args.output or args.result.with_name(args.result.stem + "_human_gold_offline_report_v0_1.json")
+    output = args.output or args.result.with_name(args.result.stem + "_human_gold_offline_report_v0_3.json")
     output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report, ensure_ascii=False, indent=2))
     return 0 if report["qualification_result"] == "PASS" else 3
