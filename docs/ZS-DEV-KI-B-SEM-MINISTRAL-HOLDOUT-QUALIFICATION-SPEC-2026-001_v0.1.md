@@ -1,6 +1,6 @@
-# ZS-DEV-KI-B-SEM-MINISTRAL-HOLDOUT-QUALIFICATION-SPEC-2026-001_v0.1
+# ZS-DEV-KI-B-SEM-MINISTRAL-HOLDOUT-QUALIFICATION-SPEC-2026-001_v0.2
 
-Status: MODEL-FREE HOLDOUT SPECIFICATION — NO MODEL CONTACT — NO RUN AUTHORIZATION
+Status: MODEL-FREE QUALIFICATION GOVERNANCE — NO MODEL CONTACT — NO RUN AUTHORIZATION
 
 Base: `6f4cd1a258d0d44084528fd729ad3016db441793`
 
@@ -8,13 +8,35 @@ Arbeitsbranch: `zs-dev-ki-b-sem-ministral-fail-root-cause-analysis-2026-001`
 
 ## Ausgangspunkt
 
-Die bisherige 16-Fälle-Suite bleibt unverändert erhalten, ist nach der modellfreien Root-Cause-Analyse und der daraus abgeleiteten Spezifitäts-/Anti-Propagation-Regel R-SP1 bis R-SP3 jedoch nur noch als **Development Regression Set** geeignet. Sie darf für einen später reparierten Prompt nicht als unabhängiger Neuqualifikationsnachweis verwendet werden.
+Die bisherige 16-Fälle-Suite bleibt unverändert erhalten und gilt als **Development Regression Set**. Sie darf nach der daraus abgeleiteten Prompt-Reparatur nicht als unabhängiger Neuqualifikationsnachweis verwendet werden.
 
-## Zweck
+Die zuvor vorgesehene vollständig human-only Erstellung eines 24-Fälle-Holdouts wird aus Praktikabilitätsgründen verworfen. Stattdessen wird die Governance in zwei klar getrennte Ebenen aufgeteilt.
 
-Dieses Dokument definiert die Anforderungen an eine neue, unabhängige Holdout-Qualifikationsmenge für einen späteren empirischen Einmallauf.
+## Neue Struktur
 
-Die Holdout-Menge muss vor jedem Modellkontakt vollständig human-only erstellt, fachlich reviewed, unabhängig gegengeprüft und eingefroren werden. Erst danach darf in einem separaten Arbeitsblock überhaupt über eine explizite Modelllauf-Autorisierung entschieden werden.
+### A. AI-assisted Development Challenge Set
+
+Umfang: **24 neue synthetische Fälle**.
+
+Zweck:
+- breite Development-Regression,
+- Prüfung neuer Oberflächenformen und semantischer Kombinationen,
+- Prompt-/Meaning-/Contract-Weiterentwicklung,
+- Generalisierungsindikatoren innerhalb des Development-Prozesses.
+
+Diese 24 Fälle dürfen KI-assistiert erstellt werden. Ihre Herkunft muss ausdrücklich als `AI_ASSISTED_DEVELOPMENT_ONLY` dokumentiert werden.
+
+Sie dürfen niemals als unabhängiger Holdout oder alleiniger Qualifikationsnachweis bezeichnet werden.
+
+### B. Independent Human Holdout Qualification Set
+
+Umfang: **8 neue synthetische Fälle**.
+
+Zweck:
+- separater unabhängiger Qualifikationsnachweis nach Abschluss der Development-Arbeit,
+- Prüfung neuer semantischer Strukturen, die nicht aus den Development-Sets stammen.
+
+Diese 8 Fälle müssen vollständig human-only erstellt werden und dürfen bei ihrer Erstellung nicht durch ein generatives Modell formuliert, paraphrasiert, ausgewählt oder fachlich gelöst werden.
 
 ## Harte Grenzen
 
@@ -23,30 +45,11 @@ Die Holdout-Menge muss vor jedem Modellkontakt vollständig human-only erstellt,
 - kein Modellrequest
 - kein Retry/Rerun
 - kein Output-Repair
-- keine Verwendung des Modells zur Fallgenerierung, Gold-Erstellung, Gold-Review oder Holdout-Auswahl
-- keine Änderung des bestehenden Frozen Human Gold aufgrund des Ministral-FAILs
-- keine Änderung der Frozen Qualification Policy in diesem Spezifikationsschritt
-- keine stille Wiederverwendung der 16 Development-Fälle als Holdout
+- keine stille Verwendung der 16 oder 24 Development-Fälle als Independent Holdout
 - keine Autorisierung eines Modelllaufs durch dieses Dokument
+- keine nachträgliche Absenkung der Qualification Policy wegen eines Modellbefunds
 
-## Holdout-Unabhängigkeit
-
-Ein Holdout-Fall ist nur zulässig, wenn sein fachlicher Inhalt nicht aus einem der bisherigen 16 Fälle abgeleitet, paraphrasiert oder minimal variiert wurde.
-
-Unzulässig sind insbesondere:
-
-- bloßer Austausch von Namen, Zahlen, Daten oder Objekten bei gleicher semantischer Struktur,
-- direkte Negativbeispiele, die lediglich die bekannten Ministral-Fehler spiegeln,
-- Fälle, deren Gold allein aus R-SP1 bis R-SP3 rückwärts konstruiert wurde,
-- Fälle, die gezielt eine bereits bekannte konkrete Fehlzuordnung abfragen, ohne neue semantische Struktur.
-
-Zulässig und erwünscht sind dagegen neue synthetische Fallstrukturen, die dieselben allgemeinen Fähigkeiten prüfen, aber andere Oberflächenformen, Aussagekombinationen, Modalitäten, Zeitbezüge, Quellenlagen und Bedeutungsüberschneidungen verwenden.
-
-## Zielumfang
-
-Vorgeschlagener Mindestumfang: **24 neue Holdout-Fälle**.
-
-Begründung: Die bisherige 16er-Suite war für die erste Qualifikation ausreichend klein, ist nun aber Development Set. Ein neuer Holdout sollte mehr Varianz enthalten und insbesondere echte Mehrdimensionalität, Spezifitätsvorrang, Boundary-Disziplin und Challenge-Fälle getrennt abdecken.
+## 24er Development Challenge Set
 
 Empfohlene Struktur:
 
@@ -59,55 +62,57 @@ Empfohlene Struktur:
 
 Gesamt: 24 Fälle.
 
-## Designprinzipien für die Fälle
+Jeder Fall muss vollständig synthetisch sein und mindestens enthalten:
 
-Jeder Holdout-Fall muss:
+- case_id
+- category
+- source_locations
+- synthetic_text
+- modality_notes
+- time_reference_notes
+- provenance_notes
+- design_intent
+- provenance_marker: `AI_ASSISTED_DEVELOPMENT_ONLY`
 
-1. vollständig synthetisch sein,
-2. genau dokumentierte SourceLocations enthalten,
-3. eine eindeutige fachliche Prüfintention besitzen,
-4. nicht lediglich einen bekannten Development-Fall imitieren,
-5. mehrere realistische semantische Nachbarn zulassen, ohne dadurch absichtlich unauflösbar zu werden,
-6. bei Mehrfachzuordnung klar trennbare eigenständige Bedeutungsdimensionen enthalten,
-7. bei Negativabgrenzungen mindestens eine plausible, aber falsche Nachbarzuordnung ermöglichen,
-8. Modalität, Zeitbezug und Provenienz so formulieren, dass sie tatsächlich geprüft werden müssen und nicht nur dekorativ sind.
+Für Development-Zwecke darf Human Gold ebenfalls KI-assistiert vorbereitet werden, muss aber vor jedem empirischen Einsatz fachlich menschlich bestätigt werden.
 
-## Human-Gold-Anforderungen
+## 8er Independent Human Holdout
 
-Für jeden Holdout-Fall muss Human Gold vor Modellkontakt festlegen:
+Der spätere Independent Holdout soll klein genug sein, dass er praktisch von einem Menschen erstellt werden kann, aber strukturell breit genug bleiben.
+
+Vorgeschlagene Verteilung:
+
+- 2 Basis-/Spezifitätsfälle
+- 2 echte Cross-PF-Mehrdimensionalitätsfälle
+- 1 Evidenz-/UNSUPPORTED-Fall
+- 1 Zeit-/Versionsfall
+- 1 Boundary-/Review-Fall
+- 1 freier Challenge-Fall
+
+Gesamt: 8 Fälle.
+
+Die 8 Fälle dürfen nicht aus den 16 oder 24 Development-Fällen paraphrasiert oder minimal variiert werden.
+
+## Human-Gold für den Independent Holdout
+
+Vor Modellkontakt müssen für alle 8 Fälle menschlich festgelegt und eingefroren werden:
 
 - `expected_assignments`
 - `optional_assignments`
 - `forbidden_assignments`
-- `expected_conflict_candidate`, soweit fachlich relevant
-- erwartete Boundary-/Review-Anforderungen, soweit der Fall dafür gebaut ist
-- kurze human-only Begründung, warum jede Required-/Optional-/Forbidden-Zuordnung gilt
+- `expected_conflict_candidate`, soweit relevant
+- Boundary-/Review-Erwartungen, soweit relevant
+- kurze fachliche Begründung
 
-Die Gold-Erstellung darf nicht mit einem Modell vorbereitet, vorgeschlagen oder gegengeprüft werden.
+Ein generatives Modell darf diese 8 Holdout-Goldentscheidungen nicht vorformulieren oder gegenprüfen.
 
-## Gegencheck-Gate
+## Freeze-Gate für spätere Qualifikation
 
-Vor Freeze müssen alle 24 Fälle unabhängig gegengeprüft werden.
+Vor jedem späteren Modellkontakt müssen mindestens separat eingefroren werden:
 
-Der Gegencheck muss mindestens prüfen:
-
-- fachliche Eindeutigkeit des Golds,
-- keine versteckte Paraphrase eines Development-Falls,
-- keine nachträgliche Codierung konkreter Ministral-Fehler,
-- echte Mehrdimensionalität bleibt zulässig,
-- Forbidden-Zuordnungen sind fachlich begründet und nicht künstlich,
-- Challenge-Fälle prüfen allgemeine Regeln und keine memorisierte Fallstruktur,
-- keine Realdaten und keine externen Quellen.
-
-Ein Fall mit ungelöster Gold-Uneinigkeit darf nicht in den Freeze.
-
-## Freeze-Gate
-
-Vor jedem späteren Modellkontakt müssen mindestens folgende Artefakte separat eingefroren werden:
-
-1. Holdout-Suite JSON mit exakt geordneten 24 Fall-IDs,
-2. Holdout Human Gold JSON,
-3. Qualification Policy oder explizite Bindung an eine bereits freigegebene Policy,
+1. Independent-Holdout-Suite JSON mit exakt geordneten 8 Fall-IDs,
+2. Independent-Holdout Human Gold JSON,
+3. Qualification Policy bzw. explizite Bindung an die freigegebene Policy,
 4. verwendeter Prompt-Candidate mit exaktem SHA256,
 5. Meaning Layer mit exaktem Blob,
 6. Contract/Structured-Output-Artefakte mit exakten Blobs,
@@ -115,46 +120,36 @@ Vor jedem späteren Modellkontakt müssen mindestens folgende Artefakte separat 
 
 Alle Bindungen müssen fail-closed prüfbar sein.
 
-## Trennung Development vs. Qualification
+## Zulässige Aussagekraft
 
-Ab diesem Arbeitsstand gelten zwei strikt getrennte Mengen:
+### 16er Development Regression Set
 
-### Development Regression Set
+Bekannte Regression. Kein unabhängiger Qualifikationsnachweis.
 
-Die bisherigen 16 Frozen-Fälle.
+### 24er AI-assisted Development Challenge Set
 
-Zweck:
-- Regression gegen bekannte Fähigkeiten und bekannte Fehlmuster,
-- statische Prompt-/Meaning-/Contract-Prüfung,
-- spätere empirische Regression nur, wenn separat autorisiert.
+Erweiterte Development-Evidenz und Generalisierungsindikator. Kein unabhängiger Qualifikationsnachweis.
 
-Nicht zulässig:
-- daraus allein eine neue Modellqualifikation abzuleiten.
+### 8er Independent Human Holdout
 
-### Independent Holdout Qualification Set
-
-Die neu zu erstellenden 24 Fälle.
-
-Zweck:
-- unabhängiger empirischer Qualifikationsnachweis nach Freeze,
-- Prüfung, ob Verbesserungen auf neue semantische Strukturen generalisieren.
+Einziger der drei Sätze, der nach ordnungsgemäßem Freeze und explizit autorisiertem Einmallauf als unabhängiger Holdout-Qualifikationsnachweis verwendet werden darf.
 
 ## Erfolgsmaßstab
 
-Die konkrete spätere Qualifikationsschwelle wird nicht in diesem Schritt neu festgelegt. Bis auf ausdrückliche Änderung durch einen separaten Governance-Block gilt als Default die bestehende strenge Logik: keine Spurious-, Forbidden-, Conflict- oder Boundary-Verstöße und vollständige Erfüllung der Required Assignments.
-
-Eine etwaige Änderung dieser Policy wäre ein eigener Arbeitsblock und darf nicht zur nachträglichen Erleichterung eines Modellbefunds erfolgen.
+Bis auf ausdrückliche Änderung in einem separaten Governance-Block gilt weiterhin die bestehende strenge Policy: vollständige Required Assignments, keine Spurious-, Forbidden-, Conflict- oder Boundary-Verstöße.
 
 ## Nächster Schritt
 
-Der nächste zulässige Schritt ist **nicht** ein Modelllauf, sondern die human-only Erstellung eines Holdout-Fallkatalogs v0.1 mit 24 neuen synthetischen Fallentwürfen ohne Gold-Freeze.
+Der nächste zulässige Schritt ist jetzt die Erstellung des **24er AI-assisted Development Challenge Set v0.1**. Dies ist ausdrücklich Development-Arbeit und kein Holdout.
 
-Danach folgen:
+Danach:
 
-1. fachliche Human-Gold-Erstellung,
-2. unabhängiger Gegencheck,
-3. Freeze der Holdout-Artefakte,
-4. separater Authorization-Prep,
-5. erst danach gegebenenfalls eine neue explizite Einmallauf-Freigabe.
+1. Development-Gold und statische Prüfung,
+2. gegebenenfalls separat autorisierte Development-Regression,
+3. erst nach Stabilisierung des Prompts Erstellung des kleinen 8er Human-Holdouts,
+4. Independent Human Gold,
+5. Freeze,
+6. separater Authorization-Prep,
+7. gegebenenfalls expliziter Einmallauf.
 
-Bis dahin gilt: **NO MODEL CONTACT — NO RUN AUTHORIZATION — DEVELOPMENT SET IS NOT QUALIFICATION HOLDOUT.**
+Bis dahin gilt: **NO MODEL CONTACT — NO RUN AUTHORIZATION — DEVELOPMENT EVIDENCE IS NOT HOLDOUT QUALIFICATION.**
