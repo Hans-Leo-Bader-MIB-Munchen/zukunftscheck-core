@@ -24,6 +24,40 @@ class MinistralHumanGoldOfflineEvaluatorV01Tests(unittest.TestCase):
             ]
         }
 
+    def _candidate_response(self, *, contract_version: str | None = None, proposal_review: bool = False) -> dict:
+        return {
+            "contract_version": contract_version or evaluator.EXPECTED_CANDIDATE_CONTRACT,
+            "source_location_id": "SRC-1",
+            "proposals": [
+                {
+                    "proposal_id": "P1",
+                    "source_location_id": "SRC-1",
+                    "normalized_statement": "Testaussage",
+                    "finding_type_candidate": "DT",
+                    "evidence_relation_type_candidate": "DIRECT",
+                    "derivation_note": None,
+                    "assignment_candidates": [
+                        {
+                            "question_id": "1.1",
+                            "pf_id": "PF1",
+                            "assignment_confidence": "CLEAR",
+                            "human_review_required": False,
+                        }
+                    ],
+                    "conflict_candidate_refs": [],
+                    "gap_notes": [],
+                    "uncertainty_notes": [],
+                    "human_review_required": proposal_review,
+                }
+            ],
+        }
+
+    def _case(self) -> dict:
+        return {
+            "target_source_location_id": "SRC-1",
+            "source_locations": [{"source_location_id": "SRC-1"}],
+        }
+
     def test_required_assignment_is_required(self) -> None:
         gold = {"expected_assignments": [{"question_id": "5.5", "pf_id": "PF5"}]}
         result = evaluator.evaluate_gold(gold, self._response([]))
@@ -62,11 +96,36 @@ class MinistralHumanGoldOfflineEvaluatorV01Tests(unittest.TestCase):
         self.assertFalse(result["passed"])
         self.assertFalse(result["conflict_candidate_match"])
 
-    def test_frozen_gold_and_policy_blobs_are_bound(self) -> None:
+    def test_frozen_gold_policy_and_candidate_schema_are_bound(self) -> None:
         _suite, gold, policy = evaluator.validate_frozen_inputs()
         self.assertEqual(gold["status"], "HUMAN_APPROVED_FROZEN")
         self.assertFalse(gold["model_visible"])
         self.assertEqual(policy["status"], "HUMAN_APPROVED_FROZEN")
+        self.assertEqual(evaluator.EXPECTED_CANDIDATE_SCHEMA_BLOB, "bc3dd4832db51677bdaf6f16028ade1b02214673")
+
+    def test_candidate_contract_is_normalized_only_for_v02_boundary_reuse(self) -> None:
+        result = evaluator.evaluate_boundary(self._case(), self._candidate_response())
+        codes = [row["code"] for row in result["issues"]]
+        self.assertNotIn("SEMANTIC_CONTRACT_VERSION_MISMATCH", codes)
+        self.assertNotIn("SEMANTIC_CANDIDATE_CONTRACT_VERSION_MISMATCH", codes)
+        self.assertTrue(result["passed"])
+
+    def test_wrong_candidate_contract_fails_closed(self) -> None:
+        result = evaluator.evaluate_boundary(
+            self._case(),
+            self._candidate_response(contract_version="ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.2"),
+        )
+        self.assertFalse(result["passed"])
+        self.assertIn("SEMANTIC_CANDIDATE_CONTRACT_VERSION_MISMATCH", [row["code"] for row in result["issues"]])
+
+    def test_candidate_normalization_preserves_real_review_flag_boundary_failure(self) -> None:
+        response = self._candidate_response()
+        response["proposals"][0]["uncertainty_notes"] = ["Unsicherheit"]
+        response["proposals"][0]["human_review_required"] = False
+        result = evaluator.evaluate_boundary(self._case(), response)
+        self.assertFalse(result["passed"])
+        self.assertIn("MISSING_PROPOSAL_REVIEW_FLAG", [row["code"] for row in result["issues"]])
+        self.assertNotIn("SEMANTIC_CONTRACT_VERSION_MISMATCH", [row["code"] for row in result["issues"]])
 
     def test_module_imports_no_network_or_model_runtime_library(self) -> None:
         tree = ast.parse(inspect.getsource(evaluator))
@@ -83,15 +142,14 @@ class MinistralHumanGoldOfflineEvaluatorV01Tests(unittest.TestCase):
         self.assertIn("deliberately never stops at first case FAIL", source)
         self.assertNotIn("break", source)
 
-    def test_direct_script_invocation_resolves_repo_imports(self) -> None:
-        root = Path(__file__).resolve().parents[2]
-        script = root / "scripts" / "zs_ki_b_sem_ministral_human_gold_offline_evaluator_v0_1.py"
+    def test_direct_script_invocation_can_resolve_repo_imports(self) -> None:
+        script = Path(evaluator.__file__).resolve()
         completed = subprocess.run(
             [sys.executable, str(script), "--help"],
-            cwd=root,
+            cwd=script.parent,
             capture_output=True,
             text=True,
-            check=False,
+            timeout=10,
         )
         self.assertEqual(completed.returncode, 0, completed.stderr)
         self.assertIn("Offline-only evaluator", completed.stdout)
