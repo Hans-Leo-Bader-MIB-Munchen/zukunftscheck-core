@@ -1,0 +1,63 @@
+{
+  "runtime_binding_version": "ZS-KI-B-SEM-AI-ASSISTED-DEVELOPMENT-RUNTIME-BINDING-2026-001_v0.1",
+  "status": "RUNTIME_BOUND_AWAITING_STATIC_VALIDATION",
+  "mode": "MODEL_FREE_RUNTIME_BINDING_PREP_ONLY",
+  "data_class": "SYNTHETIC_ONLY",
+  "qualification_claim_allowed": false,
+  "execution_authorized": false,
+  "model_contact_authorized": false,
+  "preflight_authorized": false,
+  "automatic_retry_authorized": false,
+  "automatic_rerun_authorized": false,
+  "output_repair_authorized": false,
+  "ready_for_user_approval": false,
+  "expected_run_count": 1,
+  "expected_case_count": 24,
+  "expected_model_request_count": 24,
+  "preflight_generation_request_count": 0,
+  "ordered_case_ids_sha256": "b02bc870f83c322cd000f47e2000a1e17617f465293afb990ff949f534c6b2e8",
+  "bound_prep_freeze": {
+    "path": "tests/fixtures/zs_ki_b_sem_ai_assisted_development_prep_freeze_binding_v0_1.json",
+    "git_blob_sha": "7ea07cfecf4960c0cfb88911ec40d11774f57c02"
+  },
+  "runtime_parameters": {
+    "model_id": "ministral-3-14b-instruct-2512",
+    "model_repository": "mistralai/Ministral-3-14B-Instruct-2512-GGUF",
+    "quantization": "Q4_K_M",
+    "adapter_version": "LM_STUDIO_OPENAI_COMPATIBLE_CHAT_COMPLETIONS_V1",
+    "endpoint_base_url": "http://127.0.0.1:1234/v1",
+    "endpoint_path": "/chat/completions",
+    "max_tokens": 2048,
+    "temperature": 0.0,
+    "stream": false,
+    "request_timeout_seconds": 1800.0,
+    "retry_count": 0,
+    "output_repair": false,
+    "required_loaded_context_min": 32768,
+    "structured_output_runtime_config": {
+      "type": "json_schema",
+      "strict": true,
+      "schema_path": "domains/zukunftscheck/schema/b_semantic_contract_v0_3_candidate.schema.json",
+      "schema_git_blob_sha": "bc3dd4832db51677bdaf6f16028ade1b02214673",
+      "contract_version": "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.3-candidate"
+    }
+  },
+  "prompt_binding": {
+    "path": "llm/prompts/zs_ki_b_sem_qualifikation_system_v0_8_specificity_candidate.txt",
+    "git_blob_sha": "20bb484a22e37ff12e1c2c5976e8baf85fbe7d24"
+  },
+  "runtime_parameter_state": "BOUND_AWAITING_STATIC_COUNTERCHECK",
+  "provenance": {
+    "historical_runtime_model_binding": "scripts/zs_ki_b_sem_qualifikation_runner_v1_9_readiness_prep.py",
+    "historical_max_tokens_binding": "scripts/zs_ki_b_sem_qualifikation_runner_v2_5_max_tokens_binding_prep.py",
+    "historical_preflight_gate": "docs/requirements/ZS-DEV-KI-B-SEM-MINISTRAL-PREFLIGHT-ONLY-GATE-2026-001.md"
+  },
+  "approval_requirements": [
+    "static_runtime_binding_test_must_pass",
+    "independent_static_countercheck_required_before_ready_for_user_approval",
+    "separate_explicit_user_approval_required_after_runtime_binding",
+    "approval_must_name_exactly_one_synthetic_development_run",
+    "no_retry_no_rerun_no_output_repair_without_new_explicit_approval"
+  ],
+  "hard_stop": "NO_MODEL_CONTACT_WITHOUT_SEPARATE_EXPLICIT_USER_AUTHORIZATION"
+}
