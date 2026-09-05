@@ -1,0 +1,43 @@
+{
+  "authorization_prep_version": "ZS-KI-B-SEM-AI-ASSISTED-DEVELOPMENT-AUTHORIZATION-PREP-2026-001_v0.1",
+  "status": "AWAITING_EXPLICIT_USER_APPROVAL",
+  "mode": "DEVELOPMENT_AUTHORIZATION_PREP_ONLY",
+  "data_class": "SYNTHETIC_ONLY",
+  "qualification_claim_allowed": false,
+  "execution_authorized": false,
+  "model_contact_authorized": false,
+  "preflight_authorized": false,
+  "automatic_retry_authorized": false,
+  "automatic_rerun_authorized": false,
+  "output_repair_authorized": false,
+  "expected_run_count": 1,
+  "expected_case_count": 24,
+  "expected_model_request_count": 24,
+  "authorization_scope": "ONE_SYNTHETIC_DEVELOPMENT_RUN_ONLY_IF_SEPARATELY_EXPLICITLY_APPROVED",
+  "bound_prep_freeze": {
+    "path": "tests/fixtures/zs_ki_b_sem_ai_assisted_development_prep_freeze_binding_v0_1.json",
+    "git_blob_sha": "7ea07cfecf4960c0cfb88911ec40d11774f57c02"
+  },
+  "bound_final_static_countercheck": {
+    "path": "docs/ZS-DEV-KI-B-SEM-AI-ASSISTED-DEVELOPMENT-PREP-FINAL-STATIC-COUNTERCHECK-2026-001_v0.1.md",
+    "git_blob_sha": "d277a8157f493a5314b850a395be0f330e05aaa1"
+  },
+  "ordered_case_ids_sha256": "b02bc870f83c322cd000f47e2000a1e17617f465293afb990ff949f534c6b2e8",
+  "runtime_parameters": {
+    "model_id": null,
+    "adapter_version": null,
+    "endpoint": null,
+    "max_tokens": null,
+    "temperature": null,
+    "structured_output_runtime_config": null
+  },
+  "runtime_parameter_state": "UNBOUND_NOT_READY_FOR_APPROVAL",
+  "approval_requirements": [
+    "all_runtime_parameters_must_be_explicitly_bound_before_approval",
+    "runner_and_manifest_and_freeze_binding_must_remain_blob-identical",
+    "separate_explicit_user_approval_required_after_runtime_binding",
+    "approval_must_name_exactly_one_synthetic_development_run",
+    "no_retry_no_rerun_no_output_repair_without_new_explicit_approval"
+  ],
+  "hard_stop": "NO_MODEL_CONTACT_WITHOUT_SEPARATE_EXPLICIT_USER_AUTHORIZATION"
+}
