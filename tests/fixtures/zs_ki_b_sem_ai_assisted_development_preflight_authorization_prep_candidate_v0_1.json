@@ -1,0 +1,35 @@
+{
+  "preflight_authorization_prep_version": "ZS-KI-B-SEM-AI-ASSISTED-DEVELOPMENT-PREFLIGHT-AUTHORIZATION-PREP-2026-001_v0.1",
+  "status": "AWAITING_EXPLICIT_USER_APPROVAL",
+  "mode": "PREFLIGHT_AUTHORIZATION_PREP_ONLY",
+  "data_class": "SYNTHETIC_ONLY",
+  "preflight_authorized": false,
+  "model_contact_authorized": false,
+  "execution_authorized": false,
+  "qualification_claim_allowed": false,
+  "expected_preflight_run_count": 1,
+  "expected_generation_request_count": 0,
+  "bound_preflight_candidate": {
+    "path": "scripts/zs_ki_b_sem_ai_assisted_development_preflight_only_candidate_v0_1.py",
+    "git_blob_sha": "7e34fd755d2932b71622e96e80a95c4b59d023ab"
+  },
+  "bound_runtime_binding_candidate": {
+    "path": "tests/fixtures/zs_ki_b_sem_ai_assisted_development_runtime_binding_candidate_v0_1.json",
+    "git_blob_sha": "d6a177fdb205b9283ef3e2983b81d524d910d1f8"
+  },
+  "required_model_id": "ministral-3-14b-instruct-2512",
+  "required_model_repository": "mistralai/Ministral-3-14B-Instruct-2512-GGUF",
+  "required_quantization": "Q4_K_M",
+  "required_base_url": "http://127.0.0.1:1234/v1",
+  "required_loaded_context_min": 32768,
+  "result_freeze_required_before_development_run_authorization": true,
+  "ready_for_user_approval": false,
+  "approval_requirements": [
+    "static_preflight_candidate_test_must_pass",
+    "independent_static_countercheck_required",
+    "separate_explicit_user_approval_required_for_exactly_one_preflight",
+    "preflight_generation_request_count_must_remain_zero",
+    "development_execution_must_remain_unauthorized_during_preflight"
+  ],
+  "hard_stop": "NO_MODEL_CONTACT_WITHOUT_SEPARATE_EXPLICIT_USER_AUTHORIZATION"
+}
