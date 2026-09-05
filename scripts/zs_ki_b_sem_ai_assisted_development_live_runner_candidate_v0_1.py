@@ -1,200 +1,221 @@
 #!/usr/bin/env python3
-"""Fail-closed live-runner candidate for one future 24-case synthetic development run.
+"""Static live-runner architecture candidate for the 24 synthetic SEM development cases.
 
-This file defines the future request and execution path but performs no model contact
-unless an exact, separately approved authorization object and a separately frozen
-preflight result are supplied. No approval is created or implied here.
+This module builds and validates the exact future request package, but deliberately
+exposes no model-contact path yet. Durable single-use authorization consumption and a
+separately frozen preflight-result binding must be integrated in a later candidate
+before any execution can become eligible for explicit user approval.
 """
 from __future__ import annotations
 
+import hashlib
 import json
-import urllib.error
-import urllib.request
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
-AUTH_PREP_PATH = ROOT / "tests/fixtures/zs_ki_b_sem_ai_assisted_development_authorization_prep_candidate_v0_2.json"
-CHALLENGES_PATH = ROOT / "tests/fixtures/zs_ki_b_sem_ai_assisted_development_challenges_v0_1.json"
-PROMPT_PATH = ROOT / "llm/prompts/zs_ki_b_sem_qualifikation_system_v0_8_specificity_candidate.txt"
-SCHEMA_PATH = ROOT / "domains/zukunftscheck/schema/b_semantic_contract_v0_3_candidate.schema.json"
-
-RUNNER_VERSION = "v0.1-live-candidate-not-authorized"
-RUN_TYPE = "ZS-KI-B-SEM-AI-ASSISTED-DEVELOPMENT-LIVE-CANDIDATE-2026-001"
+RUNNER_VERSION = "ZS-KI-B-SEM-AI-ASSISTED-DEVELOPMENT-LIVE-RUNNER-2026-001_v0.1"
+RUN_TYPE = "ZS-KI-B-SEM-AI-ASSISTED-DEVELOPMENT-SYNTHETIC-ONE-RUN-2026-001"
 EXPECTED_CASE_COUNT = 24
 EXPECTED_MODEL_REQUEST_COUNT = 24
 HARD_STOP = "NO_MODEL_CONTACT_WITHOUT_SEPARATE_EXPLICIT_USER_AUTHORIZATION"
 
-TransportCallable = Callable[..., tuple[str, dict[str, Any]]]
+RUNTIME_BINDING_PATH = ROOT / "tests/fixtures/zs_ki_b_sem_ai_assisted_development_runtime_binding_candidate_v0_1.json"
+RUNTIME_BINDING_BLOB = "d6a177fdb205b9283ef3e2983b81d524d910d1f8"
+CHALLENGES_PATH = ROOT / "tests/fixtures/zs_ki_b_sem_ai_assisted_development_challenges_v0_1.json"
+CHALLENGES_BLOB = "3fd3128e39ee67661d3c7d545de1d7376de2a855"
+GOLD_PATH = ROOT / "tests/fixtures/zs_ki_b_sem_ai_assisted_development_gold_v0_2.json"
+GOLD_BLOB = "76d18ca315b2066c564770d489b60b7d4e1f3566"
+PROMPT_PATH = ROOT / "llm/prompts/zs_ki_b_sem_qualifikation_system_v0_8_specificity_candidate.txt"
+PROMPT_BLOB = "20bb484a22e37ff12e1c2c5976e8baf85fbe7d24"
+QUESTIONS_PATH = ROOT / "domains/zukunftscheck/rules/reference_questions_v0_1.json"
+QUESTIONS_BLOB = "d9ab893d6614a5fd98738d24e9541feb83e4ecb5"
+MEANINGS_PATH = ROOT / "domains/zukunftscheck/rules/reference_question_meanings_v0_7.json"
+MEANINGS_BLOB = "a3fcb71782fb2097f45e7cbea325b09181972664"
+FINDING_TYPES_PATH = ROOT / "domains/zukunftscheck/rules/finding_type_meanings_v0_1.json"
+SCHEMA_PATH = ROOT / "domains/zukunftscheck/schema/b_semantic_contract_v0_3_candidate.schema.json"
+SCHEMA_BLOB = "bc3dd4832db51677bdaf6f16028ade1b02214673"
+ORDERED_CASE_IDS_SHA256 = "b02bc870f83c322cd000f47e2000a1e17617f465293afb990ff949f534c6b2e8"
 
 
-def _load_json(path: Path) -> dict[str, Any]:
+class LiveRunnerCandidateError(RuntimeError):
+    pass
+
+
+def canonical_bytes(path: Path) -> bytes:
+    data = path.read_bytes().replace(b"\r\n", b"\n")
+    if b"\r" in data:
+        raise LiveRunnerCandidateError(f"bare CR rejected for bound artifact: {path}")
+    return data
+
+
+def git_blob_sha1(path: Path) -> str:
+    data = canonical_bytes(path)
+    return hashlib.sha1(f"blob {len(data)}\0".encode("ascii") + data).hexdigest()
+
+
+def canonical_json(value: Any) -> str:
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
+def load_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def load_authorization_prep() -> dict[str, Any]:
-    return _load_json(AUTH_PREP_PATH)
+def _assert_blob(path: Path, expected: str) -> None:
+    if not path.is_file() or git_blob_sha1(path) != expected:
+        raise PermissionError(f"bound artifact mismatch: {path.relative_to(ROOT)}")
 
 
-def load_challenges() -> dict[str, Any]:
-    return _load_json(CHALLENGES_PATH)
+def validate_static_package() -> dict[str, Any]:
+    for path, blob in (
+        (RUNTIME_BINDING_PATH, RUNTIME_BINDING_BLOB),
+        (CHALLENGES_PATH, CHALLENGES_BLOB),
+        (GOLD_PATH, GOLD_BLOB),
+        (PROMPT_PATH, PROMPT_BLOB),
+        (QUESTIONS_PATH, QUESTIONS_BLOB),
+        (MEANINGS_PATH, MEANINGS_BLOB),
+        (SCHEMA_PATH, SCHEMA_BLOB),
+    ):
+        _assert_blob(path, blob)
+
+    runtime = load_json(RUNTIME_BINDING_PATH)
+    cases = load_json(CHALLENGES_PATH)["cases"]
+    gold = load_json(GOLD_PATH)["cases"]
+    case_ids = [case["case_id"] for case in cases]
+    gold_ids = [case["case_id"] for case in gold]
+    if len(case_ids) != EXPECTED_CASE_COUNT or len(set(case_ids)) != EXPECTED_CASE_COUNT:
+        raise PermissionError("development case count/uniqueness binding failed")
+    if case_ids != gold_ids:
+        raise PermissionError("development cases and Gold order differ")
+    if hashlib.sha256(canonical_json(case_ids).encode("utf-8")).hexdigest() != ORDERED_CASE_IDS_SHA256:
+        raise PermissionError("ordered development case IDs hash mismatch")
+
+    params = runtime["runtime_parameters"]
+    expected = {
+        "model_id": "ministral-3-14b-instruct-2512",
+        "model_repository": "mistralai/Ministral-3-14B-Instruct-2512-GGUF",
+        "quantization": "Q4_K_M",
+        "adapter_version": "LM_STUDIO_OPENAI_COMPATIBLE_CHAT_COMPLETIONS_V1",
+        "endpoint_base_url": "http://127.0.0.1:1234/v1",
+        "endpoint_path": "/chat/completions",
+        "max_tokens": 2048,
+        "temperature": 0.0,
+        "stream": False,
+        "request_timeout_seconds": 1800.0,
+        "retry_count": 0,
+        "output_repair": False,
+        "required_loaded_context_min": 32768,
+    }
+    for key, value in expected.items():
+        if params.get(key) != value:
+            raise PermissionError(f"runtime binding mismatch: {key}")
+    for key in ("execution_authorized", "model_contact_authorized", "preflight_authorized", "ready_for_user_approval"):
+        if runtime.get(key) is not False:
+            raise PermissionError(f"runtime binding must remain non-authorizing: {key}")
+    return runtime
 
 
-def validate_static_bindings() -> dict[str, Any]:
-    prep = load_authorization_prep()
-    challenges = load_challenges()
-    if prep.get("execution_authorized") is not False:
-        raise PermissionError("authorization prep must remain non-authorizing")
-    if prep.get("model_contact_authorized") is not False:
-        raise PermissionError("authorization prep must remain non-authorizing")
-    if prep.get("preflight_authorized") is not False:
-        raise PermissionError("authorization prep must remain non-authorizing")
-    if prep.get("ready_for_user_approval") is not False:
-        raise PermissionError("authorization prep is not ready for approval")
-    if prep.get("hard_stop") != HARD_STOP:
-        raise PermissionError("hard stop changed")
-    if prep.get("expected_case_count") != EXPECTED_CASE_COUNT:
-        raise ValueError("expected case count changed")
-    if prep.get("expected_model_request_count") != EXPECTED_MODEL_REQUEST_COUNT:
-        raise ValueError("expected model request count changed")
-    if challenges.get("case_count") != EXPECTED_CASE_COUNT or len(challenges.get("cases", [])) != EXPECTED_CASE_COUNT:
-        raise ValueError("challenge fixture must contain exactly 24 cases")
-    ids = [case.get("case_id") for case in challenges["cases"]]
-    if len(set(ids)) != EXPECTED_CASE_COUNT:
-        raise ValueError("challenge case IDs must be unique")
-    return prep
+def ordered_case_ids() -> list[str]:
+    validate_static_package()
+    return [case["case_id"] for case in load_json(CHALLENGES_PATH)["cases"]]
 
 
-def build_request_preview(case: dict[str, Any]) -> dict[str, Any]:
-    prep = validate_static_bindings()
-    runtime = prep["runtime_parameters"]
-    schema = _load_json(SCHEMA_PATH)
-    prompt = PROMPT_PATH.read_text(encoding="utf-8")
-    payload = {
-        "model": runtime["model_id"],
-        "messages": [
-            {"role": "system", "content": prompt},
-            {"role": "user", "content": json.dumps({"source_locations": [{"source_location_id": case["source_location_id"], "text": case["text"]}]}, ensure_ascii=False)},
-        ],
-        "temperature": runtime["temperature"],
-        "max_tokens": runtime["max_tokens"],
-        "stream": runtime["stream"],
-        "response_format": {
-            "type": "json_schema",
-            "json_schema": {
-                "name": "zs_ki_b_semantic_proposal",
-                "strict": True,
-                "schema": schema,
-            },
+def _case(case_id: str) -> dict[str, Any]:
+    matches = [case for case in load_json(CHALLENGES_PATH)["cases"] if case["case_id"] == case_id]
+    if len(matches) != 1:
+        raise KeyError(f"unknown or duplicate development case: {case_id}")
+    return matches[0]
+
+
+def build_response_format() -> dict[str, Any]:
+    return {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "zs_ki_b_semantic_contract_v0_3_candidate",
+            "strict": True,
+            "schema": load_json(SCHEMA_PATH),
         },
     }
-    if payload["model"] != "ministral-3-14b-instruct-2512":
-        raise ValueError("model binding changed")
-    if payload["temperature"] != 0.0 or payload["max_tokens"] != 2048 or payload["stream"] is not False:
-        raise ValueError("request runtime binding changed")
-    return payload
 
 
-def validate_execution_gate(*, authorization: dict[str, Any] | None, preflight_result: dict[str, Any] | None) -> None:
-    if not isinstance(authorization, dict):
-        raise PermissionError("separate explicit authorization missing")
-    if authorization.get("status") != "EXPLICIT_USER_APPROVED":
-        raise PermissionError("explicit user approval missing")
-    for key in ("execution_authorized", "model_contact_authorized"):
-        if authorization.get(key) is not True:
-            raise PermissionError(f"{key} must be explicitly true in separate authorization")
-    if authorization.get("expected_run_count") != 1 or authorization.get("expected_model_request_count") != 24:
-        raise PermissionError("authorization scope must be exactly one 24-request run")
-    if authorization.get("automatic_retry_authorized") is not False:
-        raise PermissionError("automatic retry forbidden")
-    if authorization.get("automatic_rerun_authorized") is not False:
-        raise PermissionError("automatic rerun forbidden")
-    if authorization.get("output_repair_authorized") is not False:
-        raise PermissionError("output repair forbidden")
-    if not isinstance(preflight_result, dict):
-        raise PermissionError("separately frozen preflight result missing")
-    if preflight_result.get("status") != "PASS_FROZEN":
-        raise PermissionError("preflight result not frozen PASS")
-    if preflight_result.get("model_id") != "ministral-3-14b-instruct-2512":
-        raise PermissionError("preflight model identity mismatch")
-    if int(preflight_result.get("loaded_context", 0)) < 32768:
-        raise PermissionError("preflight context below required minimum")
-
-
-def _default_transport(*, base_url: str, endpoint_path: str, payload: dict[str, Any], timeout_seconds: float) -> tuple[str, dict[str, Any]]:
-    if base_url != "http://127.0.0.1:1234/v1" or endpoint_path != "/chat/completions":
-        raise PermissionError("unexpected endpoint")
-    body = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
-    req = urllib.request.Request(
-        base_url + endpoint_path,
-        data=body,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=timeout_seconds) as resp:
-            envelope = json.loads(resp.read().decode("utf-8"))
-    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, OSError) as exc:
-        raise RuntimeError(f"transport failed: {exc}") from exc
-    choices = envelope.get("choices") if isinstance(envelope, dict) else None
-    if not isinstance(choices, list) or not choices:
-        raise RuntimeError("provider envelope has no choices")
-    message = choices[0].get("message") if isinstance(choices[0], dict) else None
-    content = message.get("content") if isinstance(message, dict) else None
-    if not isinstance(content, str):
-        raise RuntimeError("provider envelope has no string content")
-    metadata = {key: envelope.get(key) for key in ("id", "model", "created", "usage")}
-    return content, metadata
-
-
-def execute_once(*, authorization: dict[str, Any], preflight_result: dict[str, Any], transport: TransportCallable | None = None) -> dict[str, Any]:
-    validate_static_bindings()
-    validate_execution_gate(authorization=authorization, preflight_result=preflight_result)
-    prep = load_authorization_prep()
-    challenges = load_challenges()["cases"]
-    runtime = prep["runtime_parameters"]
-    transport_fn = transport or _default_transport
-    completed: list[dict[str, Any]] = []
-    request_count = 0
-    for case in challenges:
-        if request_count >= EXPECTED_MODEL_REQUEST_COUNT:
-            raise RuntimeError("request ceiling exceeded")
-        payload = build_request_preview(case)
-        request_count += 1
-        raw, metadata = transport_fn(
-            base_url=runtime["endpoint_base_url"],
-            endpoint_path=runtime["endpoint_path"],
-            payload=payload,
-            timeout_seconds=runtime["request_timeout_seconds"],
-        )
-        parsed = json.loads(raw)
-        completed.append({"case_id": case["case_id"], "response": parsed, "provider_metadata": metadata})
-    if request_count != EXPECTED_MODEL_REQUEST_COUNT:
-        raise RuntimeError("exactly 24 requests required")
-    return {
-        "mode": "EXECUTED_ONCE_AWAITING_DEVELOPMENT_EVALUATION",
-        "run_type": RUN_TYPE,
-        "runner_version": RUNNER_VERSION,
+def build_candidate_messages(case_id: str) -> list[dict[str, str]]:
+    validate_static_package()
+    case = _case(case_id)
+    payload = {
+        "case_id": case["case_id"],
         "data_class": "SYNTHETIC_ONLY",
-        "development_only": True,
-        "qualification_claim_allowed": False,
-        "observed_model_request_count": request_count,
+        "target_source_location_id": case["source_location_id"],
+        "source_locations": [{"source_location_id": case["source_location_id"], "text": case["text"]}],
+        "reference_questions": load_json(QUESTIONS_PATH)["questions"],
+        "reference_question_meanings": load_json(MEANINGS_PATH),
+        "finding_type_meanings": load_json(FINDING_TYPES_PATH)["finding_types"],
+    }
+    return [
+        {"role": "system", "content": PROMPT_PATH.read_text(encoding="utf-8")},
+        {"role": "user", "content": canonical_json(payload)},
+    ]
+
+
+def build_candidate_request(case_id: str) -> dict[str, Any]:
+    runtime = validate_static_package()["runtime_parameters"]
+    request = {
+        "model": runtime["model_id"],
+        "messages": build_candidate_messages(case_id),
+        "temperature": runtime["temperature"],
+        "max_tokens": runtime["max_tokens"],
+        "stream": False,
+        "response_format": build_response_format(),
+    }
+    if "max_completion_tokens" in request:
+        raise LiveRunnerCandidateError("max_completion_tokens forbidden")
+    return request
+
+
+def validate_execution_authorization(*args: Any, **kwargs: Any) -> dict[str, Any]:
+    raise PermissionError(
+        "v0.1 is static request architecture only; durable single-use authorization consumption and frozen preflight binding are not yet integrated"
+    )
+
+
+def execute_once(*args: Any, **kwargs: Any) -> dict[str, Any]:
+    raise PermissionError(
+        "v0.1 live-runner candidate is not executable and cannot contact localhost or a model"
+    )
+
+
+def build_static_architecture_report() -> dict[str, Any]:
+    case_ids = ordered_case_ids()
+    preview = build_candidate_request(case_ids[0])
+    user_payload = json.loads(preview["messages"][1]["content"])
+    return {
+        "mode": "STATIC_LIVE_RUNNER_ARCHITECTURE_CANDIDATE_ONLY",
+        "status": "PASS_STATIC_REQUEST_ARCHITECTURE_AWAITING_CONSUMPTION_AND_PREFLIGHT_GATE",
+        "runner_version": RUNNER_VERSION,
+        "run_type": RUN_TYPE,
+        "expected_case_count": len(case_ids),
+        "expected_model_request_count": EXPECTED_MODEL_REQUEST_COUNT,
+        "reference_question_count": len(user_payload["reference_questions"]),
+        "meaning_count": len(user_payload["reference_question_meanings"]["meanings"]),
+        "model_id": preview["model"],
+        "max_tokens": preview["max_tokens"],
+        "temperature": preview["temperature"],
+        "stream": preview["stream"],
+        "response_format_type": preview["response_format"]["type"],
+        "execution_authorized": False,
+        "model_contact_authorized": False,
+        "preflight_authorized": False,
         "automatic_retry_authorized": False,
         "automatic_rerun_authorized": False,
         "output_repair_authorized": False,
-        "cases": completed,
+        "ready_for_user_approval": False,
+        "qualification_claim_allowed": False,
+        "hard_stop": HARD_STOP,
     }
 
 
 def main() -> int:
-    validate_static_bindings()
-    print(json.dumps({
-        "runner_version": RUNNER_VERSION,
-        "status": "STATIC_LIVE_RUNNER_CANDIDATE_NOT_AUTHORIZED",
-        "expected_model_request_count": EXPECTED_MODEL_REQUEST_COUNT,
-        "model_request_count": 0,
-        "hard_stop": HARD_STOP,
-    }, ensure_ascii=False, indent=2))
+    print(json.dumps(build_static_architecture_report(), ensure_ascii=False, indent=2))
     return 0
 
 
