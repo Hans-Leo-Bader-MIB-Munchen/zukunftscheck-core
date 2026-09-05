@@ -29,7 +29,7 @@
   },
   "bound_machine_readable_challenges": {
     "path": "tests/fixtures/zs_ki_b_sem_ai_assisted_development_challenges_v0_1.json",
-    "git_blob_sha": "144133e49cfd5d8cb78742c19350c5aff0960f41"
+    "git_blob_sha": "3fd3128e39ee67661d3c7d545de1d7376de2a855"
   },
   "bound_machine_readable_development_gold": {
     "path": "tests/fixtures/zs_ki_b_sem_ai_assisted_development_gold_v0_2.json",
