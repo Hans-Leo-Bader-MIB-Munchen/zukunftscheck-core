@@ -1,0 +1,71 @@
+{
+  "authorization_prep_version": "ZS-KI-B-SEM-AI-ASSISTED-DEVELOPMENT-AUTHORIZATION-PREP-2026-001_v0.2",
+  "status": "AWAITING_EXPLICIT_USER_APPROVAL",
+  "mode": "DEVELOPMENT_AUTHORIZATION_PREP_ONLY",
+  "data_class": "SYNTHETIC_ONLY",
+  "qualification_claim_allowed": false,
+  "execution_authorized": false,
+  "model_contact_authorized": false,
+  "preflight_authorized": false,
+  "automatic_retry_authorized": false,
+  "automatic_rerun_authorized": false,
+  "output_repair_authorized": false,
+  "ready_for_user_approval": false,
+  "expected_run_count": 1,
+  "expected_case_count": 24,
+  "expected_model_request_count": 24,
+  "authorization_scope": "ONE_SYNTHETIC_DEVELOPMENT_RUN_ONLY_IF_SEPARATELY_EXPLICITLY_APPROVED",
+  "bound_prep_freeze": {
+    "path": "tests/fixtures/zs_ki_b_sem_ai_assisted_development_prep_freeze_binding_v0_1.json",
+    "git_blob_sha": "7ea07cfecf4960c0cfb88911ec40d11774f57c02"
+  },
+  "bound_final_static_countercheck": {
+    "path": "docs/ZS-DEV-KI-B-SEM-AI-ASSISTED-DEVELOPMENT-PREP-FINAL-STATIC-COUNTERCHECK-2026-001_v0.1.md",
+    "git_blob_sha": "d277a8157f493a5314b850a395be0f330e05aaa1"
+  },
+  "bound_runtime_binding_candidate": {
+    "path": "tests/fixtures/zs_ki_b_sem_ai_assisted_development_runtime_binding_candidate_v0_1.json",
+    "git_blob_sha": "d6a177fdb205b9283ef3e2983b81d524d910d1f8"
+  },
+  "bound_machine_readable_challenges": {
+    "path": "tests/fixtures/zs_ki_b_sem_ai_assisted_development_challenges_v0_1.json",
+    "git_blob_sha": "144133e49cfd5d8cb78742c19350c5aff0960f41"
+  },
+  "bound_machine_readable_development_gold": {
+    "path": "tests/fixtures/zs_ki_b_sem_ai_assisted_development_gold_v0_2.json",
+    "git_blob_sha": "76d18ca315b2066c564770d489b60b7d4e1f3566"
+  },
+  "ordered_case_ids_sha256": "b02bc870f83c322cd000f47e2000a1e17617f465293afb990ff949f534c6b2e8",
+  "runtime_parameters": {
+    "model_id": "ministral-3-14b-instruct-2512",
+    "model_repository": "mistralai/Ministral-3-14B-Instruct-2512-GGUF",
+    "quantization": "Q4_K_M",
+    "adapter_version": "LM_STUDIO_OPENAI_COMPATIBLE_CHAT_COMPLETIONS_V1",
+    "endpoint_base_url": "http://127.0.0.1:1234/v1",
+    "endpoint_path": "/chat/completions",
+    "max_tokens": 2048,
+    "temperature": 0.0,
+    "stream": false,
+    "request_timeout_seconds": 1800.0,
+    "retry_count": 0,
+    "output_repair": false,
+    "required_loaded_context_min": 32768,
+    "structured_output_runtime_config": {
+      "type": "json_schema",
+      "strict": true,
+      "schema_path": "domains/zukunftscheck/schema/b_semantic_contract_v0_3_candidate.schema.json",
+      "schema_git_blob_sha": "bc3dd4832db51677bdaf6f16028ade1b02214673",
+      "contract_version": "ZS-KI-B-SEMANTIKVERTRAG-2026-001_v0.3-candidate"
+    }
+  },
+  "runtime_parameter_state": "BOUND_AWAITING_LIVE_RUNNER_AND_PREFLIGHT_ARCHITECTURE",
+  "approval_requirements": [
+    "machine_readable_challenges_and_gold_must_pass_static_sync_validation",
+    "live_execution_runner_candidate_must_be_created_and_blob_bound",
+    "preflight_architecture_must_be_explicitly_resolved_before_ready_for_user_approval",
+    "separate_explicit_user_approval_required_after_all_bindings",
+    "approval_must_name_exactly_one_synthetic_development_run",
+    "no_retry_no_rerun_no_output_repair_without_new_explicit_approval"
+  ],
+  "hard_stop": "NO_MODEL_CONTACT_WITHOUT_SEPARATE_EXPLICIT_USER_AUTHORIZATION"
+}
