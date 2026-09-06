@@ -21,11 +21,11 @@
   },
   "bound_live_runner_candidate": {
     "path": "scripts/zs_ki_b_sem_ai_assisted_development_live_runner_candidate_v0_1.py",
-    "git_blob_sha": "4e1d5fa1ab3e7e93fcb26e424da3aa95465d604b"
+    "git_blob_sha": "e8c49e46af7e0eff7a6a16fefbf150014178f7b7"
   },
   "bound_live_runner_static_test": {
     "path": "tests/synthetic/test_sem_ai_assisted_development_live_runner_candidate_v0_1.py",
-    "git_blob_sha": "76eb02587516f2b473a57d735bd2ab767fa4806e"
+    "git_blob_sha": "248ba4e2685b1e0798b6bb44357b90e49059897f"
   },
   "bound_runtime_binding_candidate": {
     "path": "tests/fixtures/zs_ki_b_sem_ai_assisted_development_runtime_binding_candidate_v0_1.json",
