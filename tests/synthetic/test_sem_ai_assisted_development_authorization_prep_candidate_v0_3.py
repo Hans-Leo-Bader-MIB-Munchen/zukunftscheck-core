@@ -19,6 +19,21 @@ def git_blob_sha1(path: Path) -> str:
     return hashlib.sha1(f"blob {len(data)}\0".encode("ascii") + data).hexdigest()
 
 
+def assert_blob_bindings(testcase: unittest.TestCase, prep: dict, keys: tuple[str, ...]) -> None:
+    mismatches = []
+    for key in keys:
+        record = prep[key]
+        path = ROOT / record["path"]
+        if not path.is_file():
+            mismatches.append(f"{key}: missing file {path}")
+            continue
+        actual = git_blob_sha1(path)
+        expected = record["git_blob_sha"]
+        if actual != expected:
+            mismatches.append(f"{key}: expected {expected}, actual {actual}")
+    testcase.assertEqual([], mismatches, "\n".join(mismatches))
+
+
 class TestSemAiAssistedDevelopmentAuthorizationPrepCandidateV03(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -38,23 +53,23 @@ class TestSemAiAssistedDevelopmentAuthorizationPrepCandidateV03(unittest.TestCas
             self.assertIs(self.prep[key], False, key)
 
     def test_live_runner_and_static_test_are_blob_bound(self):
-        for key in ("bound_live_runner_candidate", "bound_live_runner_static_test"):
-            record = self.prep[key]
-            path = ROOT / record["path"]
-            self.assertTrue(path.is_file(), key)
-            self.assertEqual(git_blob_sha1(path), record["git_blob_sha"], key)
+        assert_blob_bindings(
+            self,
+            self.prep,
+            ("bound_live_runner_candidate", "bound_live_runner_static_test"),
+        )
 
     def test_prior_prep_runtime_cases_and_gold_remain_bound(self):
-        for key in (
-            "bound_prep_v0_2",
-            "bound_runtime_binding_candidate",
-            "bound_machine_readable_challenges",
-            "bound_machine_readable_development_gold",
-        ):
-            record = self.prep[key]
-            path = ROOT / record["path"]
-            self.assertTrue(path.is_file(), key)
-            self.assertEqual(git_blob_sha1(path), record["git_blob_sha"], key)
+        assert_blob_bindings(
+            self,
+            self.prep,
+            (
+                "bound_prep_v0_2",
+                "bound_runtime_binding_candidate",
+                "bound_machine_readable_challenges",
+                "bound_machine_readable_development_gold",
+            ),
+        )
 
     def test_preflight_is_mandatory_but_not_yet_bound(self):
         p = self.prep["preflight_requirement"]
