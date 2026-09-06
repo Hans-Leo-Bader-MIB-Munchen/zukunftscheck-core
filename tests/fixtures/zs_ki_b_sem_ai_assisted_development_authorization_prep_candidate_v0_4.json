@@ -17,11 +17,11 @@
   "authorization_scope": "ONE_SYNTHETIC_DEVELOPMENT_RUN_ONLY_IF_SEPARATELY_EXPLICITLY_APPROVED_AFTER_FROZEN_PREFLIGHT",
   "bound_prep_v0_3": {
     "path": "tests/fixtures/zs_ki_b_sem_ai_assisted_development_authorization_prep_candidate_v0_3.json",
-    "git_blob_sha": "26b12b2242cac0a617dc1964d1285b825fdd1313"
+    "git_blob_sha": "ba7864363f123fddb06bed78020cc8c18816e237"
   },
   "bound_live_runner_candidate": {
     "path": "scripts/zs_ki_b_sem_ai_assisted_development_live_runner_candidate_v0_1.py",
-    "git_blob_sha": "4e1d5fa1ab3e7e93fcb26e424da3aa95465d604b"
+    "git_blob_sha": "e8c49e46af7e0eff7a6a16fefbf150014178f7b7"
   },
   "bound_preflight_only_candidate": {
     "path": "scripts/zs_ki_b_sem_ai_assisted_development_preflight_only_candidate_v0_1.py",
@@ -51,7 +51,7 @@
     "preflight_static_test_must_pass",
     "preflight_authorization_prep_must_remain_non_authorizing",
     "independent_static_countercheck_required_before_any_ready_for_user_approval_state",
-    "separate_explicit_preflight_authorization_required_before localhost identity probe",
+    "separate_explicit_preflight_authorization_required_before_localhost_identity_probe",
     "frozen_preflight_PASS_required_before_separate_development_run_authorization",
     "development_run_authorization_must_be_separate_from_preflight_authorization",
     "no_retry_no_rerun_no_output_repair_without_new_explicit_approval"
