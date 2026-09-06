@@ -19,6 +19,21 @@ def git_blob_sha1(path: Path) -> str:
     return hashlib.sha1(f"blob {len(data)}\0".encode("ascii") + data).hexdigest()
 
 
+def assert_blob_bindings(testcase: unittest.TestCase, prep: dict, keys: tuple[str, ...]) -> None:
+    mismatches = []
+    for key in keys:
+        record = prep[key]
+        path = ROOT / record["path"]
+        if not path.is_file():
+            mismatches.append(f"{key}: missing file {path}")
+            continue
+        actual = git_blob_sha1(path)
+        expected = record["git_blob_sha"]
+        if actual != expected:
+            mismatches.append(f"{key}: expected {expected}, actual {actual}")
+    testcase.assertEqual([], mismatches, "\n".join(mismatches))
+
+
 class TestSemAiAssistedDevelopmentAuthorizationPrepCandidateV04(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -38,17 +53,17 @@ class TestSemAiAssistedDevelopmentAuthorizationPrepCandidateV04(unittest.TestCas
             self.assertIs(self.prep[key], False, key)
 
     def test_all_new_preflight_bindings_are_blob_exact(self):
-        for key in (
-            "bound_prep_v0_3",
-            "bound_live_runner_candidate",
-            "bound_preflight_only_candidate",
-            "bound_preflight_static_test",
-            "bound_preflight_authorization_prep",
-        ):
-            record = self.prep[key]
-            path = ROOT / record["path"]
-            self.assertTrue(path.is_file(), key)
-            self.assertEqual(git_blob_sha1(path), record["git_blob_sha"], key)
+        assert_blob_bindings(
+            self,
+            self.prep,
+            (
+                "bound_prep_v0_3",
+                "bound_live_runner_candidate",
+                "bound_preflight_only_candidate",
+                "bound_preflight_static_test",
+                "bound_preflight_authorization_prep",
+            ),
+        )
 
     def test_preflight_is_zero_generation_and_separate(self):
         requirement = self.prep["preflight_requirement"]
@@ -71,6 +86,7 @@ class TestSemAiAssistedDevelopmentAuthorizationPrepCandidateV04(unittest.TestCas
             "LIVE_RUNNER_AND_PREFLIGHT_ARCHITECTURE_BOUND_AWAITING_STATIC_COUNTERCHECK",
         )
         self.assertIn("frozen_preflight_PASS_required_before_separate_development_run_authorization", self.prep["approval_requirements"])
+        self.assertIn("separate_explicit_preflight_authorization_required_before_localhost_identity_probe", self.prep["approval_requirements"])
         self.assertEqual(self.prep["hard_stop"], "NO_MODEL_CONTACT_WITHOUT_SEPARATE_EXPLICIT_USER_AUTHORIZATION")
 
 
