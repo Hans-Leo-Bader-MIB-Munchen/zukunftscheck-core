@@ -1,0 +1,84 @@
+{
+  "manifest_version": "ZS-KI-B-SEM-AI-ASSISTED-DEVELOPMENT-MANIFEST-2026-001_v0.2",
+  "mode": "DEVELOPMENT_PREP_ONLY",
+  "data_class": "SYNTHETIC_ONLY",
+  "qualification_claim_allowed": false,
+  "execution_authorized": false,
+  "model_contact_authorized": false,
+  "preflight_authorized": false,
+  "automatic_retry_authorized": false,
+  "automatic_rerun_authorized": false,
+  "output_repair_authorized": false,
+  "expected_case_count": 24,
+  "expected_model_request_count": 24,
+  "ordered_case_ids_sha256": "b02bc870f83c322cd000f47e2000a1e17617f465293afb990ff949f534c6b2e8",
+  "ordered_case_ids_hash_canonicalization": "json_utf8_ensure_ascii_false_separators_comma_colon",
+  "ordered_case_ids": [
+    "ZS-KI-B-SEM-DEVCHAL-2026-PF1-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-PF2-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-PF3-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-PF4-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-PF5-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-PF6-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-PF7-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-PF8-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-PF9-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-PF10-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-PF11-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-PF12-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-CROSS-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-CROSS-002",
+    "ZS-KI-B-SEM-DEVCHAL-2026-CROSS-003",
+    "ZS-KI-B-SEM-DEVCHAL-2026-CROSS-004",
+    "ZS-KI-B-SEM-DEVCHAL-2026-EVIDENCE-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-EVIDENCE-002",
+    "ZS-KI-B-SEM-DEVCHAL-2026-TIME-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-TIME-002",
+    "ZS-KI-B-SEM-DEVCHAL-2026-SPECIFICITY-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-SPECIFICITY-002",
+    "ZS-KI-B-SEM-DEVCHAL-2026-BOUNDARY-001",
+    "ZS-KI-B-SEM-DEVCHAL-2026-BOUNDARY-002"
+  ],
+  "bindings": {
+    "runner_candidate": {
+      "path": "scripts/zs_ki_b_sem_ai_assisted_development_live_runner_candidate_v0_2.py",
+      "git_blob_sha": "21a1727beb6d921b734ed20814b84d36f6d8d7bb"
+    },
+    "challenge_catalog": {
+      "path": "docs/ZS-DEV-KI-B-SEM-AI-ASSISTED-DEVELOPMENT-CHALLENGE-CATALOG-2026-001_v0.1.md",
+      "git_blob_sha": "eb7c7b090564f7a27d0ba2ec555e696b55402709"
+    },
+    "development_gold": {
+      "path": "docs/ZS-DEV-KI-B-SEM-AI-ASSISTED-DEVELOPMENT-GOLD-2026-001_v0.2.md",
+      "git_blob_sha": "7cb29dfbcd8da66ec39106dd76c63d7364d39756"
+    },
+    "gold_countercheck": {
+      "path": "docs/ZS-DEV-KI-B-SEM-AI-ASSISTED-DEVELOPMENT-GOLD-COUNTERCHECK-2026-001_v0.1.md",
+      "git_blob_sha": "b586bca4fb8e15d58b5fe64d5e4c28062e52dfda"
+    },
+    "system_prompt": {
+      "path": "llm/prompts/zs_ki_b_sem_qualifikation_system_v0_9_regulatory_3_4_candidate.txt",
+      "git_blob_sha": "9df785f42eefd67cf2a1a768b2d240de399d8844"
+    },
+    "reference_questions": {
+      "path": "domains/zukunftscheck/rules/reference_questions_v0_2.json",
+      "git_blob_sha": "b446b7aeae0a51684d9597c080ef2ba505e8ac2a"
+    },
+    "meaning_layer": {
+      "path": "domains/zukunftscheck/rules/reference_question_meanings_v0_8.json",
+      "git_blob_sha": "76d79b86b739f1257bc981dc9b26b5b3576995b1"
+    },
+    "structured_output_contract": {
+      "path": "domains/zukunftscheck/schema/b_semantic_contract_v0_3_candidate.schema.json",
+      "git_blob_sha": "bc3dd4832db51677bdaf6f16028ade1b02214673"
+    },
+    "runtime_binding_candidate": {
+      "path": "tests/fixtures/zs_ki_b_sem_ai_assisted_development_runtime_binding_candidate_v0_2.json",
+      "git_blob_sha": "0cb7496884ad05906e42ad8fa731c2f1068cccfd"
+    }
+  },
+  "hard_stop": "NO_MODEL_CONTACT_WITHOUT_SEPARATE_EXPLICIT_USER_AUTHORIZATION",
+  "ready_for_user_approval": false,
+  "regulatory_3_4_scope": "MODEL_FREE_STATIC_ONLY",
+  "h5_status": "SEPARATE_NOT_AUTHORIZED"
+}

@@ -1,0 +1,29 @@
+{
+  "binding_version": "ZS-KI-B-SEM-AI-ASSISTED-DEVELOPMENT-PREP-FREEZE-BINDING-2026-001_v0.2",
+  "status": "STATIC_PREP_BINDING_ONLY",
+  "execution_authorized": false,
+  "model_contact_authorized": false,
+  "preflight_authorized": false,
+  "qualification_claim_allowed": false,
+  "ordered_case_ids_sha256": "b02bc870f83c322cd000f47e2000a1e17617f465293afb990ff949f534c6b2e8",
+  "bindings": {
+    "manifest_candidate": {
+      "path": "tests/fixtures/zs_ki_b_sem_ai_assisted_development_manifest_candidate_v0_2.json",
+      "git_blob_sha": "005344c469fa13359dd1ab1650357931531ede70"
+    },
+    "runner_candidate": {
+      "path": "scripts/zs_ki_b_sem_ai_assisted_development_live_runner_candidate_v0_2.py",
+      "git_blob_sha": "21a1727beb6d921b734ed20814b84d36f6d8d7bb"
+    },
+    "static_binding_test": {
+      "path": "tests/synthetic/test_sem_ai_assisted_development_regulatory_3_4_authorization_chain_v0_1.py",
+      "git_blob_sha": "0dadc068ea8264a1fc94605d2409298d974b5c21"
+    }
+  },
+  "hard_stop": "NO_MODEL_CONTACT_WITHOUT_SEPARATE_EXPLICIT_USER_AUTHORIZATION",
+  "automatic_retry_authorized": false,
+  "automatic_rerun_authorized": false,
+  "output_repair_authorized": false,
+  "ready_for_user_approval": false,
+  "h5_status": "SEPARATE_NOT_AUTHORIZED"
+}
