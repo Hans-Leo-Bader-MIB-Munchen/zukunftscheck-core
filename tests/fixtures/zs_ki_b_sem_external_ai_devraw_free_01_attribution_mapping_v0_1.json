@@ -1,0 +1,111 @@
+{
+  "mapping_version": "ZS-KI-B-SEM-DEVRAW-FREE-01-ATTRIBUTION-2026-001_v0.1",
+  "status": "NON_EXECUTABLE_EDITORIAL_MAPPING_ONLY",
+  "provenance_marker": "AI_ASSISTED_DEVELOPMENT_ONLY",
+  "provenance_basis": "USER_REPORTED_EXTERNAL_GENERATIVE_AI",
+  "source_fixture_path": "tests/fixtures/zs_ki_b_sem_external_ai_development_raw_candidates_v0_1.json",
+  "source_fixture_git_blob_sha": "db053e1f7decc6165a3935a74d4e326a6030ce76",
+  "source_candidate_id": "ZS-KI-B-SEM-DEVRAW-2026-FREE-01",
+  "source_incoming_label": "H-FREE-01",
+  "source_field": "source_text_as_supplied",
+  "source_is_single_ai_generated_composite_text": true,
+  "separate_original_documents_provided": false,
+  "source_location_ids_assigned": false,
+  "gold_created": false,
+  "qualification_claim_allowed": false,
+  "runner_bound": false,
+  "execution_authorized": false,
+  "model_contact_authorized": false,
+  "preflight_authorized": false,
+  "review_status": "EDITORIAL_ATTRIBUTION_ONLY_NOT_HUMAN_GOLD",
+  "explicit_attribution_units": 5,
+  "unattributed_open_units": 3,
+  "fragments": [
+    {
+      "fragment_id": "H-FREE-01-F01",
+      "original_sentence_index": 1,
+      "span_start_codepoints": 0,
+      "span_end_codepoints": 158,
+      "quoted_span": "Der Entwurf des Projektantrags vom 30. Juni 2026 nennt für den Dorfplatz eine Entsiegelung von 1.200 m² sowie die Anpflanzung von 25 standortgerechten Bäumen.",
+      "attribution": "PROJECT_APPLICATION_EXPLICIT",
+      "attribution_basis": "EXPLICIT_DOCUMENT_LABEL_IN_SYNTHETIC_COMPOSITE_ONLY",
+      "independent_original_document_verified": false
+    },
+    {
+      "fragment_id": "H-FREE-01-F02",
+      "original_sentence_index": 2,
+      "span_start_codepoints": 159,
+      "span_end_codepoints": 267,
+      "quoted_span": "Im internen Protokoll vom selben Tag heißt es, dass für 15 der 25 Bäume noch keine Standortprüfung vorliegt.",
+      "attribution": "INTERNAL_MINUTES_EXPLICIT",
+      "attribution_basis": "EXPLICIT_DOCUMENT_LABEL_IN_SYNTHETIC_COMPOSITE_ONLY",
+      "independent_original_document_verified": false
+    },
+    {
+      "fragment_id": "H-FREE-01-F03",
+      "original_sentence_index": 3,
+      "span_start_codepoints": 268,
+      "span_end_codepoints": 326,
+      "quoted_span": "Die Entwässerung soll über ein dezentrales System erfolgen",
+      "attribution": "UNATTRIBUTED_OPEN",
+      "attribution_basis": "NO_EXPLICIT_DOCUMENT_SOURCE_IN_SYNTHETIC_COMPOSITE",
+      "independent_original_document_verified": false
+    },
+    {
+      "fragment_id": "H-FREE-01-F04",
+      "original_sentence_index": 3,
+      "span_start_codepoints": 328,
+      "span_end_codepoints": 390,
+      "quoted_span": "eine hydraulische Bemessung ist laut Protokoll noch ausstehend",
+      "attribution": "INTERNAL_MINUTES_EXPLICIT",
+      "attribution_basis": "EXPLICIT_DOCUMENT_LABEL_IN_SYNTHETIC_COMPOSITE_ONLY",
+      "independent_original_document_verified": false
+    },
+    {
+      "fragment_id": "H-FREE-01-F05",
+      "original_sentence_index": 4,
+      "span_start_codepoints": 392,
+      "span_end_codepoints": 450,
+      "quoted_span": "Der Projektantrag nennt eine Förderfähigkeit der Maßnahme.",
+      "attribution": "PROJECT_APPLICATION_EXPLICIT",
+      "attribution_basis": "EXPLICIT_DOCUMENT_LABEL_IN_SYNTHETIC_COMPOSITE_ONLY",
+      "independent_original_document_verified": false
+    },
+    {
+      "fragment_id": "H-FREE-01-F06",
+      "original_sentence_index": 5,
+      "span_start_codepoints": 451,
+      "span_end_codepoints": 587,
+      "quoted_span": "Das Protokoll hält dagegen fest, dass die Förderfähigkeit erst nach Klärung der Eigentumsverhältnisse am Dorfplatz bewertet werden kann.",
+      "attribution": "INTERNAL_MINUTES_EXPLICIT",
+      "attribution_basis": "EXPLICIT_DOCUMENT_LABEL_IN_SYNTHETIC_COMPOSITE_ONLY",
+      "independent_original_document_verified": false
+    },
+    {
+      "fragment_id": "H-FREE-01-F07",
+      "original_sentence_index": 6,
+      "span_start_codepoints": 588,
+      "span_end_codepoints": 648,
+      "quoted_span": "Die Gemeinde beabsichtigt, die Maßnahme bis 2028 umzusetzen.",
+      "attribution": "UNATTRIBUTED_OPEN",
+      "attribution_basis": "NO_EXPLICIT_DOCUMENT_SOURCE_IN_SYNTHETIC_COMPOSITE",
+      "independent_original_document_verified": false
+    },
+    {
+      "fragment_id": "H-FREE-01-F08",
+      "original_sentence_index": 7,
+      "span_start_codepoints": 649,
+      "span_end_codepoints": 719,
+      "quoted_span": "Eine Beteiligung der Anwohnerschaft ist für September 2026 vorgesehen.",
+      "attribution": "UNATTRIBUTED_OPEN",
+      "attribution_basis": "NO_EXPLICIT_DOCUMENT_SOURCE_IN_SYNTHETIC_COMPOSITE",
+      "independent_original_document_verified": false
+    }
+  ],
+  "interpretation_limits": [
+    "25 planned trees and 15 sites lacking checks can both be true; not a proven numeric contradiction.",
+    "Project application claim of funding eligibility is not verified eligibility; minutes record a pending ownership clarification, not a legally verified decision.",
+    "The composite text does not provide two independently available full documents. Fragment attribution must not be converted into confirmed source_location_id values.",
+    "The development runner is bound to the existing 24-case single-SourceLocation fixture; this mapping is not bound to it."
+  ]
+}
