@@ -53,7 +53,7 @@ class ExternalAiDevelopmentRawCandidatesV01(unittest.TestCase):
         self.assertEqual(c["source_structure"], "COMPOSITE_TWO_DESCRIBED_DOCUMENTS")
         self.assertEqual(c["source_location_mapping_status"], "OPEN_MULTI_SOURCE")
         self.assertNotIn("source_location_id", c)
-        self.assertTrue(all(c["source_structure"] == "ONE_SYNTHETIC_DOCUMENT" for c in d["cases"] if c is not c))
+        self.assertTrue(all(other["source_structure"] == "ONE_SYNTHETIC_DOCUMENT" for other in d["cases"] if other is not c))
 
     def test_not_part_of_pinned_24_development_cases(self):
         raw = load(RAW)
